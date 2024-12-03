@@ -13,6 +13,7 @@ import numpy as np
 from sklearn.metrics import classification_report
 from sklearn.exceptions import UndefinedMetricWarning
 import json
+from f1chexbert import F1CheXbert
 
 # Suppress UndefinedMetricWarning
 warnings.filterwarnings('ignore', category=UndefinedMetricWarning)
@@ -26,6 +27,7 @@ class RadEval():
                  do_rouge=True,
                  do_bertscore=True,
                  do_diseases=True,
+                 do_chexbert=True
                  ):
         super(RadEval, self).__init__()
 
@@ -35,6 +37,7 @@ class RadEval():
         self.do_rouge = do_rouge
         self.do_bertscore = do_bertscore
         self.do_diseases = do_diseases
+        self.do_chexbert = do_chexbert
 
         # Initialize scorers only once
         if self.do_radgraph:
@@ -57,6 +60,9 @@ class RadEval():
             model = "StanfordAIMI/CXR-BERT-Leaves-Diseases-Only"
             self.diseases_model = StruxtBert(model_id_or_path=model, mapping=leaves_mapping)
 
+        if self.do_chexbert:
+            self.chexbert_scorer = F1CheXbert()
+
         # Store the metric keys
         self.metric_keys = []
         if self.do_radgraph:
@@ -71,6 +77,14 @@ class RadEval():
             self.metric_keys.extend(self.rouge_scorers.keys())
         if self.do_diseases:
             self.metric_keys.extend(["samples_avg_precision", "samples_avg_recall", "samples_avg_f1-score"])
+
+        if self.do_chexbert:
+            self.metric_keys.extend([
+                "chexbert-5_micro avg_f1-score",
+                "chexbert-all_micro avg_f1-score",
+                "chexbert-5_macro avg_f1-score",
+                "chexbert-all_macro avg_f1-score"
+            ])
 
     def __call__(self, refs, hyps):
         if not (isinstance(hyps, list) and isinstance(refs, list)):
@@ -120,6 +134,13 @@ class RadEval():
             scores["samples_avg_recall"] = classification_dict["samples avg"]["recall"]
             scores["samples_avg_f1-score"] = classification_dict["samples avg"]["f1-score"]
 
+        if self.do_chexbert:
+            accuracy, accuracy_per_sample, chexbert_all, chexbert_5 = self.chexbert_scorer(hyps, refs)
+            scores["chexbert-5_micro avg_f1-score"] = chexbert_5["micro avg"]["f1-score"]
+            scores["chexbert-all_micro avg_f1-score"] = chexbert_all["micro avg"]["f1-score"]
+            scores["chexbert-5_macro avg_f1-score"] = chexbert_5["macro avg"]["f1-score"]
+            scores["chexbert-all_macro avg_f1-score"] = chexbert_all["macro avg"]["f1-score"]
+
         return scores
 
 
@@ -147,7 +168,9 @@ def main():
                         do_bleu=True,
                         do_rouge=True,
                         do_bertscore=True,
-                        do_diseases=False)
+                        do_diseases=False,
+                        do_chexbert=True)
+
     results = evaluator(refs=refs, hyps=hyps)
     print(json.dumps(results, indent=4))
 

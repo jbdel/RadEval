@@ -29,7 +29,9 @@ def test_radeval():
                         do_bleu=True,
                         do_rouge=True,
                         do_bertscore=True,
-                        do_diseases=False)
+                        do_diseases=False,
+                        do_chexbert=True,
+                        )
 
     # Compute scores
     results = evaluator(refs=refs, hyps=hyps)
@@ -44,6 +46,10 @@ def test_radeval():
         "rouge1": pytest.approx(0.44681719607092746, 0.01),
         "rouge2": pytest.approx(0.4205128205128205, 0.01),
         "rougeL": pytest.approx(0.44681719607092746, 0.01),
+        "chexbert-5_micro avg_f1-score": pytest.approx(0.2857142857142857, 0.01),
+        "chexbert-all_micro avg_f1-score": pytest.approx(0.3333333333333333, 0.01),
+        "chexbert-5_macro avg_f1-score": pytest.approx(0.13333333333333333, 0.01),
+        "chexbert-all_macro avg_f1-score": pytest.approx(0.08333333333333333, 0.01),
     }
 
     # Compare computed results with expected results
