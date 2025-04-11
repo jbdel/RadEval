@@ -7,7 +7,7 @@ from tqdm import tqdm
 from factual.constants import leaves_mapping, upper_mapping, leaves_with_statuses_mapping, upper_with_statuses_mapping
 
 
-class StruxtBert(nn.Module):
+class StructBert(nn.Module):
     def __init__(self, model_id_or_path, mapping, tqdm_enable=False):
         super().__init__()
 
@@ -63,7 +63,7 @@ class StruxtBert(nn.Module):
 
 if __name__ == "__main__":
     model = "StanfordAIMI/CXR-BERT-Leaves-Diseases-Only"
-    outputs, _ = StruxtBert(model_id_or_path=model, mapping=leaves_mapping, tqdm_enable=True)(
+    outputs, _ = StructBert(model_id_or_path=model, mapping=leaves_mapping, tqdm_enable=True)(
         sentences=[
             "Layering pleural effusions",
             "Moderate pulmonary edema.",

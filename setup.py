@@ -21,7 +21,6 @@ setup(
         'bert-score==0.3.13',
         'scikit-learn',
         'numpy<2',
-        'f1chexbert'
     ],
     packages=find_packages(),
     zip_safe=False)

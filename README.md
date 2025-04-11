@@ -11,7 +11,6 @@ def main():
         "No definite acute cardiopulmonary process.Enlarged cardiac silhouette could be accentuated by patient's positioning.",
         "Increased mild pulmonary edema and left basal atelectasis.",
     ]
-
     hyps = [
         "No acute cardiopulmonary process.",
         "No radiographic findings to suggest pneumonia.",
@@ -20,17 +19,14 @@ def main():
         "Crowding of the pulmonary vasculature with possible minimal perihilar edema, but no overt pulmonary edema.",
         "No pleural effusions or pneumothoraces.",
     ]
-
     evaluator = RadEval(do_radgraph=True,
                         do_green=False,
                         do_bleu=True,
                         do_rouge=True,
                         do_bertscore=True,
-                        do_diseases=False,
+                        do_diseases=True,
                         do_chexbert=True)
-
     results = evaluator(refs=refs, hyps=hyps)
     print(json.dumps(results, indent=4))
-    
 main()
 ```

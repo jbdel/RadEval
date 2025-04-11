@@ -5,7 +5,7 @@ from nlg.rouge.rouge import Rouge
 from nlg.bleu.bleu import Bleu
 from nlg.bertscore.bertscore import BertScore
 from radgraph import F1RadGraph
-from factual.StruxtBert import StruxtBert
+from factual.StructBert import StructBert
 from factual.constants import leaves_mapping
 from torch import nn
 import pandas as pd
@@ -13,21 +13,24 @@ import numpy as np
 from sklearn.metrics import classification_report
 from sklearn.exceptions import UndefinedMetricWarning
 import json
-from f1chexbert import F1CheXbert
-
+from factual.f1chexbert import F1CheXbert
+import nltk
+from utils import clean_numbered_list
 # Suppress UndefinedMetricWarning
 warnings.filterwarnings('ignore', category=UndefinedMetricWarning)
 
 
+
+
 class RadEval():
     def __init__(self,
-                 do_radgraph=True,
-                 do_green=True,
-                 do_bleu=True,
-                 do_rouge=True,
-                 do_bertscore=True,
-                 do_diseases=True,
-                 do_chexbert=True
+                 do_radgraph=False,
+                 do_green=False,
+                 do_bleu=False,
+                 do_rouge=False,
+                 do_bertscore=False,
+                 do_diseases=False,
+                 do_chexbert=False
                  ):
         super(RadEval, self).__init__()
 
@@ -57,8 +60,9 @@ class RadEval():
                 "rougeL": Rouge(rouges=["rougeL"])
             }
         if self.do_diseases:
+            nltk.download('punkt_tab')
             model = "StanfordAIMI/CXR-BERT-Leaves-Diseases-Only"
-            self.diseases_model = StruxtBert(model_id_or_path=model, mapping=leaves_mapping)
+            self.diseases_model = StructBert(model_id_or_path=model, mapping=leaves_mapping)
 
         if self.do_chexbert:
             self.chexbert_scorer = F1CheXbert()
@@ -123,16 +127,35 @@ class RadEval():
             for key, scorer in self.rouge_scorers.items():
                 scores[key] = scorer(refs, hyps)[0]
 
-        if self.do_diseases:
-            outputs, _ = self.diseases_model(sentences=refs + hyps)
+        if self.do_diseases:            
+            # Clean reports before tokenization
+            parsed_refs = [clean_numbered_list(ref) for ref in refs]
+            parsed_hyps = [clean_numbered_list(hyp) for hyp in hyps]
+      
+       
+            section_level_hyps_pred = []
+            section_level_refs_pred = []
+            for parsed_hyp, parsed_ref in zip(parsed_hyps, parsed_refs):
+                outputs, _ = self.diseases_model(sentences=parsed_ref + parsed_hyp)
 
-            refs_preds = outputs[:len(refs)]
-            hyps_preds = outputs[len(refs):]
+                refs_preds = outputs[:len(parsed_ref)]
+                hyps_preds = outputs[len(parsed_ref):]
 
-            classification_dict = classification_report(refs_preds, hyps_preds, output_dict=True)
+                merged_refs_preds = np.any(refs_preds, axis=0).astype(int)
+                merged_hyps_preds = np.any(hyps_preds, axis=0).astype(int)
+
+                section_level_hyps_pred.append(merged_hyps_preds)
+                section_level_refs_pred.append(merged_refs_preds)
+
+            classification_dict = classification_report(section_level_refs_pred,
+                                                        section_level_hyps_pred,
+                                                        output_dict=True,
+                                                        zero_division=0)
             scores["samples_avg_precision"] = classification_dict["samples avg"]["precision"]
             scores["samples_avg_recall"] = classification_dict["samples avg"]["recall"]
             scores["samples_avg_f1-score"] = classification_dict["samples avg"]["f1-score"]
+        
+       
 
         if self.do_chexbert:
             accuracy, accuracy_per_sample, chexbert_all, chexbert_5 = self.chexbert_scorer(hyps, refs)

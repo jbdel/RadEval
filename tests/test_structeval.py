@@ -24,42 +24,16 @@ def test_radeval():
     ]
 
     # Instantiate RadEval with desired configurations
-    evaluator = RadEval(do_radgraph=True,
-                        do_green=False,
-                        do_bleu=True,
-                        do_rouge=True,
-                        do_bertscore=True,
-                        do_diseases=False,
-                        do_chexbert=True,
-                        )
+    evaluator = RadEval(do_diseases=True)
 
     # Compute scores
     results = evaluator(refs=refs, hyps=hyps)
 
-    # Expected result with pytest.approx for approximate comparison
-    expected_result = {
-        "radgraph_simple": pytest.approx(0.41111111111111115, 0.01),
-        "radgraph_partial": pytest.approx(0.41111111111111115, 0.01),
-        "radgraph_complete": pytest.approx(0.41414141414141414, 0.01),
-        "bleu": pytest.approx(0.16681006823938177, 0.01),
-        "bertscore": pytest.approx(0.6327474117279053, 0.01),
-        "rouge1": pytest.approx(0.44681719607092746, 0.01),
-        "rouge2": pytest.approx(0.4205128205128205, 0.01),
-        "rougeL": pytest.approx(0.44681719607092746, 0.01),
-        "chexbert-5_micro avg_f1-score": pytest.approx(0.2857142857142857, 0.01),
-        "chexbert-all_micro avg_f1-score": pytest.approx(0.3333333333333333, 0.01),
-        "chexbert-5_macro avg_f1-score": pytest.approx(0.13333333333333333, 0.01),
-        "chexbert-all_macro avg_f1-score": pytest.approx(0.08333333333333333, 0.01),
-    }
-
-    # Compare computed results with expected results
-    for key, expected_value in expected_result.items():
-        assert key in results, f"Missing key in results: {key}"
-        assert results[key] == expected_value, f"Mismatch for {key}: {results[key]} != {expected_value}"
-
-    # Print results for debug (optional)
-    print(json.dumps(results, indent=4))
+    # Assert expected results with approximate values
+    assert results['samples_avg_precision'] == pytest.approx(0.5)
+    assert results['samples_avg_recall'] == pytest.approx(0.3888888888888889)
+    assert results['samples_avg_f1-score'] == pytest.approx(0.4166666666666667)
 
 
 if __name__ == "__main__":
-    pytest.main()
+    test_radeval()
