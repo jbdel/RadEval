@@ -17,6 +17,7 @@ import json
 from factual.f1chexbert import F1CheXbert
 import nltk
 from utils import clean_numbered_list
+from factual.RadCliQv1.radcliq import CompositeMetric
 # Suppress UndefinedMetricWarning
 warnings.filterwarnings('ignore', category=UndefinedMetricWarning)
 
@@ -76,6 +77,9 @@ class RadEval():
         if self.do_ratescore:
             self.ratescore_scorer = RaTEScore()
 
+        if self.do_radcliq:
+            self.radcliq_scorer = CompositeMetric()
+
         # Store the metric keys
         self.metric_keys = []
         if self.do_radgraph:
@@ -102,7 +106,7 @@ class RadEval():
         if self.do_ratescore:
             self.metric_keys.append("ratescore")
         if self.do_radcliq:
-            self.metric_keys.append("radcliq")
+            self.metric_keys.append("radcliqv1")
 
     def __call__(self, refs, hyps):
         if not (isinstance(hyps, list) and isinstance(refs, list)):
@@ -182,6 +186,9 @@ class RadEval():
 
         if self.do_ratescore:
             scores["ratescore"] = sum(self.ratescore_scorer.compute_score(refs, hyps)) / len(refs)
+
+        if self.do_radcliq:
+            scores["radcliqv1"] = self.radcliq_scorer.predict(refs, hyps)[0]
 
         return scores
 

@@ -138,31 +138,25 @@ def radcliq_scores(refs, hyps,
 
 
 
-scaler = StandardScaler(with_mean=True, with_std=True)
-
-# learnt parameters, infered from 
-# https://github.com/rajpurkarlab/CXR-Report-Metric/blob/main/CXRMetric/run_eval.py#L219
-scaler.mean_            = np.array([0.53792312, 0.61757256, 0.76479421, 0.44738335])
-scaler.scale_           = np.array([0.30282584, 0.22430938, 0.25394391, 0.29892717])
-scaler.var_             = np.array([0.09170349, 0.05031470, 0.06448751, 0.08935745])
-scaler.n_samples_seen_  = 160       # integer
-scaler.n_features_in_   = 4         # integer
-
-# -----------------------------
-# 2) Composite metric weights
-# -----------------------------
-coefs = np.array([
-    -3.77083683e-01,   # radgraph weight
-    -3.70300100e-01,   # bertscore weight
-    -2.52616218e-01,   # s-emb weight
-     4.31504841e-12,   # bleu weight
-     2.46655256e-10    # intercept / bias
-])
-
 class CompositeMetric:
-    def __init__(self, scaler, coefs):
+    def __init__(self):
+        scaler = StandardScaler(with_mean=True, with_std=True)
+        # learnt parameters, infered from 
+        # https://github.com/rajpurkarlab/CXR-Report-Metric/blob/main/CXRMetric/run_eval.py#L219
+        scaler.mean_            = np.array([0.53792312, 0.61757256, 0.76479421, 0.44738335])
+        scaler.scale_           = np.array([0.30282584, 0.22430938, 0.25394391, 0.29892717])
+        scaler.var_             = np.array([0.09170349, 0.05031470, 0.06448751, 0.08935745])
+        scaler.n_samples_seen_  = 160       # integer
+        scaler.n_features_in_   = 4         # integer
+
         self.scaler = scaler
-        self.coefs  = coefs
+        self.coefs  = np.array([
+                        -3.77083683e-01,   # radgraph weight
+                        -3.70300100e-01,   # bertscore weight
+                        -2.52616218e-01,   # s-emb weight
+                        4.31504841e-12,   # bleu weight
+                        2.46655256e-10    # intercept / bias
+                    ])
         self.cols   = ["radgraph", "bertscore", "semb_score", "bleu_score"]
 
     def predict(self, X):
@@ -174,7 +168,7 @@ class CompositeMetric:
         """Stack features in the canonical column order."""
         return np.column_stack([metrics[c] for c in self.cols])
 
-    def predict(self, metrics: dict[str, np.ndarray]) -> np.ndarray:
+    def predict(self, refs, hyps) -> np.ndarray:
         """
         Args
         ----
@@ -184,14 +178,17 @@ class CompositeMetric:
         -------
         np.ndarray of shape (N,) – RadCliQ-v1 score for each ref/hyp pair.
         """
+        metrics = radcliq_scores(refs, hyps)
+
         X = self._build_matrix(metrics)
 
         Xn = self.scaler.transform(X)
 
         # Append bias term
         Xn = np.hstack([Xn, np.ones((Xn.shape[0], 1))])
+        scores = Xn @ self.coefs
 
-        return Xn @ self.coefs
+        return 1/scores.mean(), scores
 
 if __name__ == "__main__":
     refs = [
@@ -206,11 +203,10 @@ if __name__ == "__main__":
     ]
 
     # Step-1: compute the four individual metrics
-    metrics = radcliq_scores(refs, hyps)
 
     # Step-2: get the RadCliQ-v1 composite
-    radcliq = CompositeMetric(scaler, coefs)
-    composite_scores = radcliq.predict(metrics)
+    radcliq = CompositeMetric()
+    composite_scores = radcliq.predict(refs, hyps)
 
     for i, s in enumerate(composite_scores, 1):
         print(f"Pair {i}: RadCliQ-v1 = {s:.4f}")
