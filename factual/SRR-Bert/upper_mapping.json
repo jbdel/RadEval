@@ -1,0 +1,28 @@
+{
+    "Pleural Effusion": 0,
+    "Upper abdominal finding": 1,
+    "Widened cardiac silhouette": 2,
+    "Lung Finding": 3,
+    "No Finding": 4,
+    "Widened aortic contour": 5,
+    "Pleural Thickening": 6,
+    "Vascular finding": 7,
+    "Consolidation": 8,
+    "Pneumothorax": 9,
+    "Subdiaphragmatic gas": 10,
+    "Masslike opacity": 11,
+    "Chest wall finding": 12,
+    "Focal air space opacity": 13,
+    "Segmental collapse": 14,
+    "Fracture": 15,
+    "Mediastinal mass": 16,
+    "Solitary masslike opacity": 17,
+    "Support Devices": 18,
+    "Mediastinal finding": 19,
+    "Pleural finding": 20,
+    "Air space opacity": 21,
+    "Diffuse air space opacity": 22,
+    "Multiple masslike opacities": 23,
+    "Musculoskeletal finding": 24
+  }
+  

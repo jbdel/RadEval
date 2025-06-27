@@ -5,8 +5,9 @@ from nlg.rouge.rouge import Rouge
 from nlg.bleu.bleu import Bleu
 from nlg.bertscore.bertscore import BertScore
 from radgraph import F1RadGraph
-from factual.StructBert import StructBert
-from factual.constants import leaves_mapping
+# from factual.StructBert import StructBert
+# from factual.constants import leaves_mapping
+from factual.RaTEScore import RaTEScore
 from torch import nn
 import pandas as pd
 import numpy as np
@@ -30,7 +31,9 @@ class RadEval():
                  do_rouge=False,
                  do_bertscore=False,
                  do_diseases=False,
-                 do_chexbert=False
+                 do_chexbert=False,
+                 do_ratescore=False,
+                 do_radcliq=False,
                  ):
         super(RadEval, self).__init__()
 
@@ -41,6 +44,8 @@ class RadEval():
         self.do_bertscore = do_bertscore
         self.do_diseases = do_diseases
         self.do_chexbert = do_chexbert
+        self.do_ratescore = do_ratescore
+        self.do_radcliq = do_radcliq
 
         # Initialize scorers only once
         if self.do_radgraph:
@@ -60,12 +65,16 @@ class RadEval():
                 "rougeL": Rouge(rouges=["rougeL"])
             }
         if self.do_diseases:
-            nltk.download('punkt_tab')
-            model = "StanfordAIMI/CXR-BERT-Leaves-Diseases-Only"
-            self.diseases_model = StructBert(model_id_or_path=model, mapping=leaves_mapping)
+            # nltk.download('punkt_tab')
+            # model = "StanfordAIMI/CXR-BERT-Leaves-Diseases-Only"
+            # self.diseases_model = StructBert(model_id_or_path=model, mapping=leaves_mapping)
+            pass
 
         if self.do_chexbert:
             self.chexbert_scorer = F1CheXbert()
+
+        if self.do_ratescore:
+            self.ratescore_scorer = RaTEScore()
 
         # Store the metric keys
         self.metric_keys = []
@@ -90,12 +99,19 @@ class RadEval():
                 "chexbert-all_macro avg_f1-score"
             ])
 
+        if self.do_ratescore:
+            self.metric_keys.append("ratescore")
+        if self.do_radcliq:
+            self.metric_keys.append("radcliq")
+
     def __call__(self, refs, hyps):
         if not (isinstance(hyps, list) and isinstance(refs, list)):
             raise TypeError("hyps and refs must be of type list")
         if len(hyps) != len(refs):
             raise ValueError("hyps and refs lists don't have the same size")
-
+        if len(refs) == 0:
+            return {}
+        
         scores = self.compute_scores(refs=refs, hyps=hyps)
         return scores
 
@@ -163,6 +179,9 @@ class RadEval():
             scores["chexbert-all_micro avg_f1-score"] = chexbert_all["micro avg"]["f1-score"]
             scores["chexbert-5_macro avg_f1-score"] = chexbert_5["macro avg"]["f1-score"]
             scores["chexbert-all_macro avg_f1-score"] = chexbert_all["macro avg"]["f1-score"]
+
+        if self.do_ratescore:
+            scores["ratescore"] = sum(self.ratescore_scorer.compute_score(refs, hyps)) / len(refs)
 
         return scores
 

@@ -31,6 +31,7 @@ def test_radeval():
                         do_bertscore=True,
                         do_diseases=False,
                         do_chexbert=True,
+                        do_ratescore=True,
                         )
 
     # Compute scores
@@ -50,6 +51,7 @@ def test_radeval():
         "chexbert-all_micro avg_f1-score": pytest.approx(0.3333333333333333, 0.01),
         "chexbert-5_macro avg_f1-score": pytest.approx(0.13333333333333333, 0.01),
         "chexbert-all_macro avg_f1-score": pytest.approx(0.08333333333333333, 0.01),
+        "ratescore": pytest.approx(0.5877872073859466, 0.01),
     }
 
     # Compare computed results with expected results

@@ -21,6 +21,7 @@ setup(
         'bert-score==0.3.13',
         'scikit-learn',
         'numpy<2',
+        'medspacy'
     ],
     packages=find_packages(),
     zip_safe=False)

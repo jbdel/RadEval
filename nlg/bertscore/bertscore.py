@@ -6,7 +6,9 @@ from bert_score import BERTScorer
 class BertScore(nn.Module):
     def __init__(self,
                  model_type='distilbert-base-uncased',
-                 num_layers=5
+                 num_layers=5,
+                 rescale_with_baseline=True,
+                 idf=False,
                  ):
         super(BertScore, self).__init__()
         with torch.no_grad():
@@ -15,10 +17,10 @@ class BertScore(nn.Module):
                                           batch_size=64,
                                           nthreads=4,
                                           all_layers=False,
-                                          idf=False,
+                                          idf=idf,
                                           device=None,
                                           lang='en',
-                                          rescale_with_baseline=True,
+                                          rescale_with_baseline=rescale_with_baseline,
                                           baseline_path=None)
 
     def forward(self, refs, hyps):
