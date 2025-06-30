@@ -1,0 +1,25 @@
+
+torch
+transformers==4.51.3
+torchvision==0.19.0
+tokenizers==0.21.1  # Modified for compatible transformers range
+sentencepiece==0.1.99
+shortuuid
+accelerate==1.6.0
+peft==0.4.0
+bitsandbytes==0.41.0
+pydantic==2.11.4
+markdown2[all]
+numpy==1.26.4
+scikit-learn==1.2.2
+gradio==3.35.2
+gradio_client==0.2.9
+requests
+httpx==0.24.0
+uvicorn
+fastapi
+einops==0.6.1
+einops-exts==0.0.4
+timm==1.0.15
+pydicom
+tqdm

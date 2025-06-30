@@ -19,13 +19,15 @@ def main():
         "Crowding of the pulmonary vasculature with possible minimal perihilar edema, but no overt pulmonary edema.",
         "No pleural effusions or pneumothoraces.",
     ]
-    evaluator = RadEval(do_radgraph=True,
+    evaluator = RadEval(do_radgraph=False,
                         do_green=False,
                         do_bleu=True,
-                        do_rouge=True,
-                        do_bertscore=True,
-                        do_diseases=True,
-                        do_chexbert=True)
+                        do_rouge=False,
+                        do_bertscore=False,
+                        do_diseases=False,
+                        do_chexbert=False,
+                        do_ratescore=True,
+                        do_radcliq=True)
     results = evaluator(refs=refs, hyps=hyps)
     print(json.dumps(results, indent=4))
 main()

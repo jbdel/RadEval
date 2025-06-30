@@ -188,7 +188,7 @@ class RadEval():
             scores["ratescore"] = sum(self.ratescore_scorer.compute_score(refs, hyps)) / len(refs)
 
         if self.do_radcliq:
-            scores["radcliqv1"] = self.radcliq_scorer.predict(refs, hyps)[0]
+            scores["radcliq-v1"] = self.radcliq_scorer.predict(refs, hyps)[0]
 
         return scores
 

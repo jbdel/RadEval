@@ -206,10 +206,8 @@ if __name__ == "__main__":
 
     # Step-2: get the RadCliQ-v1 composite
     radcliq = CompositeMetric()
-    composite_scores = radcliq.predict(refs, hyps)
-
-    for i, s in enumerate(composite_scores, 1):
+    mean_scores, detail_scores = radcliq.predict(refs, hyps)
+    for i, s in enumerate(detail_scores, 1):
         print(f"Pair {i}: RadCliQ-v1 = {s:.4f}")
     
-    score = 1/composite_scores.mean()
-    print(f"RadCliQ-v1 score: {score:.4f}")
+    print(f"RadCliQ-v1 score: {mean_scores:.4f}")
