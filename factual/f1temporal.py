@@ -1,9 +1,22 @@
 # Temporal Entity F1
-# Adopt from https://github.com/X-iZhang/Libra/blob/main/libra/eval/temporal_f1.py
+# Adopted from https://github.com/X-iZhang/Libra/blob/main/libra/eval/temporal_f1.py
 
 import re
+import stanza
 import argparse
 from typing import List, Union
+
+# Download the radiology model for the first time (only once)
+stanza.download('en', package='radiology', processors={'ner': 'radiology'})
+
+# Initialize the pipeline with the radiology NER model explicitly specified
+nlp = stanza.Pipeline(
+    lang='en',
+    package='radiology',
+    processors={'tokenize': 'default', 'ner': 'radiology'},
+    logging_level='ERROR',  # Only output warnings or more severe messages
+    verbose=False  # Suppress additional information during pipeline initialization
+)
 
 # Keywords used for radiology-related entity extraction
 # Reference: Learning to Exploit Temporal Structure for Biomedical Vision-Language Processing (CVPR2023) 
@@ -43,23 +56,33 @@ def clean_text(text: str) -> str:
 
 def extract_entities(text: str, keywords: set) -> set:
     """
-    Extract entities from the given text based on the provided keywords.
+    Extract entities from the given text based on Stanza NER and provided keywords.
 
     Args:
         text (str): Input text.
         keywords (set): Set of keywords to extract entities.
 
     Returns:
-        set: Set of matched keywords found in the text.
+        set: Set of matched entities found in the text.
     """
+    # Use Stanza NER to extract entities tagged as "OBSERVATION" or "OBSERVATION_MODIFIER"
+    doc = nlp(text)
+    stanza_entities = {ent.text.lower() for ent in doc.entities if ent.type in {"OBSERVATION", "OBSERVATION_MODIFIER"}}
+
+    # Filter Stanza entities to include only those present in keywords
+    matched_stanza_entities = {entity for entity in stanza_entities if entity in keywords}
+
     # Clean the text before extracting entities
     text = clean_text(text)
-    
+
     # Create a regex pattern that matches any of the keywords as whole words
     pattern = r'\b(' + '|'.join(re.escape(word) for word in keywords) + r')\b'
-    
-    # Find all matches and return them as a set
-    return {match.group().lower() for match in re.finditer(pattern, text.lower())}
+
+    # Find all matches using regex
+    keyword_matches = {match.group().lower() for match in re.finditer(pattern, text.lower())}
+
+    # Combine Stanza entities and regex matches
+    return matched_stanza_entities | keyword_matches
 
 def calculate_tem_score(prediction_text: str, reference_text: Union[str, List[str]], epsilon: float = 1e-10) -> float:
     """
