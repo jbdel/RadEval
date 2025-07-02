@@ -8,6 +8,7 @@ from radgraph import F1RadGraph
 # from factual.StructBert import StructBert
 # from factual.constants import leaves_mapping
 from factual.RaTEScore import RaTEScore
+from factual.f1temporal import F1Temporal
 from torch import nn
 import pandas as pd
 import numpy as np
@@ -35,6 +36,7 @@ class RadEval():
                  do_chexbert=False,
                  do_ratescore=False,
                  do_radcliq=False,
+                 do_temporal=False,
                  ):
         super(RadEval, self).__init__()
 
@@ -47,6 +49,7 @@ class RadEval():
         self.do_chexbert = do_chexbert
         self.do_ratescore = do_ratescore
         self.do_radcliq = do_radcliq
+        self.do_temporal = do_temporal
 
         # Initialize scorers only once
         if self.do_radgraph:
@@ -80,6 +83,9 @@ class RadEval():
         if self.do_radcliq:
             self.radcliq_scorer = CompositeMetric()
 
+        if self.do_temporal:
+            self.F1Temporal = F1Temporal
+
         # Store the metric keys
         self.metric_keys = []
         if self.do_radgraph:
@@ -107,6 +113,8 @@ class RadEval():
             self.metric_keys.append("ratescore")
         if self.do_radcliq:
             self.metric_keys.append("radcliqv1")
+        if self.do_temporal:
+            self.metric_keys.append("temporal_f1")
 
     def __call__(self, refs, hyps):
         if not (isinstance(hyps, list) and isinstance(refs, list)):
@@ -190,6 +198,9 @@ class RadEval():
         if self.do_radcliq:
             scores["radcliq-v1"] = self.radcliq_scorer.predict(refs, hyps)[0]
 
+        if self.do_temporal:
+            scores["temporal_f1"] = self.F1Temporal(predictions=hyps, references=refs)["f1"]
+
         return scores
 
 
@@ -218,7 +229,8 @@ def main():
                         do_rouge=True,
                         do_bertscore=True,
                         do_diseases=False,
-                        do_chexbert=True)
+                        do_chexbert=True,
+                        do_temporal=True)
 
     results = evaluator(refs=refs, hyps=hyps)
     print(json.dumps(results, indent=4))
