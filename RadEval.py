@@ -5,6 +5,7 @@ from nlg.rouge.rouge import Rouge
 from nlg.bleu.bleu import Bleu
 from nlg.bertscore.bertscore import BertScore
 from radgraph import F1RadGraph
+from green_score import GREEN
 # from factual.StructBert import StructBert
 # from factual.constants import leaves_mapping
 from factual.RaTEScore import RaTEScore
@@ -61,7 +62,9 @@ class RadEval():
                                               num_layers=5)
         if self.do_green:
             # Initialize green scorer here if needed
-            pass
+            self.green_scorer = GREEN("StanfordAIMI/GREEN-radllama2-7b", 
+                                      output_dir=".")
+
         if self.do_rouge:
             self.rouge_scorers = {
                 "rouge1": Rouge(rouges=["rouge1"]),
@@ -148,8 +151,9 @@ class RadEval():
             scores["bertscore"] = self.bertscore_scorer(refs, hyps)[0]
 
         if self.do_green:
-            # Compute green score here if needed
-            pass
+            # Use the initialized green scorer
+            mean, std, green_scores, summary, results_df = self.green_scorer(refs, hyps)
+            scores["green"] = mean
 
         if self.do_rouge:
             for key, scorer in self.rouge_scorers.items():

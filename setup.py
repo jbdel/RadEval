@@ -14,8 +14,9 @@ setup(
         'Programming Language :: Python :: 3 :: Only',
     ],
     install_requires=[
-        'torch==2.3',
-        'transformers==4.39.0',
+        'torch>=2.2.2,<3.0',
+        'transformers>=4.39.0,<5.0',
+        'green-score==0.0.11',
         'radgraph',
         'rouge_score',
         'bert-score==0.3.13',
