@@ -250,6 +250,8 @@ def main():
                         do_srr_bert=True,
                         do_chexbert=True,
                         do_temporal=True,
+                        do_ratescore=True,
+                        do_radcliq=True,
                         do_radeval_bertsore=True)
 
     results = evaluator(refs=refs, hyps=hyps)

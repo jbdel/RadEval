@@ -3,7 +3,6 @@ from RadEval import RadEval
 import json
 
 def main():
-def main():
     refs = [
         "No acute cardiopulmonary process.",
         "No radiographic findings to suggest pneumonia.",
@@ -30,6 +29,8 @@ def main():
                         do_srr_bert=True,
                         do_chexbert=True,
                         do_temporal=True,
+                        do_ratescore=True,
+                        do_radcliq=True,
                         do_radeval_bertsore=True)
 
     results = evaluator(refs=refs, hyps=hyps)
@@ -38,4 +39,30 @@ def main():
 
 if __name__ == '__main__':
     main()
+```
+Output
+```
+{
+    "radgraph_simple": 0.41111111111111115,
+    "radgraph_partial": 0.41111111111111115,
+    "radgraph_complete": 0.41414141414141414,
+    "bleu": 0.16681006823938177,
+    "bertscore": 0.6327475905418396,
+    "rouge1": 0.44681719607092746,
+    "rouge2": 0.4205128205128205,
+    "rougeL": 0.44681719607092746,
+    "srr_bert_weighted_f1": 0.2857142857142857,
+    "srr_bert_weighted_precision": 0.2857142857142857,
+    "srr_bert_weighted_recall": 0.2857142857142857,
+    "chexbert-5_micro avg_f1-score": 0.2857142857142857,
+    "chexbert-all_micro avg_f1-score": 0.3333333333333333,
+    "chexbert-5_macro avg_f1-score": 0.13333333333333333,
+    "chexbert-all_macro avg_f1-score": 0.08333333333333333,
+    "chexbert-5_weighted_f1": 0.2222222222222222,
+    "chexbert-all_weighted_f1": 0.22916666666666666,
+    "ratescore": 0.5877871850722486,
+    "radcliq-v1": 1.6447783184968892,
+    "temporal_f1": 0.500000000075,
+    "radeval_bertsore": 0.4910106658935547
+}
 ```
