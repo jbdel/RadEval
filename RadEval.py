@@ -93,7 +93,11 @@ class RadEval():
             self.F1Temporal = F1Temporal
 
         if self.do_radeval_bertsore:
-            self.radeval_bertsore = RadEvalBERTScorer()
+            self.radeval_bertsore = RadEvalBERTScorer(
+                model_type="IAMJB/RadEvalModernBERT", 
+                num_layers=22,
+                use_fast_tokenizer=True,
+                rescale_with_baseline=False)
         # Store the metric keys
         self.metric_keys = []
         if self.do_radgraph:

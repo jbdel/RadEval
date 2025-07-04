@@ -3,6 +3,7 @@ from RadEval import RadEval
 import json
 
 def main():
+def main():
     refs = [
         "No acute cardiopulmonary process.",
         "No radiographic findings to suggest pneumonia.",
@@ -11,6 +12,7 @@ def main():
         "No definite acute cardiopulmonary process.Enlarged cardiac silhouette could be accentuated by patient's positioning.",
         "Increased mild pulmonary edema and left basal atelectasis.",
     ]
+
     hyps = [
         "No acute cardiopulmonary process.",
         "No radiographic findings to suggest pneumonia.",
@@ -19,17 +21,21 @@ def main():
         "Crowding of the pulmonary vasculature with possible minimal perihilar edema, but no overt pulmonary edema.",
         "No pleural effusions or pneumothoraces.",
     ]
-    evaluator = RadEval(do_radgraph=False,
+
+    evaluator = RadEval(do_radgraph=True,
                         do_green=False,
                         do_bleu=True,
-                        do_rouge=False,
-                        do_bertscore=False,
-                        do_diseases=False,
-                        do_chexbert=False,
-                        do_ratescore=True,
-                        do_radcliq=True,
-                        do_temporal=True)
+                        do_rouge=True,
+                        do_bertscore=True,
+                        do_srr_bert=True,
+                        do_chexbert=True,
+                        do_temporal=True,
+                        do_radeval_bertsore=True)
+
     results = evaluator(refs=refs, hyps=hyps)
     print(json.dumps(results, indent=4))
-main()
+
+
+if __name__ == '__main__':
+    main()
 ```
