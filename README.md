@@ -27,7 +27,8 @@ def main():
                         do_diseases=False,
                         do_chexbert=False,
                         do_ratescore=True,
-                        do_radcliq=True)
+                        do_radcliq=True,
+                        do_temporal=True)
     results = evaluator(refs=refs, hyps=hyps)
     print(json.dumps(results, indent=4))
 main()

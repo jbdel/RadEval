@@ -1,1 +1,15 @@
 rrg_systems/
+# Git ignore file for RadEval project
+# Ignore Python cache files
+__pycache__/
+.ipynb_checkpoints/
+*.egg-info/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore log files
+*.log
+
+# Ignore OS generated files
+.DS_Store
