@@ -33,6 +33,7 @@ def test_radeval():
                         do_chexbert=True,
                         do_ratescore=True,
                         do_radcliq=True,
+                        do_temporal=True,
                         )
 
     # Compute scores
@@ -54,6 +55,7 @@ def test_radeval():
         "chexbert-all_macro avg_f1-score": pytest.approx(0.08333333333333333, 0.01),
         "ratescore": pytest.approx(0.5877872073859466, 0.01),
         "radcliq-v1": pytest.approx(1.6447780790352864, 0.01),
+        "temporal_f1": pytest.approx(0.500000000075, 0.01),
     }
 
     # Compare computed results with expected results
