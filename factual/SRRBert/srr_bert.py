@@ -5,9 +5,42 @@ import torch
 import torch.nn as nn
 from transformers import BertForSequenceClassification, BertTokenizer
 from tqdm import tqdm
+import re
+import nltk
 
 
-class StructBert(nn.Module):
+def srr_bert_parse_sentences(text):
+    # Handle numbers followed by a dot, not followed by a digit (to avoid decimals like 3.5)
+    
+    # Case 1: Number at beginning of text
+    text = re.sub(r'^\s*\d+\.(?!\d)\s*', '', text)
+    
+    # Case 2: Number after a period, like "word.2."
+    text = re.sub(r'(\w)\.(\d+)\.(?!\d)\s*', r'\1. ', text)
+    
+    # Case 3: Number attached to a word, like "word2."
+    text = re.sub(r'(\w)(\d+)\.(?!\d)\s*', r'\1. ', text)
+    
+    # Case 4: Number after space following a word, like "word 2."
+    text = re.sub(r'(\w)\s+\d+\.(?!\d)\s*', r'\1. ', text)
+    
+    # Case 5: Standalone number in the middle, like ". 2. word"
+    text = re.sub(r'([.!?])\s*\d+\.(?!\d)\s*', r'\1 ', text)
+    
+    # Add space after periods followed immediately by uppercase letter (new sentence without space)
+    text = re.sub(r'\.([A-Z])', r'. \1', text)
+    
+    # Make sure the text ends with a period
+    if not text.strip().endswith(('.', '!', '?')):
+        text = text.strip() + '.'
+    
+    # Tokenize into sentences
+    sentences = nltk.sent_tokenize(text)
+    
+    return sentences
+    
+
+class SRRBert(nn.Module):
     # Supported model types and their configs
     MODEL_CONFIGS = {
         "leaves": {
@@ -107,7 +140,7 @@ class StructBert(nn.Module):
         outputs = np.concatenate(outputs, axis=0)
         return outputs, self.map_predictions_to_labels(outputs)
 
-
+    
 if __name__ == "__main__":
     example_sentences = [
         "Layering pleural effusions",
@@ -117,7 +150,7 @@ if __name__ == "__main__":
     ]
 
     # Initialize model (choose one of: leaves, upper, leaves_with_statuses, upper_with_statuses)
-    model = StructBert(
+    model = SRRBert(
         model_type="leaves",
         batch_size=4,
         tqdm_enable=True

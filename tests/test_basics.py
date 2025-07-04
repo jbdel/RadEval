@@ -29,7 +29,6 @@ def test_radeval():
                         do_bleu=True,
                         do_rouge=True,
                         do_bertscore=True,
-                        do_diseases=False,
                         do_chexbert=True,
                         do_ratescore=True,
                         do_radcliq=True,
