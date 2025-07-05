@@ -1,4 +1,5 @@
 from collections import defaultdict
+import stanza
 import warnings
 import re
 from nlg.rouge.rouge import Rouge
@@ -6,8 +7,6 @@ from nlg.bleu.bleu import Bleu
 from nlg.bertscore.bertscore import BertScore
 from radgraph import F1RadGraph
 from green_score import GREEN
-# from factual.StructBert import StructBert
-# from factual.constants import leaves_mapping
 from factual.RaTEScore import RaTEScore
 from factual.f1temporal import F1Temporal
 from torch import nn
@@ -20,6 +19,8 @@ from factual.f1chexbert import F1CheXbert
 import nltk
 from utils import clean_numbered_list
 from factual.RadCliQv1.radcliq import CompositeMetric
+from factual.SRRBert.srr_bert import SRRBert, srr_bert_parse_sentences
+from nlg.radevalbertscore import RadEvalBERTScorer
 # Suppress UndefinedMetricWarning
 warnings.filterwarnings('ignore', category=UndefinedMetricWarning)
 
@@ -33,10 +34,11 @@ class RadEval():
                  do_bleu=False,
                  do_rouge=False,
                  do_bertscore=False,
-                 do_diseases=False,
+                 do_srr_bert=False,
                  do_chexbert=False,
                  do_ratescore=False,
                  do_radcliq=False,
+                 do_radeval_bertsore=False,
                  do_temporal=False,
                  ):
         super(RadEval, self).__init__()
@@ -46,11 +48,12 @@ class RadEval():
         self.do_bleu = do_bleu
         self.do_rouge = do_rouge
         self.do_bertscore = do_bertscore
-        self.do_diseases = do_diseases
+        self.do_srr_bert = do_srr_bert
         self.do_chexbert = do_chexbert
         self.do_ratescore = do_ratescore
         self.do_radcliq = do_radcliq
         self.do_temporal = do_temporal
+        self.do_radeval_bertsore = do_radeval_bertsore
 
         # Initialize scorers only once
         if self.do_radgraph:
@@ -71,11 +74,10 @@ class RadEval():
                 "rouge2": Rouge(rouges=["rouge2"]),
                 "rougeL": Rouge(rouges=["rougeL"])
             }
-        if self.do_diseases:
-            # nltk.download('punkt_tab')
-            # model = "StanfordAIMI/CXR-BERT-Leaves-Diseases-Only"
-            # self.diseases_model = StructBert(model_id_or_path=model, mapping=leaves_mapping)
-            pass
+        if self.do_srr_bert:
+            nltk.download('punkt_tab')
+            self.srr_bert_scorer = SRRBert(model_type="leaves_with_statuses")
+            
 
         if self.do_chexbert:
             self.chexbert_scorer = F1CheXbert()
@@ -87,8 +89,15 @@ class RadEval():
             self.radcliq_scorer = CompositeMetric()
 
         if self.do_temporal:
+            stanza.download('en', package='radiology', processors={'ner': 'radiology'})
             self.F1Temporal = F1Temporal
 
+        if self.do_radeval_bertsore:
+            self.radeval_bertsore = RadEvalBERTScorer(
+                model_type="IAMJB/RadEvalModernBERT", 
+                num_layers=22,
+                use_fast_tokenizer=True,
+                rescale_with_baseline=False)
         # Store the metric keys
         self.metric_keys = []
         if self.do_radgraph:
@@ -101,7 +110,7 @@ class RadEval():
             self.metric_keys.append("bertscore")
         if self.do_rouge:
             self.metric_keys.extend(self.rouge_scorers.keys())
-        if self.do_diseases:
+        if self.do_srr_bert:
             self.metric_keys.extend(["samples_avg_precision", "samples_avg_recall", "samples_avg_f1-score"])
 
         if self.do_chexbert:
@@ -118,6 +127,8 @@ class RadEval():
             self.metric_keys.append("radcliqv1")
         if self.do_temporal:
             self.metric_keys.append("temporal_f1")
+        if self.do_radeval_bertsore:
+            self.metric_keys.append("radeval_bertsore")
 
     def __call__(self, refs, hyps):
         if not (isinstance(hyps, list) and isinstance(refs, list)):
@@ -159,16 +170,16 @@ class RadEval():
             for key, scorer in self.rouge_scorers.items():
                 scores[key] = scorer(refs, hyps)[0]
 
-        if self.do_diseases:            
+        if self.do_srr_bert:            
             # Clean reports before tokenization
-            parsed_refs = [clean_numbered_list(ref) for ref in refs]
-            parsed_hyps = [clean_numbered_list(hyp) for hyp in hyps]
-      
+            parsed_refs = [srr_bert_parse_sentences(ref) for ref in refs]
+            parsed_hyps = [srr_bert_parse_sentences(hyp) for hyp in hyps]
+
        
             section_level_hyps_pred = []
             section_level_refs_pred = []
             for parsed_hyp, parsed_ref in zip(parsed_hyps, parsed_refs):
-                outputs, _ = self.diseases_model(sentences=parsed_ref + parsed_hyp)
+                outputs, _ = self.srr_bert_scorer(sentences=parsed_ref + parsed_hyp)
 
                 refs_preds = outputs[:len(parsed_ref)]
                 hyps_preds = outputs[len(parsed_ref):]
@@ -183,10 +194,10 @@ class RadEval():
                                                         section_level_hyps_pred,
                                                         output_dict=True,
                                                         zero_division=0)
-            scores["samples_avg_precision"] = classification_dict["samples avg"]["precision"]
-            scores["samples_avg_recall"] = classification_dict["samples avg"]["recall"]
-            scores["samples_avg_f1-score"] = classification_dict["samples avg"]["f1-score"]
-        
+            scores["srr_bert_weighted_f1"] = classification_dict["weighted avg"]["f1-score"]
+            scores["srr_bert_weighted_precision"] = classification_dict["weighted avg"]["precision"]
+            scores["srr_bert_weighted_recall"] = classification_dict["weighted avg"]["recall"]
+
        
 
         if self.do_chexbert:
@@ -195,6 +206,8 @@ class RadEval():
             scores["chexbert-all_micro avg_f1-score"] = chexbert_all["micro avg"]["f1-score"]
             scores["chexbert-5_macro avg_f1-score"] = chexbert_5["macro avg"]["f1-score"]
             scores["chexbert-all_macro avg_f1-score"] = chexbert_all["macro avg"]["f1-score"]
+            scores["chexbert-5_weighted_f1"] = chexbert_5["weighted avg"]["f1-score"]
+            scores["chexbert-all_weighted_f1"] = chexbert_all["weighted avg"]["f1-score"]
 
         if self.do_ratescore:
             scores["ratescore"] = sum(self.ratescore_scorer.compute_score(refs, hyps)) / len(refs)
@@ -205,6 +218,8 @@ class RadEval():
         if self.do_temporal:
             scores["temporal_f1"] = self.F1Temporal(predictions=hyps, references=refs)["f1"]
 
+        if self.do_radeval_bertsore:
+            scores["radeval_bertsore"] = self.radeval_bertsore.score(refs=refs, hyps=hyps)
         return scores
 
 
@@ -232,9 +247,12 @@ def main():
                         do_bleu=True,
                         do_rouge=True,
                         do_bertscore=True,
-                        do_diseases=False,
+                        do_srr_bert=True,
                         do_chexbert=True,
-                        do_temporal=True)
+                        do_temporal=True,
+                        do_ratescore=True,
+                        do_radcliq=True,
+                        do_radeval_bertsore=True)
 
     results = evaluator(refs=refs, hyps=hyps)
     print(json.dumps(results, indent=4))

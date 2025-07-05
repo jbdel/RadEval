@@ -6,8 +6,7 @@ import stanza
 import argparse
 from typing import List, Union
 
-# Download the radiology model for the first time (only once)
-stanza.download('en', package='radiology', processors={'ner': 'radiology'})
+
 
 # Initialize the pipeline with the radiology NER model explicitly specified
 nlp = stanza.Pipeline(
