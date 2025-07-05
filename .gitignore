@@ -1,4 +1,3 @@
-rrg_systems/
 # Git ignore file for RadEval project
 # Ignore Python cache files
 __pycache__/
@@ -7,9 +6,13 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.pytest_cache/
 
 # Ignore log files
 *.log
 
 # Ignore OS generated files
 .DS_Store
+
+# Ignore run_scripts
+rrg_systems/

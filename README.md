@@ -1,3 +1,19 @@
+## Installation
+> Python 3.10 (recommend)
+1. Clone this repository and navigate to RadEval folder
+```bash
+git clone https://github.com/jbdel/RadEval
+cd RadEval
+```
+
+2. Install Package
+```Shell
+conda create -n RadEval python=3.10 -y
+conda activate RadEval
+pip install -e .
+```
+
+## Usage
 ```python
 from RadEval import RadEval
 import json
@@ -22,7 +38,7 @@ def main():
     ]
 
     evaluator = RadEval(do_radgraph=True,
-                        do_green=False,
+                        do_green=True,
                         do_bleu=True,
                         do_rouge=True,
                         do_bertscore=True,
@@ -47,7 +63,8 @@ Output
     "radgraph_partial": 0.41111111111111115,
     "radgraph_complete": 0.41414141414141414,
     "bleu": 0.16681006823938177,
-    "bertscore": 0.6327475905418396,
+    "bertscore": 0.63274747133255,
+    "green": 0.39999999999999997,
     "rouge1": 0.44681719607092746,
     "rouge2": 0.4205128205128205,
     "rougeL": 0.44681719607092746,
@@ -60,8 +77,8 @@ Output
     "chexbert-all_macro avg_f1-score": 0.08333333333333333,
     "chexbert-5_weighted_f1": 0.2222222222222222,
     "chexbert-all_weighted_f1": 0.22916666666666666,
-    "ratescore": 0.5877871850722486,
-    "radcliq-v1": 1.6447783184968892,
+    "ratescore": 0.5877872315410949,
+    "radcliq-v1": 1.6447780902700346,
     "temporal_f1": 0.500000000075,
     "radeval_bertsore": 0.4910106658935547
 }

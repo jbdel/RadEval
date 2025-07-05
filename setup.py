@@ -13,17 +13,28 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3 :: Only',
     ],
+    python_requires='>=3.9,<=3.12.1',
     install_requires=[
         'torch>=2.2.2,<3.0',
         'transformers>=4.53.1',
-        'green-score==0.0.11',
         'radgraph',
         'rouge_score',
         'bert-score==0.3.13',
         'scikit-learn',
         'numpy<2',
         'medspacy',
-        'stanza'
+        'stanza',
+        'accelerate==0.30.1',
+        'pillow==10.3.0',
+        'sentencepiece==0.2.0',
+        'sentence-transformers==3.0.1',
+        'datasets==2.19.0',
+        'torchvision==0.17.2',
+        'opencv-python==4.10.0.84',
+        'scipy',
+        'matplotlib',
+        'pandas'
     ],
     packages=find_packages(),
-    zip_safe=False)
+    zip_safe=False,
+    )

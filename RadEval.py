@@ -6,7 +6,7 @@ from nlg.rouge.rouge import Rouge
 from nlg.bleu.bleu import Bleu
 from nlg.bertscore.bertscore import BertScore
 from radgraph import F1RadGraph
-from green_score import GREEN
+from factual.green_score import GREEN
 from factual.RaTEScore import RaTEScore
 from factual.f1temporal import F1Temporal
 from torch import nn

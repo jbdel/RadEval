@@ -1,4 +1,4 @@
-from green_score import GREEN
+from factual.green_score import GREEN
 import numpy as np
 import warnings
 
