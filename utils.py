@@ -1,7 +1,7 @@
 import re
 import nltk
 
-nltk.download("punkt_tab")
+nltk.download("punkt_tab", quiet=True)
 
 def clean_numbered_list(text):
     """

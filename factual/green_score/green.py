@@ -1,7 +1,6 @@
 import re
 import torch
 import torch.distributed as dist
-from transformers import AutoModelForCausalLM, AutoTokenizer
 import pandas as pd
 from datasets import Dataset
 from datasets.distributed import split_dataset_by_node
@@ -12,6 +11,8 @@ import time
 import sys
 import warnings
 import torch.nn as nn
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers.utils import logging
 
 # Import necessary functions (ensure these are available in your environment)
 from factual.green_score.utils import (
@@ -22,6 +23,8 @@ from factual.green_score.utils import (
     flatten_values_lists_of_list_dicts_to_dict,
 )
 
+# Set the logging level for the transformers library to ERROR to suppress benign warnings
+logging.get_logger("transformers").setLevel(logging.ERROR)
 
 def get_rank():
     if not dist.is_initialized():
@@ -113,8 +116,22 @@ class GREEN:
             padding_side="left",
         )
 
-        chat_template = "{% for message in messages %}\n{% if message['from'] == 'human' %}\n{{ '<|user|>\n' + message['value'] + eos_token }}\n{% elif message['from'] == 'system' %}\n{{ '<|system|>\n' + message['value'] + eos_token }}\n{% elif message['from'] == 'gpt' %}\n{{ '<|assistant|>\n'  + message['value'] + eos_token }}\n{% endif %}\n{% if loop.last and add_generation_prompt %}\n{{ '<|assistant|>' }}\n{% endif %}\n{% endfor %}"
-
+        # Set up chat template for chat-style prompts
+        chat_template = (
+            "{% for message in messages %}\n"
+            "{% if message['from'] == 'human' %}\n"
+            "{{ '<|user|>\n' + message['value'] + eos_token }}\n"
+            "{% elif message['from'] == 'system' %}\n"
+            "{{ '<|system|>\n' + message['value'] + eos_token }}\n"
+            "{% elif message['from'] == 'gpt' %}\n"
+            "{{ '<|assistant|>\n'  + message['value'] + eos_token }}\n"
+            "{% endif %}\n"
+            "{% if loop.last and add_generation_prompt %}\n"
+            "{{ '<|assistant|>' }}\n"
+            "{% endif %}\n"
+            "{% endfor %}"
+        )
+        
         self.tokenizer.chat_template = chat_template
         self.tokenizer.pad_token = self.tokenizer.eos_token
         self.tokenizer.clean_up_tokenization_spaces = True

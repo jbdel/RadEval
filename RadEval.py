@@ -1,6 +1,8 @@
 from collections import defaultdict
 import stanza
 import warnings
+import logging
+import os
 import re
 from nlg.rouge.rouge import Rouge
 from nlg.bleu.bleu import Bleu
@@ -21,8 +23,10 @@ from utils import clean_numbered_list
 from factual.RadCliQv1.radcliq import CompositeMetric
 from factual.SRRBert.srr_bert import SRRBert, srr_bert_parse_sentences
 from nlg.radevalbertscore import RadEvalBERTScorer
-# Suppress UndefinedMetricWarning
-warnings.filterwarnings('ignore', category=UndefinedMetricWarning)
+# Suppress Warning
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+warnings.filterwarnings('ignore')
+logging.basicConfig(level=logging.ERROR)
 
 
 
@@ -75,7 +79,7 @@ class RadEval():
                 "rougeL": Rouge(rouges=["rougeL"])
             }
         if self.do_srr_bert:
-            nltk.download('punkt_tab')
+            nltk.download('punkt_tab', quiet=True)
             self.srr_bert_scorer = SRRBert(model_type="leaves_with_statuses")
             
 
