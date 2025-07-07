@@ -44,6 +44,7 @@ class RadEval():
                  do_radcliq=False,
                  do_radeval_bertsore=False,
                  do_temporal=False,
+                 do_details=False,
                  ):
         super(RadEval, self).__init__()
 
@@ -58,12 +59,16 @@ class RadEval():
         self.do_radcliq = do_radcliq
         self.do_temporal = do_temporal
         self.do_radeval_bertsore = do_radeval_bertsore
+        self.do_details = do_details
 
         # Initialize scorers only once
         if self.do_radgraph:
             self.radgraph_scorer = F1RadGraph(reward_level="all", model_type="radgraph-xl")
         if self.do_bleu:
             self.bleu_scorer = Bleu()
+            self.bleu_scorer_1 = Bleu(n=1)
+            self.bleu_scorer_2 = Bleu(n=2)
+            self.bleu_scorer_3 = Bleu(n=3)
         if self.do_bertscore:
             self.bertscore_scorer = BertScore(model_type='distilbert-base-uncased',
                                               num_layers=5)
@@ -78,6 +83,7 @@ class RadEval():
                 "rouge2": Rouge(rouges=["rouge2"]),
                 "rougeL": Rouge(rouges=["rougeL"])
             }
+
         if self.do_srr_bert:
             nltk.download('punkt_tab', quiet=True)
             self.srr_bert_scorer = SRRBert(model_type="leaves_with_statuses")
@@ -154,25 +160,81 @@ class RadEval():
         scores = {}
         if self.do_radgraph:
             radgraph_scores = self.radgraph_scorer(refs=refs, hyps=hyps)
-            radgraph_scores = radgraph_scores[0]
-            scores["radgraph_simple"] = radgraph_scores[0]
-            scores["radgraph_partial"] = radgraph_scores[1]
-            scores["radgraph_complete"] = radgraph_scores[2]
+
+            if self.do_details:
+                f1_scores = radgraph_scores[0]
+                individual_scores = radgraph_scores[1]
+                hyps_entities = radgraph_scores[2]
+                refs_entities = radgraph_scores[3]
+
+                scores["radgraph"] = {
+                    "radgraph_simple": f1_scores[0],
+                    "radgraph_partial": f1_scores[1], 
+                    "radgraph_complete": f1_scores[2],
+                    "reward_list": individual_scores,
+                    "hypothesis_annotation_lists": hyps_entities,
+                    "reference_annotation_lists": refs_entities
+                }
+
+            else:
+                radgraph_scores = radgraph_scores[0]
+                scores["radgraph_simple"] = radgraph_scores[0]
+                scores["radgraph_partial"] = radgraph_scores[1]
+                scores["radgraph_complete"] = radgraph_scores[2]
 
         if self.do_bleu:
-            scores["bleu"] = self.bleu_scorer(refs, hyps)[0]
+            if self.do_details:
+                bleu_1_score = self.bleu_scorer_1(refs, hyps)[0]
+                bleu_2_score = self.bleu_scorer_2(refs, hyps)[0]
+                bleu_3_score = self.bleu_scorer_3(refs, hyps)[0]
+                bleu_4_score = self.bleu_scorer(refs, hyps)[0]
+                
+                scores["bleu"] = {
+                    "bleu_1": bleu_1_score,
+                    "bleu_2": bleu_2_score,
+                    "bleu_3": bleu_3_score,
+                    "bleu_4": bleu_4_score
+                }
+            else:
+                scores["bleu"] = self.bleu_scorer(refs, hyps)[0]
 
         if self.do_bertscore:
-            scores["bertscore"] = self.bertscore_scorer(refs, hyps)[0]
+            if self.do_details:
+                bertscore_scores, sample_scores = self.bertscore_scorer(refs, hyps)
+                scores["bertscore"] = {
+                    "mean_score": bertscore_scores,
+                    "sample_scores": sample_scores
+                }
+            else:
+                scores["bertscore"] = self.bertscore_scorer(refs, hyps)[0]
 
         if self.do_green:
             # Use the initialized green scorer
-            mean, std, green_scores, summary, results_df = self.green_scorer(refs, hyps)
-            scores["green"] = mean
+            mean, std, sample_scores, summary, _ = self.green_scorer(refs, hyps)
+            if self.do_details:
+                scores["green"] = {
+                    "mean": mean,
+                    "std": std,
+                    "sample_scores": sample_scores,
+                    "summary": summary
+                }
+            else:
+                scores["green"] = mean
 
         if self.do_rouge:
-            for key, scorer in self.rouge_scorers.items():
-                scores[key] = scorer(refs, hyps)[0]
+            if self.do_details:
+                rouge_scores = {}
+                for key, scorer in self.rouge_scorers.items():
+                    mean, sample_scores  = scorer(refs, hyps)
+                    rouge_scores[key] = {
+                        "mean_score": mean,
+                        "sample_scores": sample_scores
+                    }
+
+                scores["rouge"] = rouge_scores
+            else:
+                for key, scorer in self.rouge_scorers.items():
+                    scores[key] = scorer(refs, hyps)[0]
 
         if self.do_srr_bert:            
             # Clean reports before tokenization
@@ -194,36 +256,124 @@ class RadEval():
                 section_level_hyps_pred.append(merged_hyps_preds)
                 section_level_refs_pred.append(merged_refs_preds)
 
+            label_names = [label for label, idx in sorted(self.srr_bert_scorer.mapping.items(), key=lambda x: x[1])]
             classification_dict = classification_report(section_level_refs_pred,
                                                         section_level_hyps_pred,
+                                                        target_names=label_names,
                                                         output_dict=True,
                                                         zero_division=0)
-            scores["srr_bert_weighted_f1"] = classification_dict["weighted avg"]["f1-score"]
-            scores["srr_bert_weighted_precision"] = classification_dict["weighted avg"]["precision"]
-            scores["srr_bert_weighted_recall"] = classification_dict["weighted avg"]["recall"]
+            
+            if self.do_details:
+                label_scores = {}
+                for label in label_names:
+                    if label in classification_dict:
+                        f1 = classification_dict[label]["f1-score"]
+                        support = classification_dict[label]["support"]
+                        if f1 > 0 or support > 0:
+                            label_scores[label] = {
+                                "f1-score": f1,
+                                "precision": classification_dict[label]["precision"],
+                                "recall": classification_dict[label]["recall"],
+                                "support": support
+                            }
+
+                scores["srr_bert"] = {
+                    "srr_bert_weighted_f1": classification_dict["weighted avg"]["f1-score"],
+                    "srr_bert_weighted_precision": classification_dict["weighted avg"]["precision"],
+                    "srr_bert_weighted_recall": classification_dict["weighted avg"]["recall"],
+                    "label_scores": label_scores
+                }
+            else:
+                scores["srr_bert_weighted_f1"] = classification_dict["weighted avg"]["f1-score"]
+                scores["srr_bert_weighted_precision"] = classification_dict["weighted avg"]["precision"]
+                scores["srr_bert_weighted_recall"] = classification_dict["weighted avg"]["recall"]
 
        
 
         if self.do_chexbert:
             accuracy, accuracy_per_sample, chexbert_all, chexbert_5 = self.chexbert_scorer(hyps, refs)
-            scores["chexbert-5_micro avg_f1-score"] = chexbert_5["micro avg"]["f1-score"]
-            scores["chexbert-all_micro avg_f1-score"] = chexbert_all["micro avg"]["f1-score"]
-            scores["chexbert-5_macro avg_f1-score"] = chexbert_5["macro avg"]["f1-score"]
-            scores["chexbert-all_macro avg_f1-score"] = chexbert_all["macro avg"]["f1-score"]
-            scores["chexbert-5_weighted_f1"] = chexbert_5["weighted avg"]["f1-score"]
-            scores["chexbert-all_weighted_f1"] = chexbert_all["weighted avg"]["f1-score"]
+            if self.do_details:
+                chexbert_5_labels = {
+                    k: v["f1-score"]
+                    for k, v in list(chexbert_5.items())[:-4]
+                }
+
+                chexbert_all_labels = {
+                    k: v["f1-score"]
+                    for k, v in list(chexbert_all.items())[:-4]
+                }
+
+                scores["chexbert"] = {
+                    "chexbert-5_micro avg_f1-score": chexbert_5["micro avg"]["f1-score"],
+                    "chexbert-all_micro avg_f1-score": chexbert_all["micro avg"]["f1-score"],
+                    "chexbert-5_macro avg_f1-score": chexbert_5["macro avg"]["f1-score"],
+                    "chexbert-all_macro avg_f1-score": chexbert_all["macro avg"]["f1-score"],
+                    "chexbert-5_weighted_f1": chexbert_5["weighted avg"]["f1-score"],
+                    "chexbert-all_weighted_f1": chexbert_all["weighted avg"]["f1-score"],
+                    "label_scores_f1-score": {
+                        "chexbert-5": chexbert_5_labels,
+                        "chexbert_all": chexbert_all_labels
+                    }
+                }
+            else:
+                scores["chexbert-5_micro avg_f1-score"] = chexbert_5["micro avg"]["f1-score"]
+                scores["chexbert-all_micro avg_f1-score"] = chexbert_all["micro avg"]["f1-score"]
+                scores["chexbert-5_macro avg_f1-score"] = chexbert_5["macro avg"]["f1-score"]
+                scores["chexbert-all_macro avg_f1-score"] = chexbert_all["macro avg"]["f1-score"]
+                scores["chexbert-5_weighted_f1"] = chexbert_5["weighted avg"]["f1-score"]
+                scores["chexbert-all_weighted_f1"] = chexbert_all["weighted avg"]["f1-score"]
 
         if self.do_ratescore:
-            scores["ratescore"] = sum(self.ratescore_scorer.compute_score(refs, hyps)) / len(refs)
+            rate_score, pred_pairs_raw ,gt_pairs_raw = self.ratescore_scorer.compute_score(candidate_list=hyps, reference_list=refs)
+            f1_ratescore = float(np.mean(rate_score))
+            if self.do_details:
+                pred_pairs = [
+                    {ent: label for ent, label in sample}
+                    for sample in pred_pairs_raw
+                ]
+                gt_pairs = [
+                    {ent: label for ent, label in sample}
+                    for sample in gt_pairs_raw
+                ]
+                scores["ratescore"] = {
+                    "f1-score": f1_ratescore,
+                    "hyps_pairs": pred_pairs,
+                    "refs_pairs": gt_pairs
+                }
+            else:
+                scores["ratescore"] = f1_ratescore
 
         if self.do_radcliq:
-            scores["radcliq-v1"] = self.radcliq_scorer.predict(refs, hyps)[0]
+            mean_scores, detail_scores = self.radcliq_scorer.predict(refs, hyps)
+            if self.do_details:
+                scores["radcliq-v1"] = {
+                    "mean_score": mean_scores,
+                    "sample_scores": detail_scores.tolist()
+                }
+            else:
+                scores["radcliq-v1"] = mean_scores
 
         if self.do_temporal:
-            scores["temporal_f1"] = self.F1Temporal(predictions=hyps, references=refs)["f1"]
+            temporal_scores = self.F1Temporal(predictions=hyps, references=refs)
+            if self.do_details:
+                scores["temporal_f1"] = {
+                    "f1-score": temporal_scores["f1"],
+                    "hyps_entities": sorted(list({ent for group in temporal_scores["prediction_entities"] for ent in group})),
+                    "refs_entities": sorted(list({ent for group in temporal_scores["reference_entities"] for ent in group}))
+                }
+            else:
+                scores["temporal_f1"] = temporal_scores["f1"]
 
         if self.do_radeval_bertsore:
-            scores["radeval_bertsore"] = self.radeval_bertsore.score(refs=refs, hyps=hyps)
+            radeval_bertsores = self.radeval_bertsore.score(refs=refs, hyps=hyps)
+            if self.do_details:
+                scores["radeval_bertsore"] = {
+                    "f1-score": radeval_bertsores[0],
+                    "sample_scores": radeval_bertsores[1].tolist()
+                }
+            else:
+                scores["radeval_bertsore"] = radeval_bertsores[0]
+
         return scores
 
 
