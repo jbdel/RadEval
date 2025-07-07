@@ -356,10 +356,18 @@ class RadEval():
         if self.do_temporal:
             temporal_scores = self.F1Temporal(predictions=hyps, references=refs)
             if self.do_details:
+                hyp_entities = [
+                    sorted(list(group)) if group else []
+                    for group in temporal_scores.get("prediction_entities", [])
+                ]
+                ref_entities = [
+                    sorted(list(group)) if group else []
+                    for group in temporal_scores.get("reference_entities", [])
+                ]
                 scores["temporal_f1"] = {
                     "f1-score": temporal_scores["f1"],
-                    "hyps_entities": sorted(list({ent for group in temporal_scores["prediction_entities"] for ent in group})),
-                    "refs_entities": sorted(list({ent for group in temporal_scores["reference_entities"] for ent in group}))
+                    "hyps_entities": hyp_entities,
+                    "refs_entities": ref_entities
                 }
             else:
                 scores["temporal_f1"] = temporal_scores["f1"]
