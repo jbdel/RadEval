@@ -5,7 +5,9 @@
 </div>
 
 <div align="center">
-  <p><em><strong><span style="font-size: 18px;">🩺 All-in-one metrics for evaluating AI-generated radiology text 📊</span></strong></em></p>
+
+***🩺 All-in-one metrics for evaluating AI-generated radiology text 📊***
+
 </div>
 
 <!--- BADGES: START --->
@@ -70,7 +72,7 @@ RadEval currently supports the following evaluation metrics:
 ## ⚙️ Installation
 RadEval supports Python **3.10+** and can be installed via PyPI or from source.
 
-### 📦 Option 1: Install via PyPI (Recommended)
+### Option 1: Install via PyPI (Recommended)
 
 ```bash
 pip install radeval
@@ -78,14 +80,14 @@ pip install radeval
 > [!TIP]
 > We recommend using a virtual environment to avoid dependency conflicts, especially since some metrics require loading large inference models.
 
-### 🧪 Option 2: Install from GitHub (Latest Development Version)
+### Option 2: Install from GitHub (Latest Development Version)
 Install the most up-to-date version directly from GitHub:
 ```bash
 pip install git+https://github.com/jbdel/RadEval.git
 ```
 > This is useful if you want the latest features or bug fixes before the next PyPI release.
 
-### 🛠️ Option 3: Install in Development Mode (Recommended for Contributors)
+### Option 3: Install in Development Mode (Recommended for Contributors)
 ```bash
 # Clone the repository
 git clone https://github.com/jbdel/RadEval.git
@@ -109,12 +111,12 @@ from RadEval import RadEval
 import json
 
 refs = [
-    "No acute cardiopulmonary process.",
-    "Mild cardiomegaly with no acute findings."
+    "No definite acute cardiopulmonary process.Enlarged cardiac silhouette could be accentuated by patient's positioning.",
+    "Increased mild pulmonary edema and left basal atelectasis.",
 ]
 hyps = [
-    "Normal chest X-ray findings.",
-    "Enlarged heart, otherwise normal."
+    "Relatively lower lung volumes with no focal airspace consolidation appreciated.",
+    "No pleural effusions or pneumothoraces.",
 ]
 
 evaluator = RadEval(
@@ -130,10 +132,10 @@ print(json.dumps(results, indent=2))
 
 ```json
 {
-  "radgraph_simple": 0.0,
-  "radgraph_partial": 0.0,
-  "radgraph_complete": 0.0,
-  "bleu": 1.7593148693125255e-16
+  "radgraph_simple": 0.5,
+  "radgraph_partial": 0.5,
+  "radgraph_complete": 0.5,
+  "bleu": 0.5852363407461811
 }
 ```
 
@@ -148,17 +150,17 @@ import json
 
 evaluator = RadEval(
     do_srr_bert=True,
-    do_bleu=True,
+    do_rouge=True,
     do_details=True
 )
 
 refs = [
-    "No acute cardiopulmonary process.",
-    "Mild cardiomegaly with no acute findings."
+    "No definite acute cardiopulmonary process.Enlarged cardiac silhouette could be accentuated by patient's positioning.",
+    "Increased mild pulmonary edema and left basal atelectasis.",
 ]
 hyps = [
-    "Normal chest X-ray findings.",
-    "Enlarged heart, otherwise normal."
+    "Relatively lower lung volumes with no focal airspace consolidation appreciated.",
+    "No pleural effusions or pneumothoraces.",
 ]
 
 results = evaluator(refs=refs, hyps=hyps)
@@ -170,26 +172,55 @@ print(json.dumps(results, indent=2))
 
 ```json
 {
-  "bleu": {
-    "bleu_1": 9.735009785958812e-17,
-    "bleu_2": 1.1241021040739735e-16,
-    "bleu_3": 1.3499757581266643e-16,
-    "bleu_4": 1.7593148693125255e-16
+  "rouge": {
+    "rouge1": {
+      "mean_score": 0.04,
+      "sample_scores": [
+        0.08,
+        0.0
+      ]
+    },
+    "rouge2": {
+      "mean_score": 0.0,
+      "sample_scores": [
+        0.0,
+        0.0
+      ]
+    },
+    "rougeL": {
+      "mean_score": 0.04,
+      "sample_scores": [
+        0.08,
+        0.0
+      ]
+    }
   },
   "srr_bert": {
-    "srr_bert_weighted_f1": 1.0,
-    "srr_bert_weighted_precision": 1.0,
-    "srr_bert_weighted_recall": 1.0,
+    "srr_bert_weighted_f1": 0.16666666666666666,
+    "srr_bert_weighted_precision": 0.125,
+    "srr_bert_weighted_recall": 0.25,
     "label_scores": {
-      "Cardiomegaly (Present)": {
-        "f1-score": 1.0,
-        "precision": 1.0,
-        "recall": 1.0,
+      "Edema (Present)": {
+        "f1-score": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 1.0
+      },
+      "Atelectasis (Present)": {
+        "f1-score": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 1.0
+      },
+      "Cardiomegaly (Uncertain)": {
+        "f1-score": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
         "support": 1.0
       },
       "No Finding": {
-        "f1-score": 1.0,
-        "precision": 1.0,
+        "f1-score": 0.6666666666666666,
+        "precision": 0.5,
         "recall": 1.0,
         "support": 1.0
       }
