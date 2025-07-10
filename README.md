@@ -12,7 +12,7 @@
 
 <!--- BADGES: START --->
 [![PyPI](https://img.shields.io/badge/RadEval-v0.0.1-00B7EB?logo=python&logoColor=00B7EB)](https://pypi.org/project/RadEval/)
-![Python version](https://img.shields.io/badge/python-3.10+-important?logo=python&logoColor=important)
+[![Python version](https://img.shields.io/badge/python-3.10+-important?logo=python&logoColor=important)]()
 [![Expert Dataset](https://img.shields.io/badge/Expert-%20Dataset-4CAF50?logo=googlecloudstorage&logoColor=9BF0E1)]()
 [![Model](https://img.shields.io/badge/Model-RadEvalModernBERT-0066CC?logo=huggingface&labelColor=grey)](https://huggingface.co/IAMJB/RadEvalModernBERT)
 [![Video](https://img.shields.io/badge/Talk-Video-9C27B0?logo=youtubeshorts&labelColor=grey)](https://justin13601.github.io/files/radeval.mp4)
@@ -24,7 +24,7 @@
 ## 📖 Table of Contents
 
 - [🌟 Overview](#-overview)
-  - [❓ Why RadEval?](#-why-radeval)
+  - [❓ Why RadEval](#-why-radeval)
   - [✨ Key Features](#-key-features)
 - [⚙️ Installation](#️-installation)
 - [🚀 Quick Start](#-quick-start)
@@ -40,13 +40,13 @@
 
 **RadEval** is a comprehensive evaluation framework specifically designed for assessing the quality of AI-generated radiology text. It provides a unified interface to multiple state-of-the-art evaluation metrics, enabling researchers and practitioners to thoroughly evaluate their radiology text generation models.
 
-### ❓ Why RadEval?
+### ❓ Why RadEval
 > [!TIP]
 > - **Domain-Specific**: Tailored for radiology text evaluation with medical knowledge integration
 > - **Multi-Metric**: Supports 11+ different evaluation metrics in one framework
 > - **Easy to Use**: Simple API with flexible configuration options
 > - **Comprehensive**: From traditional n-gram metrics to advanced LLM-based evaluations
-> - **Research-Ready**: Built for reproducible evaluation in medical AI research
+> - **Research-Ready**: Built for reproducible evaluation in radiology AI research
 
 ### ✨ Key Features
 > [!NOTE]
@@ -645,9 +645,38 @@ If you use RadEval in your research, please cite:
 }
 ```
 
+### 📦 Codebase Contributors
+<table>
+	<tbody>
+		<tr>
+            <td align="center">
+                <a href="https://jbdel.github.io/">
+                    <img src="https://aimi.stanford.edu/sites/g/files/sbiybj20451/files/styles/medium_square/public/media/image/image5_0.png?h=f4e62a0a&itok=euaj9VoF" width="100;" alt="Jean-Benoit Delbrouck"/>
+                    <br />
+                    <sub><b>Jean-Benoit Delbrouck</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://justin13601.github.io/">
+                    <img src="https://justin13601.github.io/images/pfp2.JPG" width="100;" alt="Justin Xu"/>
+                    <br />
+                    <sub><b>Justin Xu</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://x-izhang.github.io/">
+                    <img src="https://x-izhang.github.io/author/xi-zhang/avatar_hu13660783057866068725.jpg" width="100;" alt="Xi Zhang"/>
+                    <br />
+                    <sub><b>Xi Zhang</b></sub>
+                </a>
+            </td>
+		</tr>
+	<tbody>
+</table>
+
 ## 🙏 Acknowledgments
 
-This project would not be possible without the foundational work of the medical AI community.  
+This project would not be possible without the foundational work of the radiology AI community.  
 We extend our gratitude to the authors and maintainers of the following open-source projects and metrics:
 
 - 🧠 **CheXbert**, **RadGraph**, and **CheXpert** from Stanford AIMI for their powerful labelers and benchmarks.
@@ -662,9 +691,10 @@ Special thanks to:
 
 We aim to build on these contributions and promote accessible, fair, and robust evaluation of AI-generated radiology text.
 
+
 ---
 
 <div align="center">
   <p>⭐ If you find RadEval useful, please give us a star! ⭐</p>
-  <p>Made with ❤️ for the medical AI research community</p>
+  <p>Made with ❤️ for the radiology AI research community</p>
 </div>
