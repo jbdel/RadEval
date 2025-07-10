@@ -23,7 +23,6 @@
 - [📊 Evaluation Metrics](#-evaluation-metrics)
 - [⚙️ Installation](#️-installation)
 - [🚀 Quick Start](#-quick-start)
-- [💡 Usage Examples](#-usage-examples)
 - [📁 File Format Suggestion](#-file-format-suggestion)
 - [🔧 Configuration Options](#-configuration-options)
 - [📈 Example Results](#-example-results)
