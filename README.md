@@ -26,7 +26,7 @@
 - [📁 File Format Suggestion](#-file-format-suggestion)
 - [🔧 Configuration Options](#-configuration-options)
 - [📈 Example Results](#-example-results)
-- [🏎️ Performance Tips](#-performance-tips)
+- [🚄 Performance Tips](#-performance-tips)
 - [📚 Citation](#-citation)
 
 ## 🌟 Overview
@@ -425,12 +425,12 @@ if __name__ == '__main__':
 }
 ```
 
-## 🏎️ Performance Tips
+## 🚄 Performance Tips
 
-1. **Start Small**: Test with a few examples before full evaluation
-2. **Select Metrics**: Only enable metrics you actually need
-3. **Batch Processing**: Process large datasets in smaller chunks
-4. **GPU Usage**: Ensure CUDA is available for faster computation
+**Start Small**: Test with a few examples before full evaluation
+**Select Metrics**: Only enable metrics you actually need
+**Batch Processing**: Process large datasets in smaller chunks
+**GPU Usage**: Ensure CUDA is available for faster computation
 
 
 ## 📚 Citation
