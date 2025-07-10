@@ -281,7 +281,7 @@ signatures, scores = compare_systems(
 <details>
 <summary> Output </summary>
 
-```json
+<pre lang="md">
 ================================================================================
 PAIRED SIGNIFICANCE TEST RESULTS
 ================================================================================
@@ -300,7 +300,7 @@ improved                                      1.0000         1.0000
 METRIC SIGNATURES:
 - bleu: bleu|ar:50|seed:12345
 - rouge1: rouge1|ar:50|seed:12345
-```
+</pre>
 
 </details>
 
@@ -546,7 +546,7 @@ signatures, scores = compare_systems(
 <details>
 <summary> Output </summary>
 
-```json
+<pre lang="md">
 Running tests...
 ================================================================================
 PAIRED SIGNIFICANCE TEST RESULTS
@@ -575,7 +575,7 @@ METRIC SIGNATURES:
 - radgraph: radgraph|ar:50|seed:12345
 - chexbert: chexbert|ar:50|seed:12345
 - word_count: word_count|ar:50|seed:12345
-```
+</pre>
 
 </details>
 
@@ -607,11 +607,12 @@ for system_name in systems.keys():
 <details>
 <summary> Output </summary>
 
-```json
+<pre lang="md">
 Significant differences (p < 0.05):
   improved vs baseline: bleu, bertscore
   poor vs baseline: rouge1, bertscore, radgraph, word_count
-```
+</pre>
+
 </details>
 
 > [!TIP]
