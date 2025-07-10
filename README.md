@@ -6,25 +6,30 @@
 
 <div align="center">
 
-***🩺 All-in-one metrics for evaluating AI-generated radiology text 📊***
+**All-in-one metrics for evaluating AI-generated radiology text**
 
 </div>
 
 <!--- BADGES: START --->
-[![PyPI](https://img.shields.io/badge/RadEval-0.0.1-00B7EB?logo=python&logoColor=00B7EB)]()
-[![Huggingface Demo](https://img.shields.io/badge/Huggingface-Demo-FFD21E.svg?logo=huggingface)]()
-[![Arxiv](https://img.shields.io/badge/arXiv-coming_soon-B31B1B.svg?logo=arxiv)]()
+[![PyPI](https://img.shields.io/badge/RadEval-v0.0.1-00B7EB?logo=python&logoColor=00B7EB)](https://pypi.org/project/RadEval/)
+![Python version](https://img.shields.io/badge/python-3.10+-important?logo=python&logoColor=important)
+[![Video](https://img.shields.io/badge/Talk-Video-9C27B0?logo=youtubeshorts&labelColor=grey)](https://justin13601.github.io/files/radeval.mp4)
+[![Huggingface Demo](https://img.shields.io/badge/Huggingface-Demo-FFD21E.svg?logo=huggingface)](https://huggingface.co/spaces/X-iZhang/RadEval)
+[![Expert Dataset](https://img.shields.io/badge/Expert-%20Dataset-4CAF50?logo=googlecloudstorage&logoColor=9BF0E1)]()
+[![Arxiv](https://img.shields.io/badge/arXiv-coming_soon-B31B1B.svg?logo=arxiv&logoColor=B31B1B)]()
 <!--- BADGES: END --->
 
 ## 📖 Table of Contents
 
 - [🌟 Overview](#-overview)
-- [✨ Key Features](#-key-features)
+  - [❓ Why RadEval?](#-why-radeval)
+  - [✨ Key Features](#-key-features)
 - [📊 Evaluation Metrics](#-evaluation-metrics)
 - [⚙️ Installation](#️-installation)
 - [🚀 Quick Start](#-quick-start)
 - [📁 File Format Suggestion](#-file-format-suggestion)
 - [🔧 Configuration Options](#-configuration-options)
+- [🧠 RadEval Expert Dataset](#-radeval-expert-dataset)
 - [📈 Example Results](#-example-results)
 - [🚦 Performance Tips](#-performance-tips)
 - [📚 Citation](#-citation)
@@ -33,16 +38,16 @@
 
 **RadEval** is a comprehensive evaluation framework specifically designed for assessing the quality of AI-generated radiology text. It provides a unified interface to multiple state-of-the-art evaluation metrics, enabling researchers and practitioners to thoroughly evaluate their radiology text generation models.
 
-### Why RadEval?
-> [!NOTE]
-> - 🎯 **Domain-Specific**: Tailored for radiology text evaluation with medical knowledge integration
-> - 🔄 **Multi-Metric**: Supports 11+ different evaluation metrics in one framework
-> - 🚀 **Easy to Use**: Simple API with flexible configuration options
-> - 📊 **Comprehensive**: From traditional n-gram metrics to advanced LLM-based evaluations
-> - 🔬 **Research-Ready**: Built for reproducible evaluation in medical AI research
-
-## ✨ Key Features
+### ❓ Why RadEval?
 > [!TIP]
+> - **Domain-Specific**: Tailored for radiology text evaluation with medical knowledge integration
+> - **Multi-Metric**: Supports 11+ different evaluation metrics in one framework
+> - **Easy to Use**: Simple API with flexible configuration options
+> - **Comprehensive**: From traditional n-gram metrics to advanced LLM-based evaluations
+> - **Research-Ready**: Built for reproducible evaluation in medical AI research
+
+### ✨ Key Features
+> [!NOTE]
 > - **Multiple Evaluation Perspectives**: Lexical, semantic, clinical, and temporal evaluations
 > - **Batch Processing**: Efficient evaluation of large datasets
 > - **Flexible Configuration**: Enable/disable specific metrics based on your needs
@@ -74,7 +79,7 @@ RadEval supports Python **3.10+** and can be installed via PyPI or from source.
 ### Option 1: Install via PyPI (Recommended)
 
 ```bash
-pip install radeval
+pip install RadEval
 ```
 > [!TIP]
 > We recommend using a virtual environment to avoid dependency conflicts, especially since some metrics require loading large inference models.
@@ -93,8 +98,8 @@ git clone https://github.com/jbdel/RadEval.git
 cd RadEval
 
 # Create and activate a conda environment
-conda create -n radeval python=3.10 -y
-conda activate radeval
+conda create -n RadEval python=3.10 -y
+conda activate RadEval
 
 # Install in development (editable) mode
 pip install -e .
@@ -424,6 +429,8 @@ if __name__ == '__main__':
     "radeval_bertsore": 0.4910106658935547
 }
 ```
+## 🧠 RadEval Expert Dataset
+To support reliable benchmarking, we introduce the **RadEval Expert Dataset**, a carefully curated evaluation set annotated by board-certified radiologists. This dataset consists of realistic radiology reports and challenging model generations, enabling nuanced evaluation across clinical accuracy, temporal consistency, and language quality. It serves as a gold standard to validate automatic metrics and model performance under expert review.
 
 ## 🚦 Performance Tips
 
@@ -438,7 +445,13 @@ if __name__ == '__main__':
 If you use RadEval in your research, please cite:
 
 ```BibTeX
-coming soon
+@software{radeval2025,
+  author = {Jean-Benoit Delbrouck, Justin Xu, Xi Zhang},
+  title = {RadEval: A framework for radiology text evaluation},
+  year = {2025},
+  publisher = {GitHub},
+  howpublished = {\url{https://github.com/jbdel/RadEval}},
+}
 ```
 
 ## 🙏 Acknowledgments

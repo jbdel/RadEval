@@ -3,8 +3,10 @@ from setuptools import setup, find_packages
 setup(
     name='RadEval',
     version='0.0.1',
-    author='Jean-Benoit Delbrouck',
+    author='Jean-Benoit Delbrouck, Justin Xu, Xi Zhang',
+    url='https://github.com/jbdel/RadEval',
     license='MIT',
+    description='All-in-one metrics for evaluating AI-generated radiology text',
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     classifiers=[
@@ -12,6 +14,19 @@ setup(
         'Topic :: Scientific/Engineering',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3 :: Only',
+    ],
+    keywords=[
+        'radiology',
+        'evaluation',
+        'natural language processing',
+        'radiology report',
+        'medical NLP',
+        'clinical text generation',
+        'LLM',
+        'bioNLP',
+        'chexbert',
+        'radgraph',
+        'medical AI'
     ],
     python_requires='>=3.9,<=3.12.1',
     install_requires=[
