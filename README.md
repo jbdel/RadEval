@@ -13,10 +13,12 @@
 <!--- BADGES: START --->
 [![PyPI](https://img.shields.io/badge/RadEval-v0.0.1-00B7EB?logo=python&logoColor=00B7EB)](https://pypi.org/project/RadEval/)
 ![Python version](https://img.shields.io/badge/python-3.10+-important?logo=python&logoColor=important)
-[![Video](https://img.shields.io/badge/Talk-Video-9C27B0?logo=youtubeshorts&labelColor=grey)](https://justin13601.github.io/files/radeval.mp4)
-[![Huggingface Demo](https://img.shields.io/badge/Huggingface-Demo-FFD21E.svg?logo=huggingface)](https://huggingface.co/spaces/X-iZhang/RadEval)
 [![Expert Dataset](https://img.shields.io/badge/Expert-%20Dataset-4CAF50?logo=googlecloudstorage&logoColor=9BF0E1)]()
+[![Model](https://img.shields.io/badge/Model-RadEvalModernBERT-0066CC?logo=huggingface&labelColor=grey)](https://huggingface.co/IAMJB/RadEvalModernBERT)
+[![Video](https://img.shields.io/badge/Talk-Video-9C27B0?logo=youtubeshorts&labelColor=grey)](https://justin13601.github.io/files/radeval.mp4)
+[![Gradio Demo](https://img.shields.io/badge/Gradio-Demo-FFD21E.svg?logo=gradio&logoColor=gold)](https://huggingface.co/spaces/X-iZhang/RadEval)
 [![Arxiv](https://img.shields.io/badge/arXiv-coming_soon-B31B1B.svg?logo=arxiv&logoColor=B31B1B)]()
+[![License](https://img.shields.io/badge/License-MIT-blue.svg?)](https://github.com/jbdel/RadEval/main/LICENSE)
 <!--- BADGES: END --->
 
 ## 📖 Table of Contents
@@ -31,6 +33,7 @@
 - [🔧 Configuration Options](#-configuration-options)
 - [🧠 RadEval Expert Dataset](#-radeval-expert-dataset)
 - [📈 Example Results](#-example-results)
+- [🧪 Hypothesis Testing (Significance Evaluation)](#-hypothesis-testing-significance-evaluation)
 - [🚦 Performance Tips](#-performance-tips)
 - [📚 Citation](#-citation)
 
@@ -49,6 +52,7 @@
 ### ✨ Key Features
 > [!NOTE]
 > - **Multiple Evaluation Perspectives**: Lexical, semantic, clinical, and temporal evaluations
+> - **Statistical Testing**: Built-in hypothesis testing for system comparison
 > - **Batch Processing**: Efficient evaluation of large datasets
 > - **Flexible Configuration**: Enable/disable specific metrics based on your needs
 > - **Detailed Results**: Comprehensive output with metric explanations
@@ -235,7 +239,72 @@ print(json.dumps(results, indent=2))
 
 </details>
 
-### Example 3: File-based Evaluation
+### Example 3: Quick Hypothesis Testing
+Compare two systems statistically to validate improvements:
+
+```python
+from RadEval import RadEval, compare_systems
+
+# Define systems to compare
+systems = {
+    'baseline': [
+        "No acute findings.",
+        "Mild heart enlargement."
+    ],
+    'improved': [
+        "No acute cardiopulmonary process.",
+        "Mild cardiomegaly with clear lung fields."
+    ]
+}
+
+references = [
+    "No acute cardiopulmonary process.",
+    "Mild cardiomegaly with clear lung fields."
+]
+
+# Quick significance test
+evaluator = RadEval(do_bleu=True, do_rouge=True)
+metrics = {
+    'bleu': lambda hyps, refs: evaluator.bleu_scorer(refs, hyps)[0],
+    'rouge1': lambda hyps, refs: evaluator.rouge_scorers["rouge1"](refs, hyps)[0],
+}
+
+signatures, scores = compare_systems(
+    systems=systems,
+    metrics=metrics, 
+    references=references,
+    n_samples=50,
+    print_results=True
+)
+```
+
+<details>
+<summary> Output </summary>
+
+```json
+================================================================================
+PAIRED SIGNIFICANCE TEST RESULTS
+================================================================================
+System                                             bleu         rouge1
+----------------------------------------------------------------------
+Baseline: baseline                              0.0000         0.3968   
+----------------------------------------------------------------------
+improved                                      1.0000         1.0000   
+                                           (p=0.4800)     (p=0.4600)  
+----------------------------------------------------------------------
+- Significance level: 0.05
+- '*' indicates significant difference (p < significance level)
+- Null hypothesis: systems are essentially the same
+- Significant results suggest systems are meaningfully different
+
+METRIC SIGNATURES:
+- bleu: bleu|ar:50|seed:12345
+- rouge1: rouge1|ar:50|seed:12345
+```
+
+</details>
+
+### Example 4: File-based Evaluation
 Recommended for batch evaluation of large sets of generated reports.
 ```python
 import json
@@ -352,6 +421,204 @@ full_evaluator = RadEval(
     do_details=False           # Optional: return detailed metric breakdowns
 )
 ```
+
+## 🧪 Hypothesis Testing (Significance Evaluation)
+RadEval supports **paired significance testing** to statistically compare different radiology report generation systems using **Approximate Randomization (AR)**.
+
+This allows you to determine whether an observed improvement in metric scores is **statistically significant**, rather than due to chance.
+
+### 📌 Key Features
+
+- **Paired comparison** of any number of systems against a baseline
+- **Statistical rigor** using Approximate Randomization (AR) testing
+- **All built-in metrics** supported (BLEU, ROUGE, BERTScore, RadGraph, CheXbert, etc.)  
+- **Custom metrics** integration for domain-specific evaluation
+- **P-values** and significance markers (`*`) for easy interpretation
+
+### 🧮 Statistical Background
+
+The hypothesis testing uses **Approximate Randomization** to determine if observed metric differences are statistically significant:
+
+1. **Null Hypothesis (H₀)**: The two systems perform equally well
+2. **Test Statistic**: Difference in metric scores between systems
+3. **Randomization**: Shuffle system assignments and recalculate differences
+4. **P-value**: Proportion of random shuffles with differences ≥ observed
+5. **Significance**: If p < 0.05, reject H₀ (systems are significantly different)
+
+> [!NOTE]
+> **Why AR testing?** 
+> Unlike parametric tests, AR makes no assumptions about score distributions, making it ideal for evaluation metrics that may not follow normal distributions.
+
+### 👀 Understanding the Results
+
+**Interpreting P-values:**
+- **p < 0.05**: Statistically significant difference (marked with `*`)
+- **p ≥ 0.05**: No significant evidence of difference
+- **Lower p-values**: Stronger evidence of real differences
+
+**Practical Significance:**
+- Look for consistent improvements across multiple metrics
+- Consider domain relevance (e.g., RadGraph for clinical accuracy)  
+- Balance statistical and clinical significance
+
+### 🖇️ Example: Compare RadEval Default Metrics and a Custom Metric
+
+#### Initialize packages and dataset
+```python
+from RadEval import RadEval, compare_systems
+
+# Reference ground truth reports
+references = [
+    "No acute cardiopulmonary process.",
+    "No radiographic findings to suggest pneumonia.",
+    "Mild cardiomegaly with clear lung fields.",
+    "Small pleural effusion on the right side.",
+    "Status post cardiac surgery with stable appearance.",
+]
+# Three systems: baseline, improved, and poor
+systems = {
+    'baseline': [
+        "No acute findings.",
+        "No pneumonia.",
+        "Mild cardiomegaly, clear lungs.",
+        "Small right pleural effusion.",
+        "Post-cardiac surgery, stable."
+    ],
+    'improved': [
+        "No acute cardiopulmonary process.",
+        "No radiographic findings suggesting pneumonia.",
+        "Mild cardiomegaly with clear lung fields bilaterally.",
+        "Small pleural effusion present on the right side.",
+        "Status post cardiac surgery with stable appearance."
+    ],
+    'poor': [
+        "Normal.",
+        "OK.",
+        "Heart big.",
+        "Some fluid.",
+        "Surgery done."
+    ]
+}
+```
+#### Define metrics
+```python
+# Define a custom metric: average word count
+def word_count_metric(hyps, refs):
+    return sum(len(report.split()) for report in hyps) / len(hyps)
+
+# Initialise RadEval with desired metrics
+evaluator = RadEval(
+    do_bleu=True, 
+    do_rouge=True, 
+    do_bertscore=True,
+    do_radgraph=True,
+    do_chexbert=True
+)
+
+# Wrap metrics into callable functions
+metrics = {
+    'bleu': lambda hyps, refs: evaluator.bleu_scorer(refs, hyps)[0],
+    'rouge1': lambda hyps, refs: evaluator.rouge_scorers["rouge1"](refs, hyps)[0],
+    'rouge2': lambda hyps, refs: evaluator.rouge_scorers["rouge2"](refs, hyps)[0],
+    'rougeL': lambda hyps, refs: evaluator.rouge_scorers["rougeL"](refs, hyps)[0],
+    'bertscore': lambda hyps, refs: evaluator.bertscore_scorer(refs, hyps)[0],
+    'radgraph': lambda hyps, refs: evaluator.radgraph_scorer(refs, hyps)[0],
+    'chexbert': lambda hyps, refs: evaluator.chexbert_scorer(refs, hyps)[0],
+    'word_count': word_count_metric,  # ← custom metric
+}
+```
+
+#### Run significance testing
+
+```python
+print("Running significance tests...")
+
+signatures, scores = compare_systems(
+    systems=systems,
+    metrics=metrics,
+    references=references,
+    n_samples=50,                    # Number of randomization samples
+    significance_level=0.05,         # Alpha level for significance testing
+    print_results=True              # Print formatted results table
+)
+```
+
+<details>
+<summary> Output </summary>
+
+```json
+Running tests...
+================================================================================
+PAIRED SIGNIFICANCE TEST RESULTS
+================================================================================
+System                                             bleu         rouge1         rouge2         rougeL      bertscore       radgraph       chexbert     word_count
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+Baseline: baseline                              0.0000         0.6652         0.3133         0.6288         0.6881         0.5538         1.0000         3.2000   
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+improved                                      0.6874         0.9531         0.8690         0.9531         0.9642         0.9818         1.0000         6.2000   
+                                           (p=0.0000)*    (p=0.0800)     (p=0.1200)     (p=0.0600)     (p=0.0400)*    (p=0.1200)     (p=1.0000)     (p=0.0600)  
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+poor                                          0.0000         0.0444         0.0000         0.0444         0.1276         0.0000         0.8000         1.6000   
+                                           (p=0.4000)     (p=0.0400)*    (p=0.0600)     (p=0.1200)     (p=0.0400)*    (p=0.0200)*    (p=1.0000)     (p=0.0400)* 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+- Significance level: 0.05
+- '*' indicates significant difference (p < significance level)
+- Null hypothesis: systems are essentially the same
+- Significant results suggest systems are meaningfully different
+
+METRIC SIGNATURES:
+- bleu: bleu|ar:50|seed:12345
+- rouge1: rouge1|ar:50|seed:12345
+- rouge2: rouge2|ar:50|seed:12345
+- rougeL: rougeL|ar:50|seed:12345
+- bertscore: bertscore|ar:50|seed:12345
+- radgraph: radgraph|ar:50|seed:12345
+- chexbert: chexbert|ar:50|seed:12345
+- word_count: word_count|ar:50|seed:12345
+```
+
+</details>
+
+#### Summarise significant findings
+
+```python
+# Significance testing
+print("\nSignificant differences (p < 0.05):")
+baseline_name = list(systems.keys())[0]
+
+for system_name in systems.keys():
+    if system_name == baseline_name:
+        continue
+        
+    significant_metrics = []
+    for metric_name in metrics.keys():
+        pvalue_key = f"{metric_name}_pvalue"
+        if pvalue_key in scores[system_name]:
+            p_val = scores[system_name][pvalue_key]
+            if p_val < 0.05:
+                significant_metrics.append(metric_name)
+    
+    if significant_metrics:
+        print(f"  {system_name} vs {baseline_name}: {', '.join(significant_metrics)}")
+    else:
+        print(f"  {system_name} vs {baseline_name}: No significant differences")
+```
+
+<details>
+<summary> Output </summary>
+
+```json
+Significant differences (p < 0.05):
+  improved vs baseline: bleu, bertscore
+  poor vs baseline: rouge1, bertscore, radgraph, word_count
+```
+</details>
+
+> [!TIP]
+> This makes it easy to:
+> - Verify whether model improvements are meaningful
+> - Test new metrics or design your own
+> - Report statistically sound results in your paper
 
 ## 📈 Example Results
 
