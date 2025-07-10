@@ -26,14 +26,13 @@
 - [🌟 Overview](#-overview)
   - [❓ Why RadEval?](#-why-radeval)
   - [✨ Key Features](#-key-features)
-- [📊 Evaluation Metrics](#-evaluation-metrics)
 - [⚙️ Installation](#️-installation)
 - [🚀 Quick Start](#-quick-start)
-- [📁 File Format Suggestion](#-file-format-suggestion)
+- [📊 Evaluation Metrics](#-evaluation-metrics)
 - [🔧 Configuration Options](#-configuration-options)
-- [🧠 RadEval Expert Dataset](#-radeval-expert-dataset)
-- [📈 Example Results](#-example-results)
+- [📁 File Format Suggestion](#-file-format-suggestion)
 - [🧪 Hypothesis Testing (Significance Evaluation)](#-hypothesis-testing-significance-evaluation)
+- [🧠 RadEval Expert Dataset](#-radeval-expert-dataset)
 - [🚦 Performance Tips](#-performance-tips)
 - [📚 Citation](#-citation)
 
@@ -57,25 +56,6 @@
 > - **Flexible Configuration**: Enable/disable specific metrics based on your needs
 > - **Detailed Results**: Comprehensive output with metric explanations
 > - **File Format Support**: Direct evaluation from common file formats (.tok, .txt, .json)
-
-## 📊 Evaluation Metrics
-
-RadEval currently supports the following evaluation metrics:
-
-| Category | Metric | Description | Best For |
-|----------|--------|-------------|----------|
-| **Lexical** | BLEU | N-gram overlap measurement | Surface-level similarity |
-| | ROUGE | Recall-oriented evaluation | Content coverage |
-| **Semantic** | BERTScore | BERT-based semantic similarity | Semantic meaning preservation |
-| | RadEval BERTScore | Domain-adapted ModernBertModel evaluation | Medical text semantics |
-| **Clinical** | CheXbert | Clinical finding classification | Medical accuracy |
-| | RadGraph | Knowledge graph-based evaluation | Clinical relationship accuracy |
-| | RaTEScore |  Entity-level assessments | Medical synonyms |
-| **Specialized** | RadCLIQ | Composite multiple metrics | Clinical relevance |
-| | SRR-BERT | Structured report evaluation | Report structure quality |
-| | Temporal F1  | Time-sensitive evaluation | Temporal consistency |
-| | GREEN | LLM-based metric | Overall radiology report quality |
-
 
 ## ⚙️ Installation
 RadEval supports Python **3.10+** and can be installed via PyPI or from source.
@@ -333,42 +313,23 @@ def evaluate_from_files():
     return results
 ```
 
-## 📁 File Format Suggestion
+## 📊 Evaluation Metrics
 
-To ensure efficient evaluation, we recommend formatting your data in one of the following ways:
+RadEval currently supports the following evaluation metrics:
 
-### 📄 Text Files (.tok, .txt)
-Each line contains one report
-```
-No acute cardiopulmonary process.
-Mild cardiomegaly noted.
-Normal chest radiograph.
-```
-Use two separate files:
-> - ground_truth.tok — reference reports
-> - model_predictions.tok — generated reports
-
-### 🧾 JSON Files
-```json
-{
-  "references": [
-    "No acute cardiopulmonary process.",
-    "Mild cardiomegaly noted."
-  ],
-  "hypotheses": [
-    "Normal chest X-ray.",
-    "Enlarged heart observed."
-  ]
-}
-```
-
-### 🐍 Python Lists
-```python
-refs = ["Report 1", "Report 2"]
-hyps = ["Generated 1", "Generated 2"]
-```
-> [!TIP]
-> File-based input is recommended for batch evaluation and reproducibility in research workflows.
+| Category | Metric | Description | Best For |
+|----------|--------|-------------|----------|
+| **Lexical** | BLEU | N-gram overlap measurement | Surface-level similarity |
+| | ROUGE | Recall-oriented evaluation | Content coverage |
+| **Semantic** | BERTScore | BERT-based semantic similarity | Semantic meaning preservation |
+| | RadEval BERTScore | Domain-adapted ModernBertModel evaluation | Medical text semantics |
+| **Clinical** | CheXbert | Clinical finding classification | Medical accuracy |
+| | RadGraph | Knowledge graph-based evaluation | Clinical relationship accuracy |
+| | RaTEScore |  Entity-level assessments | Medical synonyms |
+| **Specialized** | RadCLIQ | Composite multiple metrics | Clinical relevance |
+| | SRR-BERT | Structured report evaluation | Report structure quality |
+| | Temporal F1  | Time-sensitive evaluation | Temporal consistency |
+| | GREEN | LLM-based metric | Overall radiology report quality |
 
 ## 🔧 Configuration Options
 
@@ -421,6 +382,44 @@ full_evaluator = RadEval(
     do_details=False           # Optional: return detailed metric breakdowns
 )
 ```
+
+## 📁 File Format Suggestion
+
+To ensure efficient evaluation, we recommend formatting your data in one of the following ways:
+
+### 📄 Text Files (.tok, .txt)
+Each line contains one report
+```
+No acute cardiopulmonary process.
+Mild cardiomegaly noted.
+Normal chest radiograph.
+```
+Use two separate files:
+> - ground_truth.tok — reference reports
+> - model_predictions.tok — generated reports
+
+### 🧾 JSON Files
+```json
+{
+  "references": [
+    "No acute cardiopulmonary process.",
+    "Mild cardiomegaly noted."
+  ],
+  "hypotheses": [
+    "Normal chest X-ray.",
+    "Enlarged heart observed."
+  ]
+}
+```
+
+### 🐍 Python Lists
+```python
+refs = ["Report 1", "Report 2"]
+hyps = ["Generated 1", "Generated 2"]
+```
+> [!TIP]
+> File-based input is recommended for batch evaluation and reproducibility in research workflows.
+
 
 ## 🧪 Hypothesis Testing (Significance Evaluation)
 RadEval supports **paired significance testing** to statistically compare different radiology report generation systems using **Approximate Randomization (AR)**.
@@ -621,82 +620,6 @@ Significant differences (p < 0.05):
 > - Test new metrics or design your own
 > - Report statistically sound results in your paper
 
-## 📈 Example Results
-
-### Sample Output Structure
-```python
-from RadEval import RadEval
-import json
-
-def main():
-    refs = [
-        "No acute cardiopulmonary process.",
-        "No radiographic findings to suggest pneumonia.",
-        "1.Status post median sternotomy for CABG with stable cardiac enlargement and calcification of the aorta consistent with atherosclerosis.Relatively lower lung volumes with no focal airspace consolidation appreciated.Crowding of the pulmonary vasculature with possible minimal perihilar edema, but no overt pulmonary edema.No pleural effusions or pneumothoraces.",
-        "1. Left PICC tip appears to terminate in the distal left brachiocephalic vein.2. Mild pulmonary vascular congestion.3. Interval improvement in aeration of the lung bases with residual streaky opacity likely reflective of atelectasis.Interval resolution of the left pleural effusion.",
-        "No definite acute cardiopulmonary process.Enlarged cardiac silhouette could be accentuated by patient's positioning.",
-        "Increased mild pulmonary edema and left basal atelectasis.",
-    ]
-
-    hyps = [
-        "No acute cardiopulmonary process.",
-        "No radiographic findings to suggest pneumonia.",
-        "Status post median sternotomy for CABG with stable cardiac enlargement and calcification of the aorta consistent with atherosclerosis.",
-        "Relatively lower lung volumes with no focal airspace consolidation appreciated.",
-        "Crowding of the pulmonary vasculature with possible minimal perihilar edema, but no overt pulmonary edema.",
-        "No pleural effusions or pneumothoraces.",
-    ]
-
-    # Comprehensive evaluation with all metrics
-    evaluator = RadEval(
-        do_radgraph=True,
-        do_green=True,
-        do_bleu=True,
-        do_rouge=True,
-        do_bertscore=True,
-        do_srr_bert=True,
-        do_chexbert=True,
-        do_temporal=True,
-        do_ratescore=True,
-        do_radcliq=True,
-        do_radeval_bertsore=True,
-        do_details=False
-    )
-
-    results = evaluator(refs=refs, hyps=hyps)
-    print(json.dumps(results, indent=4))
-
-if __name__ == '__main__':
-    main()
-```
-
-**Expected Output:**
-```json
-{
-    "radgraph_simple": 0.41111111111111115,
-    "radgraph_partial": 0.41111111111111115,
-    "radgraph_complete": 0.41414141414141414,
-    "bleu": 0.16681006823938177,
-    "bertscore": 0.63274747133255,
-    "green": 0.39999999999999997,
-    "rouge1": 0.44681719607092746,
-    "rouge2": 0.4205128205128205,
-    "rougeL": 0.44681719607092746,
-    "srr_bert_weighted_f1": 0.2857142857142857,
-    "srr_bert_weighted_precision": 0.2857142857142857,
-    "srr_bert_weighted_recall": 0.2857142857142857,
-    "chexbert-5_micro avg_f1-score": 0.2857142857142857,
-    "chexbert-all_micro avg_f1-score": 0.3333333333333333,
-    "chexbert-5_macro avg_f1-score": 0.13333333333333333,
-    "chexbert-all_macro avg_f1-score": 0.08333333333333333,
-    "chexbert-5_weighted_f1": 0.2222222222222222,
-    "chexbert-all_weighted_f1": 0.22916666666666666,
-    "ratescore": 0.5877872315410949,
-    "radcliq-v1": 1.6447780902700346,
-    "temporal_f1": 0.500000000075,
-    "radeval_bertsore": 0.4910106658935547
-}
-```
 ## 🧠 RadEval Expert Dataset
 To support reliable benchmarking, we introduce the **RadEval Expert Dataset**, a carefully curated evaluation set annotated by board-certified radiologists. This dataset consists of realistic radiology reports and challenging model generations, enabling nuanced evaluation across clinical accuracy, temporal consistency, and language quality. It serves as a gold standard to validate automatic metrics and model performance under expert review.
 
