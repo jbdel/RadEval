@@ -24,7 +24,8 @@
 - [💡 Usage Examples](#-usage-examples)
 - [📁 File Format Suggestion](#-file-format-suggestion)
 - [🔧 Configuration Options](#-configuration-options)
-- [🏎️ Performance Tips](#performance-tips)
+- [📈 Example Results](#-example-results)
+- [🏎️ Performance Tips](#-performance-tips)
 - [📚 Citation](#-citation)
 
 ## 🌟 Overview
