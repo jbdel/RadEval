@@ -647,31 +647,37 @@ If you use RadEval in your research, please cite:
 
 ### 📦 Codebase Contributors
 <table>
-	<tbody>
-		<tr>
-            <td align="center">
-                <a href="https://jbdel.github.io/">
-                    <img src="https://aimi.stanford.edu/sites/g/files/sbiybj20451/files/styles/medium_square/public/media/image/image5_0.png?h=f4e62a0a&itok=euaj9VoF" width="100;" alt="Jean-Benoit Delbrouck"/>
-                    <br />
-                    <sub><b>Jean-Benoit Delbrouck</b></sub>
-                </a>
-            </td>
-            <td align="center">
-                <a href="https://justin13601.github.io/">
-                    <img src="https://justin13601.github.io/images/pfp2.JPG" width="100;" alt="Justin Xu"/>
-                    <br />
-                    <sub><b>Justin Xu</b></sub>
-                </a>
-            </td>
-            <td align="center">
-                <a href="https://x-izhang.github.io/">
-                    <img src="https://x-izhang.github.io/author/xi-zhang/avatar_hu13660783057866068725.jpg" width="100;" alt="Xi Zhang"/>
-                    <br />
-                    <sub><b>Xi Zhang</b></sub>
-                </a>
-            </td>
-		</tr>
-	<tbody>
+  <tbody>
+    <tr>
+      <td align="center">
+        <a href="https://jbdel.github.io/">
+          <img src="https://aimi.stanford.edu/sites/g/files/sbiybj20451/files/styles/medium_square/public/media/image/image5_0.png?h=f4e62a0a&itok=euaj9VoF"
+               width="100" height="100"
+               style="object-fit: cover; border-radius: 20%;" alt="Jean-Benoit Delbrouck"/>
+          <br />
+          <sub><b>Jean-Benoit Delbrouck</b></sub>
+        </a>
+      </td>
+      <td align="center">
+        <a href="https://justin13601.github.io/">
+          <img src="https://justin13601.github.io/images/pfp2.JPG"
+               width="100" height="100"
+               style="object-fit: cover; border-radius: 20%;" alt="Justin Xu"/>
+          <br />
+          <sub><b>Justin Xu</b></sub>
+        </a>
+      </td>
+      <td align="center">
+        <a href="https://x-izhang.github.io/">
+          <img src="https://x-izhang.github.io/author/xi-zhang/avatar_hu13660783057866068725.jpg"
+               width="100" height="100"
+               style="object-fit: cover; border-radius: 20%;" alt="Xi Zhang"/>
+          <br />
+          <sub><b>Xi Zhang</b></sub>
+        </a>
+      </td>
+    </tr>
+  </tbody>
 </table>
 
 ## 🙏 Acknowledgments
