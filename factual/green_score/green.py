@@ -15,7 +15,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.utils import logging
 
 # Import necessary functions (ensure these are available in your environment)
-from factual.green_score.utils import (
+from .utils import (
     gather_processes,
     make_prompt,
     clean_responses,

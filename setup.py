@@ -4,7 +4,13 @@ setup(
     name='RadEval',
     version='0.0.1',
     author='Jean-Benoit Delbrouck, Justin Xu, Xi Zhang',
+    maintainer='Xi Zhang',
     url='https://github.com/jbdel/RadEval',
+    project_urls={
+        'Bug Reports': 'https://github.com/jbdel/RadEval/issues',
+        'Source': 'https://github.com/jbdel/RadEval',
+        'Documentation': 'https://github.com/jbdel/RadEval/blob/main/README.md',
+    },
     license='MIT',
     description='All-in-one metrics for evaluating AI-generated radiology text',
     long_description=open("README.md").read(),

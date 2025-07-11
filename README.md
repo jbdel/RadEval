@@ -1,6 +1,6 @@
 <div align="center">
   <a href="https://github.com/jbdel/RadEval">
-    <img src="RadEval_banner.png" alt="RadEval" width="100%" style="border-radius: 16px;">
+    <img src="https://github.com/jbdel/RadEval/raw/libra_run/RadEval_banner.png" alt="RadEval" width="100%" style="border-radius: 16px;">
   </a>
 </div>
 

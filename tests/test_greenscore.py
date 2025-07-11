@@ -1,4 +1,4 @@
-from factual.green_score import GREEN
+from RadEval.factual.green_score import GREEN
 import numpy as np
 import warnings
 

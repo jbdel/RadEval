@@ -4,25 +4,25 @@ import warnings
 import logging
 import os
 import re
-from nlg.rouge.rouge import Rouge
-from nlg.bleu.bleu import Bleu
-from nlg.bertscore.bertscore import BertScore
+from .nlg.rouge.rouge import Rouge
+from .nlg.bleu.bleu import Bleu
+from .nlg.bertscore.bertscore import BertScore
 from radgraph import F1RadGraph
-from factual.green_score import GREEN
-from factual.RaTEScore import RaTEScore
-from factual.f1temporal import F1Temporal
+from .factual.green_score import GREEN
+from .factual.RaTEScore import RaTEScore
+from .factual.f1temporal import F1Temporal
 from torch import nn
 import pandas as pd
 import numpy as np
 from sklearn.metrics import classification_report
 from sklearn.exceptions import UndefinedMetricWarning
 import json
-from factual.f1chexbert import F1CheXbert
+from .factual.f1chexbert import F1CheXbert
 import nltk
-from utils import clean_numbered_list
-from factual.RadCliQv1.radcliq import CompositeMetric
-from factual.SRRBert.srr_bert import SRRBert, srr_bert_parse_sentences
-from nlg.radevalbertscore import RadEvalBERTScorer
+from .utils import clean_numbered_list
+from .factual.RadCliQv1.radcliq import CompositeMetric
+from .factual.SRRBert.srr_bert import SRRBert, srr_bert_parse_sentences
+from .nlg.radevalbertscore import RadEvalBERTScorer
 # Suppress Warning
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 warnings.filterwarnings('ignore')
