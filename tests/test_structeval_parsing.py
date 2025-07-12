@@ -2,7 +2,7 @@ import pytest
 import json
 import re
 import nltk
-from factual.SRRBert.srr_bert import srr_bert_parse_sentences
+from RadEval.factual.SRRBert.srr_bert import srr_bert_parse_sentences
 
 nltk.download("punkt", quiet=True)
 

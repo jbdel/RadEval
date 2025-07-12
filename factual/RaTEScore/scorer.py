@@ -143,4 +143,4 @@ class RaTEScore:
             })
             save_file.to_json(os.path.join(self.visualization_path, 'rate_score.json'), lines=True, orient='records')
                 
-        return rate_score
+        return rate_score, pred_pairs ,gt_pairs
