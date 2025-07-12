@@ -237,24 +237,29 @@ systems = {
     ]
 }
 
+# Reference ground truth
 references = [
     "No acute cardiopulmonary process.",
     "Mild cardiomegaly with clear lung fields."
 ]
 
-# Quick significance test
-evaluator = RadEval(do_bleu=True, do_rouge=True)
+# Initialise evaluators only for selected metrics
+bleu_evaluator = RadEval(do_bleu=True)
+rouge_evaluator = RadEval(do_rouge=True)
+
+# Wrap metrics into callable functions
 metrics = {
-    'bleu': lambda hyps, refs: evaluator.bleu_scorer(refs, hyps)[0],
-    'rouge1': lambda hyps, refs: evaluator.rouge_scorers["rouge1"](refs, hyps)[0],
+    'bleu': lambda hyps, refs: bleu_evaluator(refs, hyps)['bleu'],
+    'rouge1': lambda hyps, refs: rouge_evaluator(refs, hyps)['rouge1'],
 }
 
+# Run statistical test
 signatures, scores = compare_systems(
     systems=systems,
     metrics=metrics, 
     references=references,
-    n_samples=50,
-    print_results=True
+    n_samples=50,           # Number of bootstrap samples
+    print_results=True      # Print significance table
 )
 ```
 
@@ -462,7 +467,7 @@ The hypothesis testing uses **Approximate Randomization** to determine if observ
 
 ### 🖇️ Example: Compare RadEval Default Metrics and a Custom Metric
 
-#### Initialize packages and dataset
+#### Step 1: Initialize packages and dataset
 ```python
 from RadEval import RadEval, compare_systems
 
@@ -499,35 +504,43 @@ systems = {
     ]
 }
 ```
-#### Define metrics
+
+#### Step 2: Define Evaluation Metrics and Parameters
+We define each evaluation metric using a dedicated RadEval instance (configured to compute one specific score), and also include a simple custom metric — average word count. All metrics are wrapped into a unified metrics dictionary for flexible evaluation and comparison.
+
 ```python
-# Define a custom metric: average word count
+# Initialise each evaluator with the corresponding metric
+bleu_evaluator = RadEval(do_bleu=True)
+rouge_evaluator = RadEval(do_rouge=True)
+bertscore_evaluator = RadEval(do_bertscore=True)
+radgraph_evaluator = RadEval(do_radgraph=True)
+chexbert_evaluator = RadEval(do_chexbert=True)
+
+# Define a custom metric: average word count of generated reports
 def word_count_metric(hyps, refs):
     return sum(len(report.split()) for report in hyps) / len(hyps)
 
-# Initialise RadEval with desired metrics
-evaluator = RadEval(
-    do_bleu=True, 
-    do_rouge=True, 
-    do_bertscore=True,
-    do_radgraph=True,
-    do_chexbert=True
-)
-
-# Wrap metrics into callable functions
+# Wrap metrics into a unified dictionary of callables
 metrics = {
-    'bleu': lambda hyps, refs: evaluator.bleu_scorer(refs, hyps)[0],
-    'rouge1': lambda hyps, refs: evaluator.rouge_scorers["rouge1"](refs, hyps)[0],
-    'rouge2': lambda hyps, refs: evaluator.rouge_scorers["rouge2"](refs, hyps)[0],
-    'rougeL': lambda hyps, refs: evaluator.rouge_scorers["rougeL"](refs, hyps)[0],
-    'bertscore': lambda hyps, refs: evaluator.bertscore_scorer(refs, hyps)[0],
-    'radgraph': lambda hyps, refs: evaluator.radgraph_scorer(refs, hyps)[0],
-    'chexbert': lambda hyps, refs: evaluator.chexbert_scorer(refs, hyps)[0],
-    'word_count': word_count_metric,  # ← custom metric
+    'bleu': lambda hyps, refs: bleu_evaluator(refs, hyps)['bleu'],
+    'rouge1': lambda hyps, refs: rouge_evaluator(refs, hyps)['rouge1'],
+    'rouge2': lambda hyps, refs: rouge_evaluator(refs, hyps)['rouge2'],
+    'rougeL': lambda hyps, refs: rouge_evaluator(refs, hyps)['rougeL'],
+    'bertscore': lambda hyps, refs: bertscore_evaluator(refs, hyps)['bertscore'],
+    'radgraph': lambda hyps, refs: radgraph_evaluator(refs, hyps)['radgraph_partial'],
+    'chexbert': lambda hyps, refs: chexbert_evaluator(refs, hyps)['chexbert-5_macro avg_f1-score'],
+    'word_count': word_count_metric  # ← example of a simple custom-defined metric
 }
 ```
 
-#### Run significance testing
+> [!TIP] 
+> - Each metric function takes (hyps, refs) as input and returns a single float score.
+> - This modular design allows you to flexibly plug in or remove metrics without changing the core logic of RadEval or compare_systems.
+> - For advanced, you may define your own `RadEval(do_xxx=True)` variant or custom metrics and include them seamlessly here.
+
+#### Step 3 Run significance testing
+
+Use `compare_systems` to evaluate all defined systems against the reference reports using the metrics specified above. This step performs randomization-based significance testing to assess whether differences between systems are statistically meaningful.
 
 ```python
 print("Running significance tests...")
@@ -578,12 +591,17 @@ METRIC SIGNATURES:
 
 </details>
 
-#### Summarise significant findings
+> [!TIP]
+> - The output includes mean scores for each metric and system, along with p-values comparing each system to the baseline.
+> - Statistically significant improvements (or declines) are marked with an asterisk `*` if p < 0.05.
+> - `signatures` stores each metric configuration (e.g. random seed, sample size), and `scores` contains raw score values per system for further analysis or plotting.
+
+#### Step 4: Summarise Significant Findings
 
 ```python
 # Significance testing
 print("\nSignificant differences (p < 0.05):")
-baseline_name = list(systems.keys())[0]
+baseline_name = list(systems.keys())[0] # Assume first one is the baseline
 
 for system_name in systems.keys():
     if system_name == baseline_name:
