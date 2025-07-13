@@ -1,4 +1,4 @@
-from factual.f1chexbert import F1CheXbert
+from RadEval.factual.f1chexbert import F1CheXbert
 import numpy as np
 
 
