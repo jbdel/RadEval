@@ -18,7 +18,7 @@ class RaTEScore:
                     bert_model="Angelakeke/RaTE-NER-Deberta",
                     eval_model='FremyCompany/BioLORD-2023-C',
                     batch_size=1,
-                    use_gpu=True,
+                    use_gpu=None,
                     visualization_path=None,
                     affinity_matrix="long",
                 ):
@@ -38,11 +38,11 @@ class RaTEScore:
 
         """
         
-        # if use_gpu
-        if use_gpu:
-            self.device = torch.device('cuda')
-        else:
-            self.device = torch.device('cpu')
+        # Auto select GPU
+        if use_gpu is None:
+            use_gpu = torch.cuda.is_available()
+        self.device = torch.device("cuda" if use_gpu else "cpu")
+
         
         # load the Medical entity recognition module
         self.tokenizer = AutoTokenizer.from_pretrained(bert_model)

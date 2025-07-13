@@ -62,6 +62,8 @@ class GREEN:
             category=FutureWarning,
             module="transformers.tokenization_utils_base",
         )
+        cpu = cpu or not torch.cuda.is_available()
+        self.device = torch.device("cpu" if cpu else "cuda")
         self.cpu = cpu
         self.model_name = model_name.split("/")[-1]
         self.output_dir = output_dir
@@ -100,8 +102,8 @@ class GREEN:
             model_name,
             trust_remote_code=False if "Phi" in model_name else True,
             device_map=(
-                {"": "cuda:{}".format(torch.cuda.current_device())}
-                if not self.cpu
+                {"": f"cuda:{torch.cuda.current_device()}"}
+                if (not self.cpu and torch.cuda.is_available())
                 else {"": "cpu"}
             ),
             torch_dtype=torch.float16,
@@ -211,7 +213,7 @@ class GREEN:
         return self.process_results()
 
     def tokenize_batch_as_chat(self, batch):
-        local_rank = int(os.environ.get("LOCAL_RANK", 0)) if not self.cpu else "cpu"
+        local_rank = self.device
         batch = [
             self.tokenizer.apply_chat_template(
                 i, tokenize=False, add_generation_prompt=True
