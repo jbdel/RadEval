@@ -193,10 +193,45 @@ class F1CheXbert(nn.Module):
         return [v.cpu().numpy() for v in cls]
 
     @torch.no_grad()
+    def get_label_batch(self, reports: str, mode: str = "rrg") -> List[int]:
+        """Return 14‑dim binary vector for the given report."""
+        input_ids = self.tokenizer(reports, padding = True, truncation=True, max_length=512, return_tensors="pt").input_ids.to(self.device)
+        out = self.model.cls_logits(input_ids)
+        batch_preds = []
+        for s_idx in range(out[0].shape[0]):
+            sample_pred = []
+            for head in out:
+                sample_pred.append(head[s_idx].argmax().item())
+            batch_preds.append(sample_pred)
+        batch_binary = []
+        for preds in batch_preds:
+            binary = []
+            if mode == "rrg":
+                for c in preds:
+                    binary.append(1 if c in {1, 3} else 0)
+            elif mode == "classification":
+                for c in preds:
+                    if c == 1:
+                        binary.append(1)
+                    elif c == 2:
+                        binary.append(0)
+                    elif c == 3:
+                        binary.append(-1)
+                    else:
+                        binary.append(0)
+            else:
+                raise ValueError(f"Unknown mode: {mode}")
+            batch_binary.append(binary)
+        return batch_binary
+
+
+
+    @torch.no_grad()
     def get_label(self, report: str, mode: str = "rrg") -> List[int]:
         """Return 14‑dim binary vector for the given report."""
         input_ids = self.tokenizer(report, truncation=True, max_length=512, return_tensors="pt").input_ids.to(self.device)
-        preds = [head.argmax(dim=1).item() for head in self.model.cls_logits(input_ids)]
+        out = self.model.cls_logits(input_ids)
+        preds = [head.argmax(dim=1).item() for head in out]
 
         binary = []
         if mode == "rrg":
@@ -227,13 +262,15 @@ class F1CheXbert(nn.Module):
             with open(self.refs_filename) as f:
                 refs_chexbert = [eval(line) for line in f]
         else:
-            refs_chexbert = [self.get_label(r) for r in refs]
+            refs_chexbert = self.get_label_batch(refs)
+            # refs_chexbert = [self.get_label(r) for r in refs]
             if self.refs_filename:
                 with open(self.refs_filename, "w") as f:
                     f.write("\n".join(map(str, refs_chexbert)))
 
         # Hypothesis labels ----------------------------------------------------
-        hyps_chexbert = [self.get_label(h) for h in hyps]
+        # hyps_chexbert = [self.get_label(h) for h in hyps]
+        hyps_chexbert = self.get_label_batch(hyps)
         if self.hyps_filename:
             with open(self.hyps_filename, "w") as f:
                 f.write("\n".join(map(str, hyps_chexbert)))
