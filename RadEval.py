@@ -6,7 +6,7 @@ from nlg.rouge.rouge import Rouge
 from nlg.bleu.bleu import Bleu
 from nlg.bertscore.bertscore import BertScore
 from radgraph import F1RadGraph
-from green_score import GREEN
+from factual.green import GREEN
 from factual.RaTEScore import RaTEScore
 from factual.f1temporal import F1Temporal
 from torch import nn
@@ -149,6 +149,7 @@ class RadEval():
 
         scores = {}
         if self.do_radgraph:
+            print("Computing radgraph scores")
             radgraph_scores = self.radgraph_scorer(refs=refs, hyps=hyps)
             radgraph_scores = radgraph_scores[0]
             scores["radgraph_simple"] = radgraph_scores[0]
@@ -156,21 +157,26 @@ class RadEval():
             scores["radgraph_complete"] = radgraph_scores[2]
 
         if self.do_bleu:
+            print("Computing bleu scores")
             scores["bleu"] = self.bleu_scorer(refs, hyps)[0]
 
         if self.do_bertscore:
+            print("Computing bertscore scores")
             scores["bertscore"] = self.bertscore_scorer(refs, hyps)[0]
 
         if self.do_green:
+            print("Computing green scores")
             # Use the initialized green scorer
             mean, std, green_scores, summary, results_df = self.green_scorer(refs, hyps)
             scores["green"] = mean
 
         if self.do_rouge:
+            print("Computing rouge scores")
             for key, scorer in self.rouge_scorers.items():
                 scores[key] = scorer(refs, hyps)[0]
 
         if self.do_srr_bert:            
+            print("Computing srr_bert scores")
             # Clean reports before tokenization
             parsed_refs = [srr_bert_parse_sentences(ref) for ref in refs]
             parsed_hyps = [srr_bert_parse_sentences(hyp) for hyp in hyps]
@@ -201,6 +207,7 @@ class RadEval():
        
 
         if self.do_chexbert:
+            print("Computing chexbert scores")
             accuracy, accuracy_per_sample, chexbert_all, chexbert_5 = self.chexbert_scorer(hyps, refs)
             scores["chexbert-5_micro avg_f1-score"] = chexbert_5["micro avg"]["f1-score"]
             scores["chexbert-all_micro avg_f1-score"] = chexbert_all["micro avg"]["f1-score"]
@@ -210,15 +217,19 @@ class RadEval():
             scores["chexbert-all_weighted_f1"] = chexbert_all["weighted avg"]["f1-score"]
 
         if self.do_ratescore:
+            print("Computing ratescore scores")
             scores["ratescore"] = sum(self.ratescore_scorer.compute_score(refs, hyps)) / len(refs)
 
         if self.do_radcliq:
+            print("Computing radcliq scores")
             scores["radcliq-v1"] = self.radcliq_scorer.predict(refs, hyps)[0]
 
         if self.do_temporal:
+            print("Computing temporal scores")
             scores["temporal_f1"] = self.F1Temporal(predictions=hyps, references=refs)["f1"]
 
         if self.do_radeval_bertsore:
+            print("Computing radeval_bertsore scores")
             scores["radeval_bertsore"] = self.radeval_bertsore.score(refs=refs, hyps=hyps)
         return scores
 

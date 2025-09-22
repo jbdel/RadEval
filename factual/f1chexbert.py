@@ -150,7 +150,7 @@ class F1CheXbert(nn.Module):
         *,
         refs_filename: str | None = None,
         hyps_filename: str | None = None,
-        device: Union[str, torch.device] = "cpu",
+        device: Union[str, torch.device] = "cuda",
     ):
         super().__init__()
 

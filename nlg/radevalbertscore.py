@@ -10,7 +10,7 @@ class RadEvalBERTScorer:
     """
     def __init__(self,
                  model_type: str = "IAMJB/RadEvalModernBERT",
-                 num_layers: int = None,
+                 num_layers: int = 22,
                  use_fast_tokenizer: bool = True,
                  rescale_with_baseline: bool = False,
                  device: torch.device = None):
