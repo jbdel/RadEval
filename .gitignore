@@ -6,9 +6,13 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.pytest_cache/
 
 # Ignore log files
 *.log
 
 # Ignore OS generated files
 .DS_Store
+
+# Ignore run_scripts
+rrg_systems/

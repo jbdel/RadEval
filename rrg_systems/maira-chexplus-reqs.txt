@@ -1,5 +1,0 @@
-pillow
-protobuf
-sentencepiece
-torch
-git+https://github.com/huggingface/transformers.git@88d960937c81a32bfb63356a2e8ecf7999619681
