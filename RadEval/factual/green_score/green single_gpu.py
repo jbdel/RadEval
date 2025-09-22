@@ -1,9 +1,8 @@
-import os
 import re
+import os
+import sys
 import time
 import warnings
-import multiprocessing as mp
-from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -13,17 +12,6 @@ from datasets import Dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.utils import logging
 
-import multiprocessing as mp
-import sys
-
-# Set start method safely (no-op if already set by pytest/another module)
-try:
-    if mp.get_start_method(allow_none=True) is None:
-        mp.set_start_method("spawn")
-except RuntimeError:
-    # start method already set in this interpreter; ignore
-    pass
-
 # Import necessary functions (ensure these are available in your environment)
 from green_score.utils import (
     make_prompt,
@@ -32,109 +20,8 @@ from green_score.utils import (
     flatten_values_lists_of_list_dicts_to_dict,
 )
 
-# Suppress benign warnings from transformers
+# Set the logging level for the transformers library to ERROR to suppress benign warnings
 logging.get_logger("transformers").setLevel(logging.ERROR)
-
-
-def _worker_generate(
-    worker_id: int,
-    device: str,
-    model_name: str,
-    prompts: List[str],
-    batch_size: int,
-    max_length: int,
-    padding_side: str = "left",
-    progress_queue=None,   
-) -> List[str]:
-    """
-    Runs entirely on one GPU/CPU: loads the model+tokenizer on `device`,
-    generates completions for `prompts` in batches, returns cleaned strings.
-    """
-    torch.set_grad_enabled(False)
-
-    # Load model/tokenizer on the specific device
-    # Use float16 when on CUDA; fallback to float32 on CPU
-    use_cuda = device.startswith("cuda")
-    torch_dtype = torch.float16 if use_cuda else torch.float32
-
-    # Some models don't support trust_remote_code=False; mirror your logic
-    trust_remote_code = False if "Phi" in model_name else True
-
-    model = AutoModelForCausalLM.from_pretrained(
-        model_name,
-        trust_remote_code=trust_remote_code,
-        device_map={"": device} if use_cuda else {"": "cpu"},
-        torch_dtype=torch_dtype,
-    )
-    model.eval()
-
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_name,
-        add_eos_token=True,
-        use_fast=True,
-        trust_remote_code=True,
-        padding_side=padding_side,
-    )
-    # Chat template (same as yours)
-    chat_template = (
-        "{% for message in messages %}\n"
-        "{% if message['from'] == 'human' %}\n"
-        "{{ '<|user|>\\n' + message['value'] + eos_token }}\n"
-        "{% elif message['from'] == 'system' %}\n"
-        "{{ '<|system|>\\n' + message['value'] + eos_token }}\n"
-        "{% elif message['from'] == 'gpt' %}\n"
-        "{{ '<|assistant|>\\n'  + message['value'] + eos_token }}\n"
-        "{% endif %}\n"
-        "{% if loop.last and add_generation_prompt %}\n"
-        "{{ '<|assistant|>' }}\n"
-        "{% endif %}\n"
-        "{% endfor %}"
-    )
-    tokenizer.chat_template = chat_template
-    tokenizer.pad_token = tokenizer.eos_token
-    tokenizer.clean_up_tokenization_spaces = True
-    assert tokenizer.padding_side == "left"
-
-    completions = []
-    # Local loop with a quiet tqdm to keep logs tidy across workers
-    for i in range(0, len(prompts), batch_size):
-        batch_prompts = prompts[i : i + batch_size]
-        chats = [
-            [{"from": "human", "value": p}, {"from": "gpt", "value": ""}]
-            for p in batch_prompts
-        ]
-        texts = [
-            tokenizer.apply_chat_template(c, tokenize=False, add_generation_prompt=True)
-            for c in chats
-        ]
-
-        toks = tokenizer.batch_encode_plus(
-            texts,
-            return_tensors="pt",
-            padding=True,
-            truncation=True,
-            max_length=max_length,
-        )
-        if use_cuda:
-            toks = {k: v.to(device) for k, v in toks.items()}
-
-        outputs = model.generate(
-            input_ids=toks["input_ids"],
-            attention_mask=toks["attention_mask"],
-            eos_token_id=tokenizer.eos_token_id,
-            pad_token_id=tokenizer.pad_token_id,
-            max_length=max_length,
-            do_sample=False,
-        )
-        decoded = tokenizer.batch_decode(outputs, skip_special_tokens=True)
-
-        if isinstance(decoded, list):
-            completions.extend([clean_responses(r) for r in decoded])
-        else:
-            completions.append(clean_responses(decoded))
-        if progress_queue is not None:
-            progress_queue.put(len(batch_prompts))
-    return completions
 
 
 class GREEN:
@@ -144,7 +31,6 @@ class GREEN:
         output_dir=".",
         cpu=False,
         compute_summary_stats=False,
-        num_gpus=None,  # NEW: set None to auto-detect (capped at 8)
     ):
         super().__init__()
         warnings.filterwarnings(
@@ -170,69 +56,51 @@ class GREEN:
         ]
         self.compute_summary_stats = compute_summary_stats
 
-        # Device logic
+        # Force single‐GPU (cuda:0) or CPU
         if torch.cuda.is_available() and not self.cpu:
-            avail = torch.cuda.device_count()
-            # Cap at 8 as requested
-            self.num_gpus = min(num_gpus if num_gpus is not None else avail, 8)
-            self.num_gpus = max(self.num_gpus, 1)
-            # If only 1 GPU, we keep old single-device behavior
-            if self.num_gpus == 1:
-                torch.cuda.set_device(0)
-            self._use_multi_gpu = (self.num_gpus > 1)
+            torch.cuda.set_device(0)
         else:
-            # CPU mode
             self.cpu = True
-            self.num_gpus = 0
-            self._use_multi_gpu = False
 
-        # Defer model/tokenizer init to:
-        # - single-GPU/CPU: initialize now (like your original)
-        # - multi-GPU: initialize inside each worker to avoid duplicate weights in parent
+        # Model + tokenizer will be set up only if model_name is provided
         self.model = None
         self.tokenizer = None
-        self.model_name = None
-
         if model_name:
-            self.model_id = model_name
             self.model_name = model_name.split("/")[-1]
+            self.model = AutoModelForCausalLM.from_pretrained(
+                model_name,
+                trust_remote_code=False if "Phi" in model_name else True,
+                device_map={"": "cuda:0"} if (torch.cuda.is_available() and not self.cpu) else {"": "cpu"},
+                torch_dtype=torch.float16,
+            )
+            self.model.eval()
 
-            if not self._use_multi_gpu:
-                # Single device path: load once here
-                self.model = AutoModelForCausalLM.from_pretrained(
-                    self.model_id,
-                    trust_remote_code=False if "Phi" in self.model_id else True,
-                    device_map={"": ("cuda:0" if (torch.cuda.is_available() and not self.cpu) else "cpu")},
-                    torch_dtype=torch.float16 if not self.cpu else torch.float32,
-                )
-                self.model.eval()
-
-                self.tokenizer = AutoTokenizer.from_pretrained(
-                    self.model_id,
-                    add_eos_token=True,
-                    use_fast=True,
-                    trust_remote_code=True,
-                    padding_side="left",
-                )
-                # Set up chat template for chat-style prompts
-                chat_template = (
-                    "{% for message in messages %}\n"
-                    "{% if message['from'] == 'human' %}\n"
-                    "{{ '<|user|>\\n' + message['value'] + eos_token }}\n"
-                    "{% elif message['from'] == 'system' %}\n"
-                    "{{ '<|system|>\\n' + message['value'] + eos_token }}\n"
-                    "{% elif message['from'] == 'gpt' %}\n"
-                    "{{ '<|assistant|>\\n'  + message['value'] + eos_token }}\n"
-                    "{% endif %}\n"
-                    "{% if loop.last and add_generation_prompt %}\n"
-                    "{{ '<|assistant|>' }}\n"
-                    "{% endif %}\n"
-                    "{% endfor %}"
-                )
-                self.tokenizer.chat_template = chat_template
-                self.tokenizer.pad_token = self.tokenizer.eos_token
-                self.tokenizer.clean_up_tokenization_spaces = True
-                assert self.tokenizer.padding_side == "left"
+            self.tokenizer = AutoTokenizer.from_pretrained(
+                model_name,
+                add_eos_token=True,
+                use_fast=True,
+                trust_remote_code=True,
+                padding_side="left",
+            )
+            # Set up chat template for chat-style prompts
+            chat_template = (
+                "{% for message in messages %}\n"
+                "{% if message['from'] == 'human' %}\n"
+                "{{ '<|user|>\n' + message['value'] + eos_token }}\n"
+                "{% elif message['from'] == 'system' %}\n"
+                "{{ '<|system|>\n' + message['value'] + eos_token }}\n"
+                "{% elif message['from'] == 'gpt' %}\n"
+                "{{ '<|assistant|>\n'  + message['value'] + eos_token }}\n"
+                "{% endif %}\n"
+                "{% if loop.last and add_generation_prompt %}\n"
+                "{{ '<|assistant|>' }}\n"
+                "{% endif %}\n"
+                "{% endfor %}"
+            )
+            self.tokenizer.chat_template = chat_template
+            self.tokenizer.pad_token = self.tokenizer.eos_token
+            self.tokenizer.clean_up_tokenization_spaces = True
+            assert self.tokenizer.padding_side == "left"
 
     def __call__(self, refs, hyps):
         print("Processing data...making prompts")
@@ -261,99 +129,19 @@ class GREEN:
 
     @torch.inference_mode()
     def infer(self):
-        assert self.model_id is not None, "You must pass a model_name to GREEN(...)"
+        assert self.model is not None and self.tokenizer is not None
+        local_completions = []
+        local_references = []
 
-        prompts = list(self.dataset["prompt"])
-        n = len(prompts)
+        for batch in tqdm(self.dataset.iter(batch_size=self.batch_size),
+                          total=len(self.dataset) // self.batch_size):
+            local_references.extend(batch["prompt"])
+            local_completions.extend(self.get_response(batch))
 
-        if self._use_multi_gpu:
-            print(f"Multi-GPU inference across {self.num_gpus} GPUs")
-            # Shard prompts evenly across workers
-            shards = np.array_split(np.arange(n), self.num_gpus)
-            shard_prompts = [[prompts[i] for i in idxs] for idxs in shards]
-
-            # Build args for each worker
-            devices = [f"cuda:{i}" for i in range(self.num_gpus)]
-
-            # --- progress wiring (spawn-safe, manager-backed queue) ---
-            import multiprocessing as mp
-            ctx = mp.get_context("spawn")
-            mgr = ctx.Manager()          # manager so the queue is picklable for Pool workers
-            q = mgr.Queue()
-
-            # start the monitor thread
-            import sys, threading
-            from tqdm import tqdm
-
-            def _progress_monitor(q_, total_):
-                disable_bar = not sys.stdout.isatty()
-                with tqdm(total=total_, desc="Generating", unit="ex", smoothing=0.1, disable=disable_bar) as pbar:
-                    done = 0
-                    while True:
-                        msg = q_.get()
-                        if msg is None:  # sentinel
-                            break
-                        done += int(msg)
-                        pbar.n = done
-                        pbar.refresh()
-
-            monitor = threading.Thread(target=_progress_monitor, args=(q, n), daemon=True)
-            monitor.start()
-            # ----------------------------------------------------------
-
-            args = [
-                (
-                    i,                 # worker_id
-                    devices[i],        # device
-                    self.model_id,     # model identifier
-                    shard_prompts[i],  # prompts for this shard
-                    self.batch_size,
-                    self.max_length,
-                    "left",
-                    q,                 # progress_queue (Manager-backed)
-                )
-                for i in range(self.num_gpus)
-            ]
-
-            with ctx.Pool(processes=self.num_gpus) as pool:
-                worker_outputs = pool.starmap(_worker_generate, args)
-
-            # stop monitor and manager
-            q.put(None)
-            monitor.join()
-            mgr.shutdown()
-
-            # Reassemble outputs in original order
-            completions = [None] * n
-            for idxs, outs in zip(shards, worker_outputs):
-                for k, global_i in enumerate(idxs):
-                    completions[int(global_i)] = outs[k]
-
-            self.prompts = prompts
-            self.completions = completions
-
-        else:
-            # Single-device path (GPU:0 or CPU)
-            local_completions = []
-            local_references = []
-
-            # Optional single-device progress bar
-            import sys
-            from tqdm import tqdm
-            disable_bar = not sys.stdout.isatty()
-            with tqdm(total=n, desc="Generating", unit="ex", disable=disable_bar) as pbar:
-                for i in range(0, n, self.batch_size):
-                    batch_prompts = prompts[i: i + self.batch_size]
-                    batch = {"prompt": batch_prompts}
-                    local_references.extend(batch["prompt"])
-                    local_completions.extend(self.get_response(batch))
-                    pbar.update(len(batch_prompts))
-
-            self.prompts = local_references
-            self.completions = local_completions
+        self.prompts = local_references
+        self.completions = local_completions
 
         return self.process_results()
-
 
     def get_response(self, batch):
         # Build chat-formatted inputs
@@ -551,6 +339,4 @@ class GREEN:
 
 
 if __name__ == "__main__":
-    # If you plan to invoke GREEN here and you're on macOS/Windows,
-    # make sure the calls that trigger multi-GPU are under this guard.
     pass

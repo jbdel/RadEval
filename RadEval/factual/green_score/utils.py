@@ -129,6 +129,12 @@ def flatten_values_lists_of_list_dicts_to_dict(item):
 
 
 def gather_processes(local_candidates, local_references=None):
+    # If torch.distributed is not initialized, just return the local results
+    if not dist.is_available() or not dist.is_initialized():
+        if local_references is None:
+            return local_candidates
+        return local_candidates, local_references
+
     world_size = int(os.environ.get("WORLD_SIZE", "1"))
     local_rank = int(os.environ.get("RANK", "0"))
     global_candidates_list = None
