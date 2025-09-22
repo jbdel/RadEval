@@ -1,10 +1,10 @@
 import numpy as np
 import torch
-from nlg.bertscore.bertscore import BertScore
+from RadEval.nlg.bertscore.bertscore import BertScore
 from radgraph import RadGraph
-from factual.f1chexbert import F1CheXbert
+from RadEval.factual.f1chexbert import F1CheXbert
 from sklearn.preprocessing import StandardScaler
-from nlg.bleu.bleu import Bleu
+from RadEval.nlg.bleu.bleu import Bleu
 
 
 def radcliq_bertscore(refs, hyps, model_type='distilroberta-base'):

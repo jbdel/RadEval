@@ -42,7 +42,7 @@ class RadEvalBERTScorer:
             device=self.device
         )
         # Return the mean F1 over all pairs
-        return F1.mean().item()
+        return F1.mean().item(), F1
 
 if __name__ == "__main__":
     # Example usage

@@ -3,7 +3,7 @@ from typing import Sequence, Union
 import numpy as np
 import torch
 
-from factual.f1chexbert import F1CheXbert
+from RadEval.factual.f1chexbert import F1CheXbert
 
 
 def semantic_embedding_scores(

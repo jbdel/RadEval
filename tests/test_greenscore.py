@@ -1,8 +1,7 @@
-from factual.green import GREEN
 import pandas as pd
 import difflib
 import math
-import json
+from RadEval.factual.green_score import GREEN
 import warnings
 
 # please commented out 2 lines below if you are using an environment with different versions
