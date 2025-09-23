@@ -654,12 +654,14 @@ To support reliable benchmarking, we introduce the **RadEval Expert Dataset**, a
 If you use RadEval in your research, please cite:
 
 ```BibTeX
-@software{radeval2025,
-  author = {Jean-Benoit Delbrouck, Justin Xu, Xi Zhang},
-  title = {RadEval: A framework for radiology text evaluation},
-  year = {2025},
-  publisher = {GitHub},
-  howpublished = {\url{https://github.com/jbdel/RadEval}},
+@misc{xu2025radevalframeworkradiologytext,
+      title={RadEval: A framework for radiology text evaluation}, 
+      author={Justin Xu and Xi Zhang and Javid Abderezaei and Julie Bauml and Roger Boodoo and Fatemeh Haghighi and Ali Ganjizadeh and Eric Brattain and Dave Van Veen and Zaiqiao Meng and David Eyre and Jean-Benoit Delbrouck},
+      year={2025},
+      eprint={2509.18030},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2509.18030}, 
 }
 ```
 
