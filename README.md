@@ -1,8 +1,38 @@
-<div align="center">
-  <a href="https://github.com/jbdel/RadEval">
-    <img src="https://github.com/jbdel/RadEval/raw/libra_run/RadEval_banner.png" alt="RadEval" width="100%" style="border-radius: 16px;">
-  </a>
-</div>
+# TL;DR
+```
+pip install RadEval
+```
+```python
+from RadEval import RadEval
+import json
+
+refs = [
+    "No definite acute cardiopulmonary process.Enlarged cardiac silhouette could be accentuated by patient's positioning.",
+    "Increased mild pulmonary edema and left basal atelectasis.",
+]
+hyps = [
+    "Relatively lower lung volumes with no focal airspace consolidation appreciated.",
+    "No pleural effusions or pneumothoraces.",
+]
+
+evaluator = RadEval(
+    do_radgraph=True,
+    do_bleu=True
+)
+
+results = evaluator(refs=refs, hyps=hyps)
+print(json.dumps(results, indent=2))
+```
+```json
+{
+  "radgraph_simple": 0.5,
+  "radgraph_partial": 0.5,
+  "radgraph_complete": 0.5,
+  "bleu": 0.5852363407461811
+}
+```
+
+# RadEval
 
 <div align="center">
 
