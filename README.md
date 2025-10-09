@@ -47,7 +47,7 @@ print(json.dumps(results, indent=2))
 [![Model](https://img.shields.io/badge/Model-RadEvalModernBERT-0066CC?logo=huggingface&labelColor=grey)](https://huggingface.co/IAMJB/RadEvalModernBERT)
 [![Video](https://img.shields.io/badge/Talk-Video-9C27B0?logo=youtubeshorts&labelColor=grey)](https://justin13601.github.io/files/radeval.mp4)
 [![Gradio Demo](https://img.shields.io/badge/Gradio-Demo-FFD21E.svg?logo=gradio&logoColor=gold)](https://huggingface.co/spaces/X-iZhang/RadEval)
-[![Arxiv](https://img.shields.io/badge/arXiv-coming_soon-B31B1B.svg?logo=arxiv&logoColor=B31B1B)]()
+[![Arxiv](https://img.shields.io/badge/arXiv-2509.18030v1-B31B1B.svg?logo=arxiv&logoColor=B31B1B)](https://arxiv.org/html/2509.18030v1)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?)](https://github.com/jbdel/RadEval/main/LICENSE)
 <!--- BADGES: END --->
 
