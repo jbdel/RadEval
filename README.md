@@ -59,7 +59,36 @@ Generating: 100%|█████████████████████
   "green": 0.875
 }
 ```
-
+```bibtex
+@inproceedings{xu-etal-2025-radeval,
+    title = "{R}ad{E}val: A framework for radiology text evaluation",
+    author = "Xu, Justin  and
+      Zhang, Xi  and
+      Abderezaei, Javid  and
+      Bauml, Julie  and
+      Boodoo, Roger  and
+      Haghighi, Fatemeh  and
+      Ganjizadeh, Ali  and
+      Brattain, Eric  and
+      Van Veen, Dave  and
+      Meng, Zaiqiao  and
+      Eyre, David W  and
+      Delbrouck, Jean-Benoit",
+    editor = {Habernal, Ivan  and
+      Schulam, Peter  and
+      Tiedemann, J{\"o}rg},
+    booktitle = "Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing: System Demonstrations",
+    month = nov,
+    year = "2025",
+    address = "Suzhou, China",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2025.emnlp-demos.40/",
+    doi = "10.18653/v1/2025.emnlp-demos.40",
+    pages = "546--557",
+    ISBN = "979-8-89176-334-0",
+    abstract = "We introduce RadEval, a unified, open-source framework for evaluating radiology texts. RadEval consolidates a diverse range of metrics - from classic n{-}gram overlap (BLEU, ROUGE) and contextual measures (BERTScore) to clinical concept-based scores (F1CheXbert, F1RadGraph, RaTEScore, SRR-BERT, TemporalEntityF1) and advanced LLM{-}based evaluators (GREEN). We refine and standardize implementations, extend GREEN to support multiple imaging modalities with a more lightweight model, and pretrain a domain-specific radiology encoder - demonstrating strong zero-shot retrieval performance. We also release a richly annotated expert dataset with over 450 clinically significant error labels and show how different metrics correlate with radiologist judgment. Finally, RadEval provides statistical testing tools and baseline model evaluations across multiple publicly available datasets, facilitating reproducibility and robust benchmarking in radiology report generation."
+}
+```
 
 # RadEval
 
@@ -76,7 +105,7 @@ Generating: 100%|█████████████████████
 [![Model](https://img.shields.io/badge/Model-RadEvalModernBERT-0066CC?logo=huggingface&labelColor=grey)](https://huggingface.co/IAMJB/RadEvalModernBERT)
 [![Video](https://img.shields.io/badge/Talk-Video-9C27B0?logo=youtubeshorts&labelColor=grey)](https://justin13601.github.io/files/radeval.mp4)
 [![Gradio Demo](https://img.shields.io/badge/Gradio-Demo-FFD21E.svg?logo=gradio&logoColor=gold)](https://huggingface.co/spaces/X-iZhang/RadEval)
-[![Arxiv](https://img.shields.io/badge/arXiv-2509.18030v1-B31B1B.svg?logo=arxiv&logoColor=B31B1B)](https://arxiv.org/html/2509.18030v1)
+[![EMNLP](https://img.shields.io/badge/paper-EMNLP-red)](https://aclanthology.org/2025.emnlp-demos.40/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?)](https://github.com/jbdel/RadEval/main/LICENSE)
 <!--- BADGES: END --->
 
@@ -713,14 +742,33 @@ To support reliable benchmarking, we introduce the **RadEval Expert Dataset**, a
 If you use RadEval in your research, please cite:
 
 ```BibTeX
-@misc{xu2025radevalframeworkradiologytext,
-      title={RadEval: A framework for radiology text evaluation}, 
-      author={Justin Xu and Xi Zhang and Javid Abderezaei and Julie Bauml and Roger Boodoo and Fatemeh Haghighi and Ali Ganjizadeh and Eric Brattain and Dave Van Veen and Zaiqiao Meng and David Eyre and Jean-Benoit Delbrouck},
-      year={2025},
-      eprint={2509.18030},
-      archivePrefix={arXiv},
-      primaryClass={cs.CL},
-      url={https://arxiv.org/abs/2509.18030}, 
+@inproceedings{xu-etal-2025-radeval,
+    title = "{R}ad{E}val: A framework for radiology text evaluation",
+    author = "Xu, Justin  and
+      Zhang, Xi  and
+      Abderezaei, Javid  and
+      Bauml, Julie  and
+      Boodoo, Roger  and
+      Haghighi, Fatemeh  and
+      Ganjizadeh, Ali  and
+      Brattain, Eric  and
+      Van Veen, Dave  and
+      Meng, Zaiqiao  and
+      Eyre, David W  and
+      Delbrouck, Jean-Benoit",
+    editor = {Habernal, Ivan  and
+      Schulam, Peter  and
+      Tiedemann, J{\"o}rg},
+    booktitle = "Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing: System Demonstrations",
+    month = nov,
+    year = "2025",
+    address = "Suzhou, China",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2025.emnlp-demos.40/",
+    doi = "10.18653/v1/2025.emnlp-demos.40",
+    pages = "546--557",
+    ISBN = "979-8-89176-334-0",
+    abstract = "We introduce RadEval, a unified, open-source framework for evaluating radiology texts. RadEval consolidates a diverse range of metrics - from classic n{-}gram overlap (BLEU, ROUGE) and contextual measures (BERTScore) to clinical concept-based scores (F1CheXbert, F1RadGraph, RaTEScore, SRR-BERT, TemporalEntityF1) and advanced LLM{-}based evaluators (GREEN). We refine and standardize implementations, extend GREEN to support multiple imaging modalities with a more lightweight model, and pretrain a domain-specific radiology encoder - demonstrating strong zero-shot retrieval performance. We also release a richly annotated expert dataset with over 450 clinically significant error labels and show how different metrics correlate with radiologist judgment. Finally, RadEval provides statistical testing tools and baseline model evaluations across multiple publicly available datasets, facilitating reproducibility and robust benchmarking in radiology report generation."
 }
 ```
 
