@@ -48,6 +48,6 @@ if __name__ == "__main__":
     # Example usage
     refs = ["Chronic mild to moderate cardiomegaly and pulmonary venous hypertension."]
     hyps = ["Mild left basal atelectasis; no pneumonia."]
-    scorer = RadiologyBERTScorer(num_layers=23)
+    scorer = RadEvalBERTScorer(num_layers=23)
     f1_score = scorer.score(refs, hyps)
     print(f"Mean F1 score: {f1_score:.4f}")

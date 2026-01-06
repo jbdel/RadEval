@@ -1,6 +1,6 @@
 # TL;DR
 ```
-pip install RadEval
+pip install -e .
 ```
 ```python
 from RadEval import RadEval
@@ -31,6 +31,35 @@ print(json.dumps(results, indent=2))
   "bleu": 0.36
 }
 ```
+With GREEN:
+
+```python
+export CUDA_VISIBLE_DEVICES=0,1 # define your available gpus for faster processing
+[..]
+evaluator = RadEval(
+    do_radgraph=True,
+    do_bleu=True,
+    do_green=True
+)
+
+results = evaluator(refs=refs, hyps=hyps)
+print(json.dumps(results, indent=2))
+```
+```json
+(GREEN) Multi-GPU inference across 2 GPUs
+Loading checkpoint shards: 100%|████████████████████████████████████████████████| 3/3 [00:02<00:00,  1.46it/s]
+Loading checkpoint shards: 100%|████████████████████████████████████████████████| 3/3 [00:02<00:00,  1.45it/s]
+Generating: 100%|███████████████████████████████████████████████████████████████| 2/2 [00:25<00:00, 12.61s/ex]
+
+{
+  "radgraph_simple": 0.72,
+  "radgraph_partial": 0.61,
+  "radgraph_complete": 0.61,
+  "bleu": 0.36,
+  "green": 0.875
+}
+```
+
 
 # RadEval
 

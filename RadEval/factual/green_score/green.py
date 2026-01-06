@@ -24,8 +24,7 @@ except RuntimeError:
     # start method already set in this interpreter; ignore
     pass
 
-# Import necessary functions (ensure these are available in your environment)
-from green_score.utils import (
+from RadEval.factual.green_score.utils import (
     make_prompt,
     clean_responses,
     compute_largest_cluster,
@@ -235,16 +234,13 @@ class GREEN:
                 assert self.tokenizer.padding_side == "left"
 
     def __call__(self, refs, hyps):
-        print("Processing data...making prompts")
         dataset = Dataset.from_dict({"reference": refs, "prediction": hyps})
         dataset = self.process_data(dataset)
-        print("Done.")
 
         self.dataset = dataset
         start = time.time()
         mean, std, green_scores, summary, results_df = self.infer()
         elapsed = time.time() - start
-        print(f"Seconds per example: {elapsed / len(refs):.3f}")
 
         return mean, std, green_scores, summary, results_df
 
@@ -267,7 +263,7 @@ class GREEN:
         n = len(prompts)
 
         if self._use_multi_gpu:
-            print(f"Multi-GPU inference across {self.num_gpus} GPUs")
+            print(f"(GREEN) Multi-GPU inference across {self.num_gpus} GPUs")
             # Shard prompts evenly across workers
             shards = np.array_split(np.arange(n), self.num_gpus)
             shard_prompts = [[prompts[i] for i in idxs] for idxs in shards]
@@ -538,7 +534,6 @@ class GREEN:
         }
 
     def compute_summary(self, mean, std):
-        print("Computing summary ...")
         reps = self.get_representative_sentences(self.completions)
         accs = self.compute_accuracy(self.completions)
         summary = [f"-------------{self.model_name}----------------",
