@@ -244,7 +244,7 @@ class F1CheXbert(nn.Module):
 
         # overall accuracy -----------------------------------------------------
         accuracy = accuracy_score(refs5, hyps5)
-        _, y_true, y_pred = _check_targets(refs5, hyps5)
+        _, y_true, y_pred, _ = _check_targets(refs5, hyps5)
         pe_accuracy = (count_nonzero(y_true - y_pred, axis=1) == 0).astype(float)
 
         # full classification reports -----------------------------------------

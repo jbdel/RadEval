@@ -2,9 +2,9 @@ from setuptools import setup, find_packages
 
 setup(
     name='RadEval',
-    version='0.0.2',
+    version='0.0.3',
     author='Jean-Benoit Delbrouck, Justin Xu, Xi Zhang',
-    maintainer='Xi Zhang',
+    maintainer='Xi Zhang, JB Delbrouck',
     url='https://github.com/jbdel/RadEval',
     project_urls={
         'Bug Reports': 'https://github.com/jbdel/RadEval/issues',
@@ -34,18 +34,17 @@ setup(
         'radgraph',
         'medical AI'
     ],
-    python_requires='>=3.9',
+    python_requires='>=3.9,<3.12',
     install_requires=[
         'torch>=2.2.2,<3.0',
         'transformers>=4.53.1',
         'radgraph',
         'rouge_score',
         'bert-score==0.3.13',
-        'scikit-learn',
+        'scikit-learn>=1.8.0',
         'numpy<2',
         'medspacy',
         'stanza',
-        'accelerate==0.30.1',
         'pillow==10.3.0',
         'sentencepiece==0.2.0',
         'sentence-transformers==3.0.1',
@@ -54,6 +53,7 @@ setup(
         'opencv-python==4.10.0.84',
         'scipy',
         'matplotlib',
+        'accelerate==0.30.1',
         'pandas'
     ],
     packages=find_packages(),
