@@ -7,11 +7,11 @@ from RadEval import RadEval
 import json
 
 refs = [
-    "No definite acute cardiopulmonary process.Enlarged cardiac silhouette could be accentuated by patient's positioning.",
-    "Increased mild pulmonary edema and left basal atelectasis.",
+    "Mild cardiomegaly with small bilateral pleural effusions and basilar atelectasis.",
+    "No pleural effusions or pneumothoraces.",
 ]
 hyps = [
-    "Relatively lower lung volumes with no focal airspace consolidation appreciated.",
+    "Mildly enlarged cardiac silhouette with small pleural effusions and dependent bibasilar atelectasis.",
     "No pleural effusions or pneumothoraces.",
 ]
 
@@ -25,10 +25,10 @@ print(json.dumps(results, indent=2))
 ```
 ```json
 {
-  "radgraph_simple": 0.5,
-  "radgraph_partial": 0.5,
-  "radgraph_complete": 0.5,
-  "bleu": 0.5852363407461811
+  "radgraph_simple": 0.72,
+  "radgraph_partial": 0.61,
+  "radgraph_complete": 0.61,
+  "bleu": 0.36
 }
 ```
 
@@ -129,11 +129,11 @@ from RadEval import RadEval
 import json
 
 refs = [
-    "No definite acute cardiopulmonary process.Enlarged cardiac silhouette could be accentuated by patient's positioning.",
-    "Increased mild pulmonary edema and left basal atelectasis.",
+    "Mild cardiomegaly with small bilateral pleural effusions and basilar atelectasis.",
+    "No pleural effusions or pneumothoraces.",
 ]
 hyps = [
-    "Relatively lower lung volumes with no focal airspace consolidation appreciated.",
+    "Mildly enlarged cardiac silhouette with small pleural effusions and dependent bibasilar atelectasis.",
     "No pleural effusions or pneumothoraces.",
 ]
 
@@ -173,11 +173,11 @@ evaluator = RadEval(
 )
 
 refs = [
-    "No definite acute cardiopulmonary process.Enlarged cardiac silhouette could be accentuated by patient's positioning.",
-    "Increased mild pulmonary edema and left basal atelectasis.",
+    "Mild cardiomegaly with small bilateral pleural effusions and basilar atelectasis.",
+    "No pleural effusions or pneumothoraces.",
 ]
 hyps = [
-    "Relatively lower lung volumes with no focal airspace consolidation appreciated.",
+    "Mildly enlarged cardiac silhouette with small pleural effusions and dependent bibasilar atelectasis.",
     "No pleural effusions or pneumothoraces.",
 ]
 
