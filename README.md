@@ -440,7 +440,7 @@ RadEval currently supports the following evaluation metrics:
 | `do_temporal` | bool | False | Enable temporal evaluation |
 | `do_ratescore` | bool | False | Enable RateScore |
 | `do_radcliq` | bool | False | Enable RadCLIQ |
-| `do_radeval_bertsore` | bool | False | Enable RadEval BERTScore |
+| `do_radeval_bertscore` | bool | False | Enable RadEval BERTScore |
 | `do_details` | bool | False | Include detailed metrics |
 
 ### Example Configurations
@@ -471,7 +471,7 @@ full_evaluator = RadEval(
     do_temporal=True,
     do_ratescore=True,
     do_radcliq=True,
-    do_radeval_bertsore=True,
+    do_radeval_bertscore=True,
     do_details=False           # Optional: return detailed metric breakdowns
 )
 ```
