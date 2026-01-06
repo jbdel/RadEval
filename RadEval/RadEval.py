@@ -42,7 +42,7 @@ class RadEval():
                  do_chexbert=False,
                  do_ratescore=False,
                  do_radcliq=False,
-                 do_radeval_bertsore=False,
+                 do_radeval_bertscore=False,
                  do_temporal=False,
                  do_details=False,
                  ):
@@ -58,7 +58,7 @@ class RadEval():
         self.do_ratescore = do_ratescore
         self.do_radcliq = do_radcliq
         self.do_temporal = do_temporal
-        self.do_radeval_bertsore = do_radeval_bertsore
+        self.do_radeval_bertscore = do_radeval_bertscore
         self.do_details = do_details
 
         # Initialize scorers only once
@@ -102,8 +102,8 @@ class RadEval():
             stanza.download('en', package='radiology', processors={'ner': 'radiology'})
             self.F1Temporal = F1Temporal
 
-        if self.do_radeval_bertsore:
-            self.radeval_bertsore = RadEvalBERTScorer(
+        if self.do_radeval_bertscore:
+            self.radeval_bertscore = RadEvalBERTScorer(
                 model_type="IAMJB/RadEvalModernBERT", 
                 num_layers=22,
                 use_fast_tokenizer=True,
@@ -137,8 +137,8 @@ class RadEval():
             self.metric_keys.append("radcliqv1")
         if self.do_temporal:
             self.metric_keys.append("temporal_f1")
-        if self.do_radeval_bertsore:
-            self.metric_keys.append("radeval_bertsore")
+        if self.do_radeval_bertscore:
+            self.metric_keys.append("radeval_bertscore")
 
     def __call__(self, refs, hyps):
         if not (isinstance(hyps, list) and isinstance(refs, list)):
@@ -372,15 +372,15 @@ class RadEval():
             else:
                 scores["temporal_f1"] = temporal_scores["f1"]
 
-        if self.do_radeval_bertsore:
-            radeval_bertsores = self.radeval_bertsore.score(refs=refs, hyps=hyps)
+        if self.do_radeval_bertscore:
+            radeval_bertscores = self.radeval_bertscore.score(refs=refs, hyps=hyps)
             if self.do_details:
-                scores["radeval_bertsore"] = {
-                    "f1-score": radeval_bertsores[0],
-                    "sample_scores": radeval_bertsores[1].tolist()
+                scores["radeval_bertscore"] = {
+                    "f1-score": radeval_bertscores[0],
+                    "sample_scores": radeval_bertscores[1].tolist()
                 }
             else:
-                scores["radeval_bertsore"] = radeval_bertsores[0]
+                scores["radeval_bertscore"] = radeval_bertscores[0]
 
         return scores
 
@@ -414,7 +414,7 @@ def main():
                         do_temporal=True,
                         do_ratescore=True,
                         do_radcliq=True,
-                        do_radeval_bertsore=True)
+                        do_radeval_bertscore=True)
 
     results = evaluator(refs=refs, hyps=hyps)
     print(json.dumps(results, indent=4))
