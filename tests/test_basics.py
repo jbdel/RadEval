@@ -34,7 +34,7 @@ def test_radeval():
                         do_radcliq=True,
                         do_temporal=True,
                         do_srr_bert=False,
-                        do_radeval_bertsore=False,
+                        do_radeval_bertscore=False,
                         )
 
     # Compute scores

@@ -210,13 +210,12 @@ class RadEval():
 
         if self.do_green:
             # Use the initialized green scorer
-            mean, std, sample_scores, summary, _ = self.green_scorer(refs, hyps)
+            mean, std, sample_scores, _ = self.green_scorer(refs, hyps)
             if self.do_details:
                 scores["green"] = {
                     "mean": mean,
                     "std": std,
                     "sample_scores": sample_scores,
-                    "summary": summary
                 }
             else:
                 scores["green"] = mean

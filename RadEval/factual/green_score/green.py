@@ -27,8 +27,6 @@ except RuntimeError:
 from RadEval.factual.green_score.utils import (
     make_prompt,
     clean_responses,
-    compute_largest_cluster,
-    flatten_values_lists_of_list_dicts_to_dict,
 )
 
 # Suppress benign warnings from transformers
@@ -43,7 +41,7 @@ def _worker_generate(
     batch_size: int,
     max_length: int,
     padding_side: str = "left",
-    progress_queue=None,   
+    progress_queue=None,
 ) -> List[str]:
     """
     Runs entirely on one GPU/CPU: loads the model+tokenizer on `device`,
@@ -97,13 +95,14 @@ def _worker_generate(
     completions = []
     # Local loop with a quiet tqdm to keep logs tidy across workers
     for i in range(0, len(prompts), batch_size):
-        batch_prompts = prompts[i : i + batch_size]
+        batch_prompts = prompts[i: i + batch_size]
         chats = [
             [{"from": "human", "value": p}, {"from": "gpt", "value": ""}]
             for p in batch_prompts
         ]
         texts = [
-            tokenizer.apply_chat_template(c, tokenize=False, add_generation_prompt=True)
+            tokenizer.apply_chat_template(
+                c, tokenize=False, add_generation_prompt=True)
             for c in chats
         ]
 
@@ -142,7 +141,6 @@ class GREEN:
         model_name=None,
         output_dir=".",
         cpu=False,
-        compute_summary_stats=False,
         num_gpus=None,  # NEW: set None to auto-detect (capped at 8)
     ):
         super().__init__()
@@ -167,7 +165,6 @@ class GREEN:
             "(e) Mentioning a comparison that isn't in the reference",
             "(f) Omitting a comparison detailing a change from a prior study",
         ]
-        self.compute_summary_stats = compute_summary_stats
 
         # Device logic
         if torch.cuda.is_available() and not self.cpu:
@@ -201,7 +198,8 @@ class GREEN:
                 self.model = AutoModelForCausalLM.from_pretrained(
                     self.model_id,
                     trust_remote_code=False if "Phi" in self.model_id else True,
-                    device_map={"": ("cuda:0" if (torch.cuda.is_available() and not self.cpu) else "cpu")},
+                    device_map={
+                        "": ("cuda:0" if (torch.cuda.is_available() and not self.cpu) else "cpu")},
                     torch_dtype=torch.float16 if not self.cpu else torch.float32,
                 )
                 self.model.eval()
@@ -239,10 +237,10 @@ class GREEN:
 
         self.dataset = dataset
         start = time.time()
-        mean, std, green_scores, summary, results_df = self.infer()
+        mean, std, green_scores, results_df = self.infer()
         elapsed = time.time() - start
 
-        return mean, std, green_scores, summary, results_df
+        return mean, std, green_scores, results_df
 
     def process_data(self, dataset):
         def prompting(examples):
@@ -278,7 +276,8 @@ class GREEN:
             q = mgr.Queue()
 
             # start the monitor thread
-            import sys, threading
+            import sys
+            import threading
             from tqdm import tqdm
 
             def _progress_monitor(q_, total_):
@@ -293,7 +292,8 @@ class GREEN:
                         pbar.n = done
                         pbar.refresh()
 
-            monitor = threading.Thread(target=_progress_monitor, args=(q, n), daemon=True)
+            monitor = threading.Thread(
+                target=_progress_monitor, args=(q, n), daemon=True)
             monitor.start()
             # ----------------------------------------------------------
 
@@ -350,7 +350,6 @@ class GREEN:
 
         return self.process_results()
 
-
     def get_response(self, batch):
         # Build chat-formatted inputs
         chats = [
@@ -358,7 +357,8 @@ class GREEN:
             for prompt in batch["prompt"]
         ]
         texts = [
-            self.tokenizer.apply_chat_template(c, tokenize=False, add_generation_prompt=True)
+            self.tokenizer.apply_chat_template(
+                c, tokenize=False, add_generation_prompt=True)
             for c in chats
         ]
         toks = self.tokenizer.batch_encode_plus(
@@ -377,7 +377,8 @@ class GREEN:
             max_length=self.max_length,
             do_sample=False,
         )
-        responses = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
+        responses = self.tokenizer.batch_decode(
+            outputs, skip_special_tokens=True)
 
         # Clean and return as list
         if isinstance(responses, list):
@@ -406,21 +407,19 @@ class GREEN:
         mean = float(np.mean(self.green_scores))
         std = float(np.std(self.green_scores))
 
-        if self.compute_summary_stats:
-            summary = self.compute_summary(mean, std)
-        else:
-            summary = None
-
-        return mean, std, self.green_scores, summary, results_df
+        return mean, std, self.green_scores, results_df
 
     def compute_error_count(self, response):
         _, sig_errors = self.parse_error_counts(response, self.categories[0])
-        matched_findings, _ = self.parse_error_counts(response, self.categories[2])
+        matched_findings, _ = self.parse_error_counts(
+            response, self.categories[2])
         return sig_errors + [matched_findings]
 
     def compute_green(self, response):
-        sig_present, sig_errors = self.parse_error_counts(response, self.categories[0])
-        matched_findings, _ = self.parse_error_counts(response, self.categories[2])
+        sig_present, sig_errors = self.parse_error_counts(
+            response, self.categories[0])
+        matched_findings, _ = self.parse_error_counts(
+            response, self.categories[2])
 
         if matched_findings == 0:
             return 0
@@ -462,7 +461,8 @@ class GREEN:
         if not matches:
             # fallback to numeric markers
             matches = sorted(re.findall(r"\([1-6]\) .*", body))
-            sub_cats = [f"({i}) " for i in range(1, len(self.sub_categories) + 1)]
+            sub_cats = [f"({i}) " for i in range(
+                1, len(self.sub_categories) + 1)]
 
         for idx, sub_cat in enumerate(sub_cats):
             for m in matches:
@@ -472,77 +472,14 @@ class GREEN:
                         sub_counts[idx] = int(num.group(0))
         return sum(sub_counts), sub_counts
 
-    def parse_error_sentences(self, response, category):
-        if category not in self.categories:
-            raise ValueError(
-                f"Category {category} is not a valid category. Please choose from {self.categories}."
-            )
-        pattern = rf"\[{category}\]:\s*(.*?)(?:\n\s*\n|\Z)"
-        category_text = re.search(pattern, response, re.DOTALL)
-
-        sentences = {sub: [] for sub in self.sub_categories}
-        if not category_text:
-            return sentences
-
-        body = category_text.group(1)
-        if body.startswith("No"):
-            return sentences
-
-        if category == "Matched Findings":
-            # last clause after colon, split on semicolon
-            return body.rsplit(":", 1)[-1].rsplit(".", 1)[-1].split(";")
-
-        matches = sorted(re.findall(r"\([a-f]\) .*", body))
-        if not matches:
-            matches = sorted(re.findall(r"\([1-6]\) .*", body))
-            self.sub_categories = [f"({i}) " for i in range(1, len(self.sub_categories) + 1)]
-
-        for idx, sub_cat in enumerate(self.sub_categories):
-            for m in matches:
-                if m.startswith(sub_cat):
-                    part = m.rsplit(":", 1)[-1]
-                    sentences[sub_cat] = part.split(";")
-        return sentences
-
-    def compute_sentences(self, response):
-        return self.parse_error_sentences(response, self.categories[0])
-
-    def get_representative_sentences(self, responses):
-        list_sentences = [self.compute_sentences(r) for r in responses]
-        flat = flatten_values_lists_of_list_dicts_to_dict(list_sentences)
-
-        result = {}
-        for sub in self.sub_categories:
-            items = [s for s in flat.get(sub, []) if s and s.strip()]
-            # if fewer than 2 distinct items, just return them
-            if len(set(items)) < 2:
-                result[sub] = items
-            else:
-                try:
-                    _, cluster = compute_largest_cluster(items)
-                except ValueError:
-                    cluster = items
-                result[sub] = cluster
-        return result
-
     def compute_accuracy(self, responses):
-        counts = [self.parse_error_counts(r, self.categories[0])[1] for r in responses]
+        counts = [self.parse_error_counts(r, self.categories[0])[
+            1] for r in responses]
         arr = np.array(counts)
         return {
             sub: float((arr[:, idx] == 0).mean())
             for idx, sub in enumerate(self.sub_categories)
         }
-
-    def compute_summary(self, mean, std):
-        reps = self.get_representative_sentences(self.completions)
-        accs = self.compute_accuracy(self.completions)
-        summary = [f"-------------{self.model_name}----------------",
-                   f"[Summary]: Green average {mean} and standard deviation {std}",
-                   "[Clinically Significant Errors Analyses]: <accuracy>. <representative error>"]
-        for sub in self.sub_categories:
-            summary.append(f"{sub}: {accs[sub]}. {reps.get(sub, [])}")
-        summary.append("----------------------------------")
-        return "\n".join(summary)
 
 
 if __name__ == "__main__":
