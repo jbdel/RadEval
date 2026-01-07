@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='RadEval',
-    version='0.0.3',
+    version='0.0.5',
     author='Jean-Benoit Delbrouck, Justin Xu, Xi Zhang',
     maintainer='Xi Zhang, JB Delbrouck',
     url='https://github.com/jbdel/RadEval',
@@ -36,8 +36,8 @@ setup(
     ],
     python_requires='>=3.9,<3.12',
     install_requires=[
-        'torch>=2.2.2,<3.0',
-        'transformers>=4.53.1',
+        'torch==2.9.1',
+        'transformers==4.57.3',
         'radgraph',
         'rouge_score',
         'bert-score==0.3.13',
@@ -46,12 +46,10 @@ setup(
         'medspacy',
         'stanza',
         'pillow==10.3.0',
-        'sentencepiece==0.2.0',
-        'sentence-transformers==3.0.1',
+        'sentencepiece==0.2.0', # for GREEN
         'datasets==2.19.0',
-        'torchvision==0.17.2',
+        'torchvision',
         'opencv-python==4.10.0.84',
-        'scipy',
         'matplotlib',
         'accelerate==0.30.1',
         'pandas'
