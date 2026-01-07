@@ -1,8 +1,96 @@
-<div align="center">
-  <a href="https://github.com/jbdel/RadEval">
-    <img src="https://github.com/jbdel/RadEval/raw/libra_run/RadEval_banner.png" alt="RadEval" width="100%" style="border-radius: 16px;">
-  </a>
-</div>
+# TL;DR
+```
+pip install -e .
+```
+```python
+from RadEval import RadEval
+import json
+
+refs = [
+    "Mild cardiomegaly with small bilateral pleural effusions and basilar atelectasis.",
+    "No pleural effusions or pneumothoraces.",
+]
+hyps = [
+    "Mildly enlarged cardiac silhouette with small pleural effusions and dependent bibasilar atelectasis.",
+    "No pleural effusions or pneumothoraces.",
+]
+
+evaluator = RadEval(
+    do_radgraph=True,
+    do_bleu=True
+)
+
+results = evaluator(refs=refs, hyps=hyps)
+print(json.dumps(results, indent=2))
+```
+```json
+{
+  "radgraph_simple": 0.72,
+  "radgraph_partial": 0.61,
+  "radgraph_complete": 0.61,
+  "bleu": 0.36
+}
+```
+With GREEN:
+
+```python
+export CUDA_VISIBLE_DEVICES=0,1 # define your available gpus for faster processing
+[..]
+evaluator = RadEval(
+    do_radgraph=True,
+    do_bleu=True,
+    do_green=True
+)
+
+results = evaluator(refs=refs, hyps=hyps)
+print(json.dumps(results, indent=2))
+```
+```json
+(GREEN) Multi-GPU inference across 2 GPUs
+Loading checkpoint shards: 100%|████████████████████████████████████████████████| 3/3 [00:02<00:00,  1.46it/s]
+Loading checkpoint shards: 100%|████████████████████████████████████████████████| 3/3 [00:02<00:00,  1.45it/s]
+Generating: 100%|███████████████████████████████████████████████████████████████| 2/2 [00:25<00:00, 12.61s/ex]
+
+{
+  "radgraph_simple": 0.72,
+  "radgraph_partial": 0.61,
+  "radgraph_complete": 0.61,
+  "bleu": 0.36,
+  "green": 0.875
+}
+```
+```bibtex
+@inproceedings{xu-etal-2025-radeval,
+    title = "{R}ad{E}val: A framework for radiology text evaluation",
+    author = "Xu, Justin  and
+      Zhang, Xi  and
+      Abderezaei, Javid  and
+      Bauml, Julie  and
+      Boodoo, Roger  and
+      Haghighi, Fatemeh  and
+      Ganjizadeh, Ali  and
+      Brattain, Eric  and
+      Van Veen, Dave  and
+      Meng, Zaiqiao  and
+      Eyre, David W  and
+      Delbrouck, Jean-Benoit",
+    editor = {Habernal, Ivan  and
+      Schulam, Peter  and
+      Tiedemann, J{\"o}rg},
+    booktitle = "Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing: System Demonstrations",
+    month = nov,
+    year = "2025",
+    address = "Suzhou, China",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2025.emnlp-demos.40/",
+    doi = "10.18653/v1/2025.emnlp-demos.40",
+    pages = "546--557",
+    ISBN = "979-8-89176-334-0",
+    abstract = "We introduce RadEval, a unified, open-source framework for evaluating radiology texts. RadEval consolidates a diverse range of metrics - from classic n{-}gram overlap (BLEU, ROUGE) and contextual measures (BERTScore) to clinical concept-based scores (F1CheXbert, F1RadGraph, RaTEScore, SRR-BERT, TemporalEntityF1) and advanced LLM{-}based evaluators (GREEN). We refine and standardize implementations, extend GREEN to support multiple imaging modalities with a more lightweight model, and pretrain a domain-specific radiology encoder - demonstrating strong zero-shot retrieval performance. We also release a richly annotated expert dataset with over 450 clinically significant error labels and show how different metrics correlate with radiologist judgment. Finally, RadEval provides statistical testing tools and baseline model evaluations across multiple publicly available datasets, facilitating reproducibility and robust benchmarking in radiology report generation."
+}
+```
+
+# RadEval
 
 <div align="center">
 
@@ -13,11 +101,11 @@
 <!--- BADGES: START --->
 [![PyPI](https://img.shields.io/badge/RadEval-v0.0.1-00B7EB?logo=python&logoColor=00B7EB)](https://pypi.org/project/RadEval/)
 [![Python version](https://img.shields.io/badge/python-3.10+-important?logo=python&logoColor=important)]()
-[![Expert Dataset](https://img.shields.io/badge/Expert-%20Dataset-4CAF50?logo=googlecloudstorage&logoColor=9BF0E1)]()
+[![Expert Dataset](https://img.shields.io/badge/Expert-%20Dataset-4CAF50?logo=googlecloudstorage&logoColor=9BF0E1)](https://huggingface.co/datasets/IAMJB/RadEvalExpertDataset)
 [![Model](https://img.shields.io/badge/Model-RadEvalModernBERT-0066CC?logo=huggingface&labelColor=grey)](https://huggingface.co/IAMJB/RadEvalModernBERT)
 [![Video](https://img.shields.io/badge/Talk-Video-9C27B0?logo=youtubeshorts&labelColor=grey)](https://justin13601.github.io/files/radeval.mp4)
 [![Gradio Demo](https://img.shields.io/badge/Gradio-Demo-FFD21E.svg?logo=gradio&logoColor=gold)](https://huggingface.co/spaces/X-iZhang/RadEval)
-[![Arxiv](https://img.shields.io/badge/arXiv-coming_soon-B31B1B.svg?logo=arxiv&logoColor=B31B1B)]()
+[![EMNLP](https://img.shields.io/badge/paper-EMNLP-red)](https://aclanthology.org/2025.emnlp-demos.40/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?)](https://github.com/jbdel/RadEval/main/LICENSE)
 <!--- BADGES: END --->
 
@@ -99,11 +187,11 @@ from RadEval import RadEval
 import json
 
 refs = [
-    "No definite acute cardiopulmonary process.Enlarged cardiac silhouette could be accentuated by patient's positioning.",
-    "Increased mild pulmonary edema and left basal atelectasis.",
+    "Mild cardiomegaly with small bilateral pleural effusions and basilar atelectasis.",
+    "No pleural effusions or pneumothoraces.",
 ]
 hyps = [
-    "Relatively lower lung volumes with no focal airspace consolidation appreciated.",
+    "Mildly enlarged cardiac silhouette with small pleural effusions and dependent bibasilar atelectasis.",
     "No pleural effusions or pneumothoraces.",
 ]
 
@@ -143,11 +231,11 @@ evaluator = RadEval(
 )
 
 refs = [
-    "No definite acute cardiopulmonary process.Enlarged cardiac silhouette could be accentuated by patient's positioning.",
-    "Increased mild pulmonary edema and left basal atelectasis.",
+    "Mild cardiomegaly with small bilateral pleural effusions and basilar atelectasis.",
+    "No pleural effusions or pneumothoraces.",
 ]
 hyps = [
-    "Relatively lower lung volumes with no focal airspace consolidation appreciated.",
+    "Mildly enlarged cardiac silhouette with small pleural effusions and dependent bibasilar atelectasis.",
     "No pleural effusions or pneumothoraces.",
 ]
 
@@ -352,7 +440,7 @@ RadEval currently supports the following evaluation metrics:
 | `do_temporal` | bool | False | Enable temporal evaluation |
 | `do_ratescore` | bool | False | Enable RateScore |
 | `do_radcliq` | bool | False | Enable RadCLIQ |
-| `do_radeval_bertsore` | bool | False | Enable RadEval BERTScore |
+| `do_radeval_bertscore` | bool | False | Enable RadEval BERTScore |
 | `do_details` | bool | False | Include detailed metrics |
 
 ### Example Configurations
@@ -383,7 +471,7 @@ full_evaluator = RadEval(
     do_temporal=True,
     do_ratescore=True,
     do_radcliq=True,
-    do_radeval_bertsore=True,
+    do_radeval_bertscore=True,
     do_details=False           # Optional: return detailed metric breakdowns
 )
 ```
@@ -654,12 +742,33 @@ To support reliable benchmarking, we introduce the **RadEval Expert Dataset**, a
 If you use RadEval in your research, please cite:
 
 ```BibTeX
-@software{radeval2025,
-  author = {Jean-Benoit Delbrouck, Justin Xu, Xi Zhang},
-  title = {RadEval: A framework for radiology text evaluation},
-  year = {2025},
-  publisher = {GitHub},
-  howpublished = {\url{https://github.com/jbdel/RadEval}},
+@inproceedings{xu-etal-2025-radeval,
+    title = "{R}ad{E}val: A framework for radiology text evaluation",
+    author = "Xu, Justin  and
+      Zhang, Xi  and
+      Abderezaei, Javid  and
+      Bauml, Julie  and
+      Boodoo, Roger  and
+      Haghighi, Fatemeh  and
+      Ganjizadeh, Ali  and
+      Brattain, Eric  and
+      Van Veen, Dave  and
+      Meng, Zaiqiao  and
+      Eyre, David W  and
+      Delbrouck, Jean-Benoit",
+    editor = {Habernal, Ivan  and
+      Schulam, Peter  and
+      Tiedemann, J{\"o}rg},
+    booktitle = "Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing: System Demonstrations",
+    month = nov,
+    year = "2025",
+    address = "Suzhou, China",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2025.emnlp-demos.40/",
+    doi = "10.18653/v1/2025.emnlp-demos.40",
+    pages = "546--557",
+    ISBN = "979-8-89176-334-0",
+    abstract = "We introduce RadEval, a unified, open-source framework for evaluating radiology texts. RadEval consolidates a diverse range of metrics - from classic n{-}gram overlap (BLEU, ROUGE) and contextual measures (BERTScore) to clinical concept-based scores (F1CheXbert, F1RadGraph, RaTEScore, SRR-BERT, TemporalEntityF1) and advanced LLM{-}based evaluators (GREEN). We refine and standardize implementations, extend GREEN to support multiple imaging modalities with a more lightweight model, and pretrain a domain-specific radiology encoder - demonstrating strong zero-shot retrieval performance. We also release a richly annotated expert dataset with over 450 clinically significant error labels and show how different metrics correlate with radiologist judgment. Finally, RadEval provides statistical testing tools and baseline model evaluations across multiple publicly available datasets, facilitating reproducibility and robust benchmarking in radiology report generation."
 }
 ```
 

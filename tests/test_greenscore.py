@@ -1,121 +1,85 @@
+import pandas as pd
+import difflib
+import math
 from RadEval.factual.green_score import GREEN
-import numpy as np
 import warnings
 
+# please commented out 2 lines below if you are using an environment with different versions
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
+
+# run with
+# pytest tests/test_repro.py -s
+
+epsilon = 1e-5
+
 model_name = "StanfordAIMI/GREEN-radllama2-7b"
-
-# Initialize GREEN scorer
-green_scorer = GREEN(model_name, output_dir=".")
-
-def test_green_scorer():
-    """
-    Test the GREEN scorer with a specific example to ensure consistent results.
-    """
-    # Test data
-    refs = [
-        "1.Status post median sternotomy for CABG with stable cardiac enlargement and calcification of the aorta consistent with atherosclerosis.Relatively lower lung volumes with no focal airspace consolidation appreciated.Crowding of the pulmonary vasculature with possible minimal perihilar edema, but no overt pulmonary edema.No pleural effusions or pneumothoraces.",
-    ]
-    hyps = [
-        "Status post median sternotomy for CABG with stable cardiac enlargement and calcification of the aorta consistent with atherosclerosis.",
-    ]
-
-    # Get results
-    mean, std, green_score_list, summary, result_df = green_scorer(refs, hyps)
-
-    # Expected output based on the test run
-    expected_mean = 0.4
-    expected_std = 0.0
-    expected_green_score_list = [0.4]
-    expected_summary = "\n-------------GREEN-radllama2-7b----------------\n [Summary]: Green average 0.4 and standard deviation 0.0 \n [Clinically Significant Errors Analyses]: <accuracy>. <representative error>\n\n(a) False report of a finding in the candidate: 1.0. \n None \n\n(b) Missing a finding present in the reference: 0.0. \n  Lower lung volumes \n\n(c) Misidentification of a finding's anatomic location/position: 1.0. \n None \n\n(d) Misassessment of the severity of a finding: 1.0. \n None \n\n(e) Mentioning a comparison that isn't in the reference: 1.0. \n None \n\n(f) Omitting a comparison detailing a change from a prior study: 1.0. \n None \n\n----------------------------------\n"
-    expected_df_shape = (1, 11)
-
-    # Assertions
-    assert abs(mean - expected_mean) < 1e-6, f"Expected mean {expected_mean}, got {mean}"
-    assert abs(std - expected_std) < 1e-6, f"Expected std {expected_std}, got {std}"
-    assert green_score_list == expected_green_score_list, f"Expected green_score_list {expected_green_score_list}, got {green_score_list}"
-    assert summary == expected_summary, f"Summary mismatch. Expected:\n{expected_summary}\nGot:\n{summary}"
-    
-    # Additional checks
-    assert result_df is not None and not result_df.empty, "Result dataframe should not be empty"
-    assert result_df.shape == expected_df_shape, f"Expected shape {expected_df_shape}, got {result_df.shape}"
-
-    # Check that result_df contains expected columns
-    expected_columns = ['reference', 'predictions', 'green_analysis', 'green_score']
-    for col in expected_columns:
-        assert col in result_df.columns, f"Missing expected column: {col}"
-    
-    # Check specific values in the dataframe
-    assert result_df.loc[0, 'reference'] == refs[0], "Reference text mismatch in dataframe"
-    assert result_df.loc[0, 'predictions'] == hyps[0], "Prediction text mismatch in dataframe"
-    assert result_df.loc[0, 'green_score'] == expected_green_score_list[0], "Green score mismatch in dataframe"
-
-def test_green_scorer_basic():
-    """
-    Test the GREEN scorer with basic checks (less strict than full summary comparison).
-    """
-    # Test data
-    refs = [
-        "1.Status post median sternotomy for CABG with stable cardiac enlargement and calcification of the aorta consistent with atherosclerosis.Relatively lower lung volumes with no focal airspace consolidation appreciated.Crowding of the pulmonary vasculature with possible minimal perihilar edema, but no overt pulmonary edema.No pleural effusions or pneumothoraces.",
-    ]
-    hyps = [
-        "Status post median sternotomy for CABG with stable cardiac enlargement and calcification of the aorta consistent with atherosclerosis.",
-    ]
-
-    # Get results using the global green_scorer
-    mean, std, green_score_list, summary, result_df = green_scorer(refs, hyps)
-
-    # Basic expected values
-    expected_mean = 0.4
-    expected_std = 0.0
-    expected_green_score_list = [0.4]
-
-    # Basic assertions
-    assert abs(mean - expected_mean) < 1e-6, f"Expected mean {expected_mean}, got {mean}"
-    assert abs(std - expected_std) < 1e-6, f"Expected std {expected_std}, got {std}"
-    assert green_score_list == expected_green_score_list, f"Expected green_score_list {expected_green_score_list}, got {green_score_list}"
-    
-    # Check summary contains key elements
-    assert summary is not None and len(summary) > 0, "Summary should not be empty"
-    assert "GREEN-radllama2-7b" in summary, "Summary should contain model name"
-    assert "Green average 0.4" in summary, "Summary should contain correct average"
-    assert "standard deviation 0.0" in summary, "Summary should contain correct std"
-    
-    # Check dataframe
-    assert result_df is not None and not result_df.empty, "Result dataframe should not be empty"
-    assert result_df.shape == (1, 11), f"Expected shape (1, 11), got {result_df.shape}"
-    
-    # Check specific values in the dataframe
-    assert result_df.loc[0, 'green_score'] == expected_green_score_list[0], "Green score mismatch in dataframe"
+green_scorer = GREEN(model_name, output_dir=".", cpu=False, compute_summary_stats=False)
 
 
-def test_green_scorer_multiple_examples():
-    """
-    Test the GREEN scorer with multiple examples.
-    """
-    # Test data with multiple examples
-    refs = [
-        "No acute cardiopulmonary process.",
-        "Normal heart size and pulmonary vasculature.",
-    ]
-    hyps = [
-        "No acute cardiopulmonary process.",
-        "Normal heart size.",
-    ]
+refs = [
+    "1.  Increased opacification of the bilateral bases to the mid lung fields, which most likely represents pulmonary edema, however underlying infection cannot be excluded.    2.  Stable cardiomegaly.   3.  Small-to-moderate bilateral pleural effusions.",
+    "1.  Left lower lobe pneumonia with small left parapneumonic effusion. 2.  New focal airspace opacities in the right lung apex and right lung base may represent superimposition of normal structures.  Attention is recommended on followup.  Findings were discussed by Dr. ___ with Dr. ___ ___ medicine via telephone at 10:50am on ___.",
+    "In comparison with the study of ___, there are worsened lung volumes. Monitoring and support devices are unchanged.  Opacification at the left base is consistent with substantial volume loss in the lower lobes and pleural effusion. No definite pulmonary vascular congestion.  The left lung is essentially clear.",
+    "Stable chest findings, no evidence of new acute infiltrates.",
+    "Focal peripheral right upper lobe noduular opacity appears slightly more prominent than on prior studies , possibly due to overlap of the right scapula . However , further evaluation with a chest CT may be helpful to more fully characterize this region and to exclude the possibility of a slowly growing lung adenocarcinoma at this site . Findings and recommendation were discussed by telephone with Dr . ___ at 11 a . m . on ___ at the time of discovery .",
+]
+hyps = [
+    "1. Low lung volumes.  Mild interstitial pulmonary edema, improved from the previous exam.    2.  Near-complete interval resolution of bilateral pleural effusions since ___.    3.  Prominent mediastinal silhouette is most likely due to low lung volumes and patient's positioning.  A repeat conventional PA and lateral radiographs will be helpful, when tolerated.",
+    "1.  Large right hilar lung mass and radiation fibrosis.  Additional post-obstructive pneumonia in the right upper and lower lobes is possible but hard to delineate. 2.  New left retrocardiac opacity, small left effusion, and pleural thickening.  Findings were discussed with ___, RN, via telephone at ___ and again with Dr ___ at ___.",
+    "In comparison with the study of ___, the monitoring and support devices are unchanged.  Opacification at the right base is unchanged, again consistent with collapse of the middle and lower lobes.  The left lung remains clear.",
+    "In comparison the prior study there is a 10cm opacity in the right lower lobe. No evidence of new acute pneumonia.",
+    "Irregularly marginated 3-cm mass in the lingula has grown since prior studies. Although previously attributed to round atelectasis, its  growth and margins raise the potential concern for a slowly growing lung adenocarcinoma.  CT of the chest is recommended for further evaluation of this finding.  These findings were discussed with Dr. ___ via phone at 3:05 p.m. by ___.",
+]
+expected_green_score_list = [
+    "\nThe candidate report has several discrepancies when compared to the reference report. The candidate report mentions low lung volumes and mild interstitial pulmonary edema, which are not mentioned in the reference report. The reference report mentions increased opacification of the bilateral bases to the mid lung fields, stable cardiomegaly, and small-to-moderate bilateral pleural effusions, none of which are mentioned in the candidate report. The candidate report also mentions a near-complete interval resolution of bilateral pleural effusions, which contradicts the reference report's mention of small-to-moderate bilateral pleural effusions.\n\n[Clinically Significant Errors]:\n(a) False report of a finding in the candidate: 2. Low lung volumes; Mild interstitial pulmonary edema.\n(b) Missing a finding present in the reference: 3. Increased opacification of the bilateral bases to the mid lung fields; Stable cardiomegaly; Small-to-moderate bilateral pleural effusions.\n(c) Misidentification of a finding's anatomic location/position: 0.\n(d) Misassessment of the severity of a finding: 1. Near-complete interval resolution of bilateral pleural effusions.\n(e) Mentioning a comparison that isn't in the reference: 0.\n(f) Omitting a comparison detailing a change from a prior study: 0.\n\n[Clinically Insignificant Errors]:\n(a) False report of a finding in the candidate: 0.\n(b) Missing a finding present in the reference: 0.\n(c) Misidentification of a finding's anatomic location/position: 0.\n(d) Misassessment of the severity of a finding: 0.\n(e) Mentioning a comparison that isn't in the reference: 0.\n(f) Omitting a comparison detailing a change from a prior study: 0.\n\n[Matched Findings]:\n0.",
+    "\nThe candidate report has several clinically significant errors. It falsely reports a large right hilar lung mass and radiation fibrosis, which are not mentioned in the reference report. It also misidentifies the location of the pneumonia, stating it is in the right upper and lower lobes, while the reference report mentions it in the left lower lobe. The candidate report also misses the finding of new focal airspace opacities in the right lung apex and right lung base. The candidate report also misidentifies the location of the left retrocardiac opacity, which is not mentioned in the reference report. \n\n[Clinically Significant Errors]:\n(a) False report of a finding in the candidate: 2. Large right hilar lung mass; Radiation fibrosis.\n(b) Missing a finding present in the reference: 1. New focal airspace opacities in the right lung apex and right lung base.\n(c) Misidentification of a finding's anatomic location/position: 2. Pneumonia in the right upper and lower lobes; Left retrocardiac opacity.\n(d) Misassessment of the severity of a finding: 0.\n(e) Mentioning a comparison that isn't in the reference: 0.\n(f) Omitting a comparison detailing a change from a prior study: 0.\n\n[Clinically Insignificant Errors]:\n(a) False report of a finding in the candidate: 0.\n(b) Missing a finding present in the reference: 0.\n(c) Misidentification of a finding's anatomic location/position: 0.\n(d) Misassessment of the severity of a finding: 0.\n(e) Mentioning a comparison that isn't in the reference: 0.\n(f) Omitting a comparison detailing a change from a prior study: 0.\n\n[Matched Findings]:\n1. Small left effusion.",
+    "\nThe candidate report has several discrepancies when compared to the reference report. The candidate report incorrectly identifies the location of the opacification, stating it is at the right base instead of the left. It also fails to mention the worsened lung volumes and the substantial volume loss in the lower lobes and pleural effusion. Furthermore, the candidate report incorrectly states that the opacification is unchanged, which contradicts the reference report's finding of worsened lung volumes.\n\n[Clinically Significant Errors]:\n(a) False report of a finding in the candidate: 0.\n(b) Missing a finding present in the reference: 2. Worsened lung volumes; Substantial volume loss in the lower lobes and pleural effusion.\n(c) Misidentification of a finding's anatomic location/position: 1. Opacification at the right base instead of the left.\n(d) Misassessment of the severity of a finding: 1. Incorrectly stated that the opacification is unchanged.\n(e) Mentioning a comparison that isn't in the reference: 0.\n(f) Omitting a comparison detailing a change from a prior study: 0.\n\n[Clinically Insignificant Errors]:\n(a) False report of a finding in the candidate: 0.\n(b) Missing a finding present in the reference: 0.\n(c) Misidentification of a finding's anatomic location/position: 0.\n(d) Misassessment of the severity of a finding: 0.\n(e) Mentioning a comparison that isn't in the reference: 0.\n(f) Omitting a comparison detailing a change from a prior study: 0.\n\n[Matched Findings]:\n2. The monitoring and support devices are unchanged; The left lung remains clear.",
+    "\nThe candidate report mentions a 10cm opacity in the right lower lobe, which is not mentioned in the reference report. This is a clinically significant error as it falsely reports a finding that is not present in the reference report. The candidate report correctly mentions that there is no evidence of new acute pneumonia, which matches the reference report's finding of no evidence of new acute infiltrates.\n\n[Clinically Significant Errors]:\n(a) False report of a finding in the candidate: 1. 10cm opacity in the right lower lobe.\n(b) Missing a finding present in the reference: 0.\n(c) Misidentification of a finding's anatomic location/position: 0.\n(d) Misassessment of the severity of a finding: 0.\n(e) Mentioning a comparison that isn't in the reference: 0.\n(f) Omitting a comparison detailing a change from a prior study: 0.\n\n[Clinically Insignificant Errors]:\n(a) False report of a finding in the candidate: 0.\n(b) Missing a finding present in the reference: 0.\n(c) Misidentification of a finding's anatomic location/position: 0.\n(d) Misassessment of the severity of a finding: 0.\n(e) Mentioning a comparison that isn't in the reference: 0.\n(f) Omitting a comparison detailing a change from a prior study: 0.\n\n[Matched Findings]:\n1. No evidence of new acute pneumonia.",
+    "\nThe candidate report has several significant discrepancies when compared to the reference report. The candidate report incorrectly identifies the location of the lung abnormality, stating it is in the lingula instead of the right upper lobe. It also incorrectly describes the abnormality as a 3-cm mass, whereas the reference report describes it as a nodular opacity. The candidate report also incorrectly attributes the growth of the abnormality to round atelectasis, whereas the reference report attributes it to the overlap of the right scapula. \n\n[Clinically Significant Errors]:\n(a) False report of a finding in the candidate: 1. The candidate report falsely attributes the growth of the lung abnormality to round atelectasis.\n(b) Missing a finding present in the reference: 0.\n(c) Misidentification of a finding's anatomic location/position: 1. The candidate report incorrectly identifies the location of the lung abnormality as the lingula instead of the right upper lobe.\n(d) Misassessment of the severity of a finding: 1. The candidate report incorrectly describes the lung abnormality as a 3-cm mass, whereas the reference report describes it as a nodular opacity.\n(e) Mentioning a comparison that isn't in the reference: 0.\n(f) Omitting a comparison detailing a change from a prior study: 0.\n\n[Clinically Insignificant Errors]:\n(a) False report of a finding in the candidate: 0.\n(b) Missing a finding present in the reference: 0.\n(c) Misidentification of a finding's anatomic location/position: 0.\n(d) Misassessment of the severity of a finding: 0.\n(e) Mentioning a comparison that isn't in the reference: 0.\n(f) Omitting a comparison detailing a change from a prior study: 0.\n\n[Matched Findings]:\n1. Both reports recommend further evaluation with a chest CT to better characterize the lung abnormality and exclude the possibility of a slowly growing lung adenocarcinoma.",
+]
 
-    # Get results
-    mean, std, green_score_list, summary, result_df = green_scorer(refs, hyps)
+expected_mean = 0.25
+expected_std = 0.16666666666666669
 
-    # Basic assertions
-    assert isinstance(mean, (int, float)), "Mean should be a number"
-    assert isinstance(std, (int, float)), "Std should be a number"
-    assert isinstance(green_score_list, list), "Green score list should be a list"
-    assert len(green_score_list) == len(refs), "Green score list length should match input length"
-    assert result_df.shape[0] == len(refs), "Result dataframe rows should match input length"
+mean, std, green_score_list, summary, result_df = green_scorer(refs, hyps)
 
-    # Check value ranges
-    assert 0 <= mean <= 1, "Mean should be between 0 and 1"
-    assert std >= 0, "Std should be non-negative"
+# Test cases
+def test_green_score_responses():
 
-    for score in green_score_list:
-        if score is not None:  # GREEN score can be None in some cases
-            assert 0 <= score <= 1, f"Green score should be between 0 and 1, got {score}"
+    for i in range(len(result_df)):
+        actual = (
+            result_df["green_analysis"][i]
+            .strip()
+            .replace("</s>", "")
+            .replace(":\n", "")
+        )
+        expected = (
+            expected_green_score_list[i].strip().replace("</s>", "").replace(":\n", "")
+        )
+
+        # Assert that the actual response matches the expected response
+        assert (
+            actual == expected
+        ), f"Mismatch at index {i}:\n{get_diff(expected, actual)}"
+
+
+def test_green_score_values():
+    for i in range(len(result_df)):
+        actual_score = result_df["green_score"][i]
+        expected_score = green_scorer.compute_green(
+            response=expected_green_score_list[i]
+        )
+        assert math.isclose(
+            actual_score, expected_score, rel_tol=epsilon
+        ), f"Mismatch in scores at index {i}: Actual {actual_score}, Expected {expected_score}"
+
+def test_green_score_std():
+    assert math.isclose(std, expected_std, rel_tol=epsilon), f"Mismatch in std: Actual {std}, Expected {expected_std}"
+
+def test_green_score_mean():
+    assert math.isclose(mean, expected_mean, rel_tol=epsilon), f"Mismatch in mean: Actual {mean}, Expected {expected_mean}"
+
+def get_diff(expected, actual):
+    diff = difflib.unified_diff(expected.splitlines(), actual.splitlines(), lineterm="")
+    return "\n".join(diff)
