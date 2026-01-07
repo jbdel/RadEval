@@ -170,7 +170,7 @@ git clone https://github.com/jbdel/RadEval.git
 cd RadEval
 
 # Create and activate a conda environment
-conda create -n RadEval python=3.10 -y
+conda create -n RadEval python=3.11 -y
 conda activate RadEval
 
 # Install in development (editable) mode

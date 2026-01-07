@@ -25,7 +25,7 @@ def test_do_details():
                       do_temporal=True,
                       do_ratescore=True,
                       do_radcliq=True,
-                      do_radeval_bertsore=True,
+                      do_radeval_bertscore=True,
                       do_details=True)
     
     # Run the evaluation
@@ -33,7 +33,7 @@ def test_do_details():
     
     # 1. Check that all expected evaluation metric keys are present
     expected_keys = {'radgraph', 'bleu', 'bertscore', 'rouge', 'srr_bert', 
-                    'chexbert', 'ratescore', 'radcliq-v1', 'temporal_f1', 'radeval_bertsore'}
+                    'chexbert', 'ratescore', 'radcliq-v1', 'temporal_f1', 'radeval_bertscore'}
     actual_keys = set(results.keys())
     assert expected_keys == actual_keys, f"Key mismatch. Expected: {expected_keys}, Actual: {actual_keys}"
     

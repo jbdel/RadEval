@@ -6,6 +6,7 @@
 import re
 import nltk
 import random
+import numpy as np
 from typing import List, Dict, Tuple, Callable, Optional
 from collections import defaultdict
 
@@ -339,3 +340,81 @@ def compare_systems(systems: Dict[str, List[str]],
         print_significance_results(scores, signatures, baseline_name, significance_level)
     
     return signatures, scores
+
+def multilabel_prf_per_sample(y_true, y_pred, eps=1e-8, aggregate="mean", include="union"):
+    """
+    Per-sample aggregated precision/recall/f1 for multi-label classification,
+    by aggregating per-label scores within each sample.
+
+    Args:
+        y_true, y_pred: array-like, shape (N, K), values {0,1}
+        aggregate:
+            - "mean":   average over selected labels
+            - "weighted": weight by per-sample label support (y_true) over selected labels
+        include:
+            - "union":  labels where (y_true==1) OR (y_pred==1) for that sample
+            - "true":   labels where (y_true==1) for that sample only
+
+    Returns:
+        sample_precision: np.ndarray shape (N,)
+        sample_recall:    np.ndarray shape (N,)
+        sample_f1:        np.ndarray shape (N,)
+    """
+    y_true = np.asarray(y_true, dtype=int)
+    y_pred = np.asarray(y_pred, dtype=int)
+
+    # per-sample, per-label confusion terms: each is (N, K) with 0/1 values
+    tp = ((y_true == 1) & (y_pred == 1)).astype(int)
+    fp = ((y_true == 0) & (y_pred == 1)).astype(int)
+    fn = ((y_true == 1) & (y_pred == 0)).astype(int)
+
+    # per-sample, per-label P/R/F1 (still (N, K))
+    p = tp / (tp + fp + eps)
+    r = tp / (tp + fn + eps)
+    f1 = (2 * tp) / (2 * tp + fp + fn + eps)
+
+    # choose which labels to include in each sample’s aggregation
+    if include == "true":
+        mask = (y_true == 1)
+    elif include == "union":
+        mask = (y_true == 1) | (y_pred == 1)
+    else:
+        raise ValueError("include must be 'union' or 'true'")
+
+    # aggregate per sample
+    sample_precision = np.zeros(y_true.shape[0], dtype=float)
+    sample_recall = np.zeros(y_true.shape[0], dtype=float)
+    sample_f1 = np.zeros(y_true.shape[0], dtype=float)
+
+    for i in range(y_true.shape[0]):
+        m = mask[i]
+        if not np.any(m):
+            # no relevant labels in this sample:
+            # you can choose 1.0 or 0.0; 1.0 avoids penalising empty-empty cases.
+            sample_precision[i] = 1.0
+            sample_recall[i] = 1.0
+            sample_f1[i] = 1.0
+            continue
+
+        if aggregate == "mean":
+            sample_precision[i] = float(p[i][m].mean())
+            sample_recall[i] = float(r[i][m].mean())
+            sample_f1[i] = float(f1[i][m].mean())
+
+        elif aggregate == "weighted":
+            # weight by true-label support within the sample (gives more weight to labels present in y_true)
+            w = y_true[i][m].astype(float)
+            if w.sum() == 0:
+                # if include="union" and this sample has only predicted labels (no true labels),
+                # fallback to mean
+                sample_precision[i] = float(p[i][m].mean())
+                sample_recall[i] = float(r[i][m].mean())
+                sample_f1[i] = float(f1[i][m].mean())
+            else:
+                sample_precision[i] = float((p[i][m] * w).sum() / (w.sum() + eps))
+                sample_recall[i] = float((r[i][m] * w).sum() / (w.sum() + eps))
+                sample_f1[i] = float((f1[i][m] * w).sum() / (w.sum() + eps))
+        else:
+            raise ValueError("aggregate must be 'mean' or 'weighted'")
+
+    return sample_precision, sample_recall, sample_f1
