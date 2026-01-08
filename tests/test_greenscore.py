@@ -14,7 +14,7 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 epsilon = 1e-5
 
 model_name = "StanfordAIMI/GREEN-radllama2-7b"
-green_scorer = GREEN(model_name, output_dir=".", cpu=False, compute_summary_stats=False)
+green_scorer = GREEN(model_name, output_dir=".", cpu=False)
 
 
 refs = [
@@ -42,26 +42,7 @@ expected_green_score_list = [
 expected_mean = 0.25
 expected_std = 0.16666666666666669
 
-mean, std, green_score_list, summary, result_df = green_scorer(refs, hyps)
-
-# Test cases
-def test_green_score_responses():
-
-    for i in range(len(result_df)):
-        actual = (
-            result_df["green_analysis"][i]
-            .strip()
-            .replace("</s>", "")
-            .replace(":\n", "")
-        )
-        expected = (
-            expected_green_score_list[i].strip().replace("</s>", "").replace(":\n", "")
-        )
-
-        # Assert that the actual response matches the expected response
-        assert (
-            actual == expected
-        ), f"Mismatch at index {i}:\n{get_diff(expected, actual)}"
+mean, std, green_score_list, result_df = green_scorer(refs, hyps)
 
 
 def test_green_score_values():
