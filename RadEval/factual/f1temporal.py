@@ -162,6 +162,7 @@ def F1Temporal(predictions: List[str], references: List[Union[str, List[str]]], 
 
     return {
         "f1": average_f1,
+        "sample_scores": tem_scores,
         "prediction_entities": prediction_entities,
         "reference_entities": reference_entities
     }

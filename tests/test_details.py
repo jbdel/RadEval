@@ -44,7 +44,7 @@ def test_do_details():
     assert 'radgraph_simple' in radgraph_result
     assert 'radgraph_partial' in radgraph_result
     assert 'radgraph_complete' in radgraph_result
-    assert 'reward_list' in radgraph_result
+    assert 'sample_scores' in radgraph_result
     
     # Check detailed annotation fields (core functionality of do_details=True)
     assert 'hypothesis_annotation_lists' in radgraph_result, "Missing hypothesis_annotation_lists"
@@ -78,7 +78,14 @@ def test_do_details():
     bleu_result = results['bleu']
     for key in ['bleu_1', 'bleu_2', 'bleu_3', 'bleu_4']:
         assert key in bleu_result, f"BLEU missing {key}"
-        assert isinstance(bleu_result[key], (int, float)), f"BLEU {key} is not a numeric type"
+        val = bleu_result[key]
+        assert isinstance(val, dict), f"BLEU {key} should be a dict"
+        assert "mean_score" in val, f"BLEU {key} missing mean_score"
+        assert "sample_scores" in val, f"BLEU {key} missing sample_scores"
+
+        assert isinstance(val["mean_score"], (int, float)), f"BLEU {key}.mean_score is not numeric"
+        assert isinstance(val["sample_scores"], list), f"BLEU {key}.sample_scores is not a list"
+        assert all(isinstance(x, (int, float)) for x in val["sample_scores"]), f"BLEU {key}.sample_scores contains non-numeric"
     
     # BERTScore
     bertscore_result = results['bertscore']

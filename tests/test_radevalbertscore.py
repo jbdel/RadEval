@@ -10,7 +10,7 @@ def read_reports(filepath):
 refs = read_reports("tests/utterances/preds_chexpert_impression.txt")
 hyps = read_reports("tests/utterances/refs_chexpert_impression.txt")
 
-expected_score = 0.34624621272087097
+expected_score = 0.3462
 epsilon = 1e-5
 
 

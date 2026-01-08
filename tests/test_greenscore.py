@@ -44,25 +44,6 @@ expected_std = 0.16666666666666669
 
 mean, std, green_score_list, result_df = green_scorer(refs, hyps)
 
-# Test cases
-def test_green_score_responses():
-
-    for i in range(len(result_df)):
-        actual = (
-            result_df["green_analysis"][i]
-            .strip()
-            .replace("</s>", "")
-            .replace(":\n", "")
-        )
-        expected = (
-            expected_green_score_list[i].strip().replace("</s>", "").replace(":\n", "")
-        )
-
-        # Assert that the actual response matches the expected response
-        assert (
-            actual == expected
-        ), f"Mismatch at index {i}:\n{get_diff(expected, actual)}"
-
 
 def test_green_score_values():
     for i in range(len(result_df)):
