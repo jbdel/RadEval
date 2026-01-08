@@ -208,10 +208,10 @@ print(json.dumps(results, indent=2))
 
 ```json
 {
-  "radgraph_simple": 0.7222222222222222,
-  "radgraph_partial": 0.6111111111111112,
-  "radgraph_complete": 0.6111111111111112,
-  "bleu": 0.3605173113417773
+  "radgraph_simple": 0.7222,
+  "radgraph_partial": 0.6111,
+  "radgraph_complete": 0.6111,
+  "bleu": 0.3605
 }
 ```
 
