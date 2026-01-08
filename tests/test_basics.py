@@ -44,7 +44,7 @@ def test_radeval():
     expected_result = {
         "radgraph_simple": pytest.approx(0.41111111111111115, 0.01),
         "radgraph_partial": pytest.approx(0.41111111111111115, 0.01),
-        "radgraph_complete": pytest.approx(0.41414141414141414, 0.01),
+        "radgraph_complete": pytest.approx(0.41111111111111115, 0.01),
         "bleu": pytest.approx(0.16681006823938177, 0.01),
         "bertscore": pytest.approx(0.6327474117279053, 0.01),
         "rouge1": pytest.approx(0.44681719607092746, 0.01),

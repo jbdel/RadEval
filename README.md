@@ -208,10 +208,10 @@ print(json.dumps(results, indent=2))
 
 ```json
 {
-  "radgraph_simple": 0.5,
-  "radgraph_partial": 0.5,
-  "radgraph_complete": 0.5,
-  "bleu": 0.5852363407461811
+  "radgraph_simple": 0.7222222222222222,
+  "radgraph_partial": 0.6111111111111112,
+  "radgraph_complete": 0.6111111111111112,
+  "bleu": 0.3605173113417773
 }
 ```
 
@@ -250,53 +250,71 @@ print(json.dumps(results, indent=2))
 {
   "rouge": {
     "rouge1": {
-      "mean_score": 0.04,
+      "mean_score": 0.7727272727272727,
       "sample_scores": [
-        0.08,
-        0.0
+        0.5454545454545454,
+        1.0
       ]
     },
     "rouge2": {
-      "mean_score": 0.0,
+      "mean_score": 0.65,
       "sample_scores": [
-        0.0,
-        0.0
+        0.3,
+        1.0
       ]
     },
     "rougeL": {
-      "mean_score": 0.04,
+      "mean_score": 0.7727272727272727,
       "sample_scores": [
-        0.08,
-        0.0
+        0.5454545454545454,
+        1.0
       ]
     }
   },
   "srr_bert": {
-    "srr_bert_weighted_f1": 0.16666666666666666,
-    "srr_bert_weighted_precision": 0.125,
-    "srr_bert_weighted_recall": 0.25,
+    "srr_bert_weighted_f1": {
+      "weighted_mean_score": 1.0,
+      "sample_scores": [
+        0.999999995,
+        0.999999995
+      ]
+    },
+    "srr_bert_weighted_precision": {
+      "weighted_mean_score": 1.0,
+      "sample_scores": [
+        0.9999999900000002,
+        0.9999999900000002
+      ]
+    },
+    "srr_bert_weighted_recall": {
+      "weighted_mean_score": 1.0,
+      "sample_scores": [
+        0.9999999900000002,
+        0.9999999900000002
+      ]
+    },
     "label_scores": {
-      "Edema (Present)": {
-        "f1-score": 0.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "support": 1.0
-      },
       "Atelectasis (Present)": {
-        "f1-score": 0.0,
-        "precision": 0.0,
-        "recall": 0.0,
+        "f1-score": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
         "support": 1.0
       },
-      "Cardiomegaly (Uncertain)": {
-        "f1-score": 0.0,
-        "precision": 0.0,
-        "recall": 0.0,
+      "Simple pleural effusion (Present)": {
+        "f1-score": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "support": 1.0
+      },
+      "Cardiomegaly (Present)": {
+        "f1-score": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
         "support": 1.0
       },
       "No Finding": {
-        "f1-score": 0.6666666666666666,
-        "precision": 0.5,
+        "f1-score": 1.0,
+        "precision": 1.0,
         "recall": 1.0,
         "support": 1.0
       }
