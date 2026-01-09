@@ -8,7 +8,7 @@ from .nlg.rouge.rouge import Rouge
 from .nlg.bleu.bleu import Bleu
 from .nlg.bertscore.bertscore import BertScore
 from radgraph import F1RadGraph
-from .factual.green_score import GREEN
+from .factual.green_score import GREEN, MammoGREEN
 from .factual.RaTEScore import RaTEScore
 from .factual.f1temporal import F1Temporal
 from torch import nn
@@ -36,6 +36,9 @@ class RadEval():
     def __init__(self,
                  do_radgraph=False,
                  do_green=False,
+                 do_mammo_green=False,
+                 mammo_green_model="gpt-4o-mini",
+                 mammo_green_api_key=None,
                  do_bleu=False,
                  do_rouge=False,
                  do_bertscore=False,
@@ -51,6 +54,9 @@ class RadEval():
 
         self.do_radgraph = do_radgraph
         self.do_green = do_green
+        self.do_mammo_green = do_mammo_green
+        self.mammo_green_model = mammo_green_model
+        self.mammo_green_api_key = mammo_green_api_key
         self.do_bleu = do_bleu
         self.do_rouge = do_rouge
         self.do_bertscore = do_bertscore
@@ -75,8 +81,15 @@ class RadEval():
                                               num_layers=5)
         if self.do_green:
             # Initialize green scorer here if needed
-            self.green_scorer = GREEN("StanfordAIMI/GREEN-radllama2-7b", 
+            self.green_scorer = GREEN("StanfordAIMI/GREEN-radllama2-7b",
                                       output_dir=".")
+
+        if self.do_mammo_green:
+            self.mammo_green_scorer = MammoGREEN(
+                model_name=self.mammo_green_model,
+                api_key=self.mammo_green_api_key,
+                output_dir="."
+            )
 
         if self.do_rouge:
             self.rouge_scorers = {
@@ -117,6 +130,8 @@ class RadEval():
             self.metric_keys.append("bleu")
         if self.do_green:
             self.metric_keys.append("green")
+        if self.do_mammo_green:
+            self.metric_keys.append("mammo_green")
         if self.do_bertscore:
             self.metric_keys.append("bertscore")
         if self.do_rouge:
@@ -220,6 +235,23 @@ class RadEval():
                 }
             else:
                 scores["green"] = round(mean, 4)
+
+        if self.do_mammo_green:
+            # Use the MammoGREEN scorer (OpenAI-based, mammography-specific)
+            mean, std, sample_scores, results_df = self.mammo_green_scorer(refs, hyps)
+            if self.do_details:
+                scores["mammo_green"] = {
+                    "mean": mean,
+                    "std": std,
+                    "sample_scores": sample_scores,
+                    "error_counts": results_df[[
+                        "matched_findings", "false_finding", "missing_finding",
+                        "mischaracterization", "wrong_location_laterality",
+                        "incorrect_birads", "insignificant_errors"
+                    ]].to_dict(orient="records"),
+                }
+            else:
+                scores["mammo_green"] = round(mean, 4)
 
         if self.do_rouge:
             if self.do_details:
