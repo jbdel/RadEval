@@ -29,7 +29,7 @@ hyps = [
     "Bilateral mammography demonstrates heterogeneously dense breast tissue. No suspicious masses or calcifications are identified. BI-RADS 1.",
 ]
 
-# Mock response data for unit tests
+# Mock response data for unit tests (includes incorrect_breast_density)
 mock_judge_responses = [
     {
         "matched_findings": 1,
@@ -39,6 +39,7 @@ mock_judge_responses = [
             "mischaracterization": 0,
             "wrong_location_laterality": 0,
             "incorrect_birads": 1,
+            "incorrect_breast_density": 0,
         },
         "insignificant_errors": 0,
     },
@@ -50,6 +51,7 @@ mock_judge_responses = [
             "mischaracterization": 1,
             "wrong_location_laterality": 0,
             "incorrect_birads": 1,
+            "incorrect_breast_density": 0,
         },
         "insignificant_errors": 0,
     },
@@ -61,6 +63,7 @@ mock_judge_responses = [
             "mischaracterization": 0,
             "wrong_location_laterality": 0,
             "incorrect_birads": 0,
+            "incorrect_breast_density": 0,
         },
         "insignificant_errors": 0,
     },
@@ -112,7 +115,7 @@ class TestMammoGreenUnit:
         old_key = os.environ.pop("OPENAI_API_KEY", None)
         try:
             with pytest.raises(EnvironmentError):
-                MammoGREEN(model_name="gpt-4o-mini")
+                MammoGREEN(model_name="gpt-4o")
         finally:
             if old_key:
                 os.environ["OPENAI_API_KEY"] = old_key
@@ -123,33 +126,36 @@ class TestMammoGreenUnit:
         from RadEval.factual.green_score.mammo_green import GEMINI_AVAILABLE
 
         # Remove env var if present
-        old_key = os.environ.pop("GOOGLE_API_KEY", None)
+        old_gemini_key = os.environ.pop("GEMINI_API_KEY", None)
+        old_google_key = os.environ.pop("GOOGLE_API_KEY", None)
         try:
             if GEMINI_AVAILABLE:
                 with pytest.raises(EnvironmentError):
                     MammoGREEN(model_name="gemini-2.5-flash")
             else:
-                # If google-generativeai is not installed, ImportError is raised
+                # If google-genai is not installed, ImportError is raised
                 with pytest.raises(ImportError):
                     MammoGREEN(model_name="gemini-2.5-flash")
         finally:
-            if old_key:
-                os.environ["GOOGLE_API_KEY"] = old_key
+            if old_gemini_key:
+                os.environ["GEMINI_API_KEY"] = old_gemini_key
+            if old_google_key:
+                os.environ["GOOGLE_API_KEY"] = old_google_key
 
     def test_provider_detection(self):
         """Test that provider is correctly detected based on model name."""
         from RadEval.factual.green_score.mammo_green import _detect_provider
 
         # OpenAI models
+        assert _detect_provider("gpt-4o") == "openai"
         assert _detect_provider("gpt-4o-mini") == "openai"
-        assert _detect_provider("gpt-4") == "openai"
-        assert _detect_provider("gpt-3.5-turbo") == "openai"
+        assert _detect_provider("gpt-5.2-2025-12-11") == "openai"
+        assert _detect_provider("gpt-5-mini-2025-08-07") == "openai"
         assert _detect_provider("o1-preview") == "openai"
 
-        # Gemini models
+        # Gemini models (2.5+ only)
         assert _detect_provider("gemini-2.5-flash") == "gemini"
         assert _detect_provider("gemini-2.5-pro") == "gemini"
-        assert _detect_provider("gemini-2.0-flash") == "gemini"
         assert _detect_provider("Gemini-2.5-Flash") == "gemini"  # Case insensitive
 
     def test_explicit_provider_parameter(self, mock_openai_client):
@@ -165,15 +171,15 @@ class TestMammoGreenUnit:
         from RadEval.factual.green_score import MammoGREEN
 
         with pytest.raises(ValueError, match="Unsupported provider"):
-            MammoGREEN(model_name="gpt-4o-mini", provider="invalid", api_key="test-key")
+            MammoGREEN(model_name="gpt-4o", provider="invalid", api_key="test-key")
 
     def test_initialization_with_api_key(self, mock_openai_client):
         """Test that initialization succeeds with API key."""
         from RadEval.factual.green_score import MammoGREEN
 
-        scorer = MammoGREEN(model_name="gpt-4o-mini", api_key="test-key")
+        scorer = MammoGREEN(model_name="gpt-4o", api_key="test-key")
         assert scorer is not None
-        assert scorer.model_name == "gpt-4o-mini"
+        assert scorer.model_name == "gpt-4o"
 
     def test_score_computation(self):
         """Test the mammo_green_score function."""
@@ -187,6 +193,7 @@ class TestMammoGreenUnit:
             "mischaracterization": 0,
             "wrong_location_laterality": 0,
             "incorrect_birads": 1,
+            "incorrect_breast_density": 0,
         }
         score = mammo_green_score(matched, errors)
         assert math.isclose(score, 1/3, rel_tol=epsilon)
@@ -215,11 +222,16 @@ class TestMammoGreenUnit:
         markdown = '```json\n{"matched_findings": 1}\n```'
         assert _extract_json_str(markdown) == '{"matched_findings": 1}'
 
+        # JSON with trailing comma (common LLM error)
+        trailing_comma = '{"matched_findings": 1,}'
+        result = _extract_json_str(trailing_comma)
+        assert result == '{"matched_findings": 1}'
+
     def test_output_schema_validation(self):
         """Test the MammoGreenOutput schema validation."""
         from RadEval.factual.green_score.mammo_green import MammoGreenOutput
 
-        # Valid output
+        # Valid output with all 6 error types
         valid_data = {
             "matched_findings": 2,
             "significant_errors": {
@@ -228,6 +240,7 @@ class TestMammoGreenUnit:
                 "mischaracterization": 0,
                 "wrong_location_laterality": 0,
                 "incorrect_birads": 1,
+                "incorrect_breast_density": 0,
             },
             "insignificant_errors": 0,
         }
@@ -259,7 +272,7 @@ class TestMammoGreenUnit:
             for i in range(len(refs))
         ]
 
-        scorer = MammoGREEN(model_name="gpt-4o-mini", api_key="test-key")
+        scorer = MammoGREEN(model_name="gpt-4o", api_key="test-key")
         mean, std, scores, results_df = scorer(refs, hyps)
 
         # Check return types
@@ -272,11 +285,12 @@ class TestMammoGreenUnit:
         assert len(scores) == len(refs)
         assert len(results_df) == len(refs)
 
-        # Check DataFrame columns
+        # Check DataFrame columns (includes incorrect_breast_density)
         expected_columns = [
             "reference", "prediction", "green_score", "matched_findings",
             "false_finding", "missing_finding", "mischaracterization",
-            "wrong_location_laterality", "incorrect_birads", "insignificant_errors"
+            "wrong_location_laterality", "incorrect_birads", "incorrect_breast_density",
+            "insignificant_errors"
         ]
         for col in expected_columns:
             assert col in results_df.columns, f"Missing column: {col}"
@@ -292,7 +306,7 @@ class TestMammoGreenUnit:
             for i in range(len(refs))
         ]
 
-        scorer = MammoGREEN(model_name="gpt-4o-mini", api_key="test-key")
+        scorer = MammoGREEN(model_name="gpt-4o", api_key="test-key")
         result = scorer.score(refs, hyps)
 
         # Check return type and keys
@@ -307,6 +321,9 @@ class TestMammoGreenUnit:
         assert "mean_green" in summary
         assert "total_significant_errors_by_type" in summary
 
+        # Verify incorrect_breast_density is tracked in summary
+        assert "incorrect_breast_density" in summary["total_significant_errors_by_type"]
+
     def test_computed_scores(self, mock_openai_client):
         """Test that computed scores match expected values."""
         import json
@@ -318,7 +335,7 @@ class TestMammoGreenUnit:
             for i in range(len(refs))
         ]
 
-        scorer = MammoGREEN(model_name="gpt-4o-mini", api_key="test-key")
+        scorer = MammoGREEN(model_name="gpt-4o", api_key="test-key")
         mean, std, scores, results_df = scorer(refs, hyps)
 
         # Check individual scores
@@ -334,10 +351,24 @@ class TestMammoGreenUnit:
         """Test that mismatched refs/hyps lengths raise error."""
         from RadEval.factual.green_score import MammoGREEN
 
-        scorer = MammoGREEN(model_name="gpt-4o-mini", api_key="test-key")
+        scorer = MammoGREEN(model_name="gpt-4o", api_key="test-key")
 
         with pytest.raises(ValueError):
             scorer(refs[:2], hyps)  # Different lengths
+
+    def test_significant_error_keys_constant(self):
+        """Test that SIGNIFICANT_ERROR_KEYS contains all 6 error types."""
+        from RadEval.factual.green_score.mammo_green import SIGNIFICANT_ERROR_KEYS
+
+        expected_keys = {
+            "false_finding",
+            "missing_finding",
+            "mischaracterization",
+            "wrong_location_laterality",
+            "incorrect_birads",
+            "incorrect_breast_density",
+        }
+        assert set(SIGNIFICANT_ERROR_KEYS) == expected_keys
 
 
 class TestMammoGreenRadEvalIntegration:
@@ -380,7 +411,7 @@ class TestMammoGreenIntegration:
         test_hyps = hyps
 
         scorer = MammoGREEN(
-            model_name="gpt-4o-mini",
+            model_name="gpt-5.2-2025-12-11", #"gpt-4o",
             api_key=api_key,
             temperature=0.0,
         )
@@ -399,6 +430,7 @@ class TestMammoGreenIntegration:
             assert results_df["matched_findings"].iloc[i] >= 0
             assert results_df["false_finding"].iloc[i] >= 0
             assert results_df["missing_finding"].iloc[i] >= 0
+            assert results_df["incorrect_breast_density"].iloc[i] >= 0
 
         print(f"\nReal API test results:")
         print(f"  Mean score: {mean:.4f}")
@@ -410,6 +442,7 @@ class TestMammoGreenIntegration:
             print(f"      Matched findings: {results_df['matched_findings'].iloc[i]}")
             print(f"      Missing findings: {results_df['missing_finding'].iloc[i]}")
             print(f"      Incorrect BI-RADS: {results_df['incorrect_birads'].iloc[i]}")
+            print(f"      Incorrect breast density: {results_df['incorrect_breast_density'].iloc[i]}")
 
     def test_radeval_with_mammo_green(self, api_key):
         """Test MammoGREEN through RadEval interface."""
@@ -422,7 +455,7 @@ class TestMammoGreenIntegration:
         evaluator = RadEval(
             do_mammo_green=True,
             mammo_green_api_key=api_key,
-            mammo_green_model="gpt-4o-mini",
+            mammo_green_model="gpt-4o",
         )
 
         results = evaluator(refs=test_refs, hyps=test_hyps)
@@ -439,9 +472,9 @@ class TestMammoGreenIntegration:
         """Test with real Gemini API call."""
         from RadEval.factual.green_score import MammoGREEN
 
-        key = os.environ.get("GOOGLE_API_KEY")
+        key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")
         if not key:
-            pytest.skip("GOOGLE_API_KEY not set")
+            pytest.skip("GOOGLE_API_KEY or GEMINI_API_KEY not set")
 
         # Use all samples
         test_refs = refs
@@ -468,6 +501,7 @@ class TestMammoGreenIntegration:
             assert results_df["matched_findings"].iloc[i] >= 0
             assert results_df["false_finding"].iloc[i] >= 0
             assert results_df["missing_finding"].iloc[i] >= 0
+            assert results_df["incorrect_breast_density"].iloc[i] >= 0
 
         print(f"\nGemini API test results:")
         print(f"  Mean score: {mean:.4f}")
@@ -479,6 +513,7 @@ class TestMammoGreenIntegration:
             print(f"      Matched findings: {results_df['matched_findings'].iloc[i]}")
             print(f"      Missing findings: {results_df['missing_finding'].iloc[i]}")
             print(f"      Incorrect BI-RADS: {results_df['incorrect_birads'].iloc[i]}")
+            print(f"      Incorrect breast density: {results_df['incorrect_breast_density'].iloc[i]}")
 
 
 if __name__ == "__main__":

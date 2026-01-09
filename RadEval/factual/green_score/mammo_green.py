@@ -6,18 +6,19 @@ Adapted from Mammo-FM style implementation for RadEval.
 
 Supports OpenAI and Google Gemini models as judges.
 
-Implements 5 clinically significant error categories for mammography:
+Implements 6 clinically significant error categories for mammography:
   (a) false_finding
   (b) missing_finding
   (c) mischaracterization
   (d) wrong_location_laterality
   (e) incorrect_birads
+  (f) incorrect_breast_density
 
 GREEN score:
     matched_findings / (matched_findings + sum(significant_errors))
 
 Dependencies:
-  pip install openai google-generativeai pydantic tenacity
+  pip install openai google-genai pydantic tenacity
 
 Env:
   export OPENAI_API_KEY="..."  # for OpenAI models
@@ -30,14 +31,14 @@ Usage:
   hyps = [...]
 
   # OpenAI models (auto-detected from model name)
-  mg = MammoGREEN(model_name="gpt-4o-mini")
+  mg = MammoGREEN(model_name="gpt-4o")
 
   # Gemini models (auto-detected from model name)
-  mg = MammoGREEN(model_name="gemini-1.5-flash")
+  mg = MammoGREEN(model_name="gemini-2.5-flash")
 
-  # Explicit provider specification (recommended for clarity)
-  mg = MammoGREEN(model_name="gpt-4o-mini", provider="openai")
-  mg = MammoGREEN(model_name="gemini-1.5-flash", provider="gemini")
+  # Explicit provider specification
+  mg = MammoGREEN(model_name="gpt-4o", provider="openai")
+  mg = MammoGREEN(model_name="gemini-2.5-flash", provider="gemini")
 
   mean, std, green_scores, results_df = mg(refs, hyps)
 """
@@ -46,6 +47,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import time
 import statistics
 from dataclasses import dataclass
@@ -58,21 +60,36 @@ from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_excep
 
 from openai import OpenAI
 
-# Optional Gemini support
+# Optional Gemini support (new SDK)
 try:
-    import google.generativeai as genai
+    from google import genai
+    from google.genai import types
     GEMINI_AVAILABLE = True
 except ImportError:
     genai = None
+    types = None
     GEMINI_AVAILABLE = False
+
+
+# -----------------------------
+# Constants
+# -----------------------------
+
+SUPPORTED_PROVIDERS = ("openai", "gemini")
+
+SIGNIFICANT_ERROR_KEYS = (
+    "false_finding",
+    "missing_finding",
+    "mischaracterization",
+    "wrong_location_laterality",
+    "incorrect_birads",
+    "incorrect_breast_density",
+)
 
 
 # -----------------------------
 # Provider Detection
 # -----------------------------
-
-SUPPORTED_PROVIDERS = ("openai", "gemini")
-
 
 def _detect_provider(model_name: str) -> str:
     """
@@ -83,7 +100,6 @@ def _detect_provider(model_name: str) -> str:
     model_lower = model_name.lower()
     if model_lower.startswith("gemini"):
         return "gemini"
-    # Default to OpenAI for gpt-*, o1-*, etc.
     return "openai"
 
 
@@ -92,18 +108,14 @@ def _detect_provider(model_name: str) -> str:
 # -----------------------------
 
 class MammoGreenOutput(BaseModel):
+    """Schema for validated MammoGREEN judge output."""
     matched_findings: int = Field(ge=0)
     significant_errors: Dict[str, int]
     insignificant_errors: int = Field(ge=0)
 
     def validate_keys(self) -> None:
-        required = {
-            "false_finding",
-            "missing_finding",
-            "mischaracterization",
-            "wrong_location_laterality",
-            "incorrect_birads",
-        }
+        """Validate that significant_errors contains exactly the required keys."""
+        required = set(SIGNIFICANT_ERROR_KEYS)
         if set(self.significant_errors.keys()) != required:
             raise ValueError(
                 f"significant_errors keys must be exactly: {sorted(required)}; "
@@ -115,7 +127,7 @@ class MammoGreenOutput(BaseModel):
 
 
 # -----------------------------
-# Prompt (Mammo-FM-style, strict JSON)
+# Prompt (Mammo-FM-style with BIRADS and benign handling)
 # -----------------------------
 
 MAMMO_GREEN_SYSTEM_PROMPT = """You are a breast imaging report evaluator for screening/diagnostic mammography.
@@ -126,13 +138,28 @@ Definitions:
   A match requires agreement on the finding and its laterality/location and major characterization.
   Paraphrases count as matches.
 
+Important benign-handling rules:
+- Statements indicating absence or normality (e.g., "no suspicious findings",
+  "unremarkable", "within normal limits", "benign exam") should be treated as benign defaults.
+- Do NOT count benign/negative statements as false_finding or missing_finding
+  unless they directly contradict a positive abnormal finding explicitly stated
+  in the REFERENCE.
+- If both reports indicate absence of suspicious findings, this counts as a matched finding.
+
+
+
 Clinically significant errors (count each instance):
-- false_finding: GENERATED reports a finding not present in REFERENCE.
-- missing_finding: GENERATED omits a finding present in REFERENCE.
+- false_finding: GENERATED reports a positive abnormal finding not present in REFERENCE.
+- missing_finding: GENERATED omits a positive abnormal or clinically actionable finding
+  present in REFERENCE. Omission of benign/incidental findings (BI-RADS 2) should NOT be
+  counted as missing_finding if the BI-RADS assessment remains correct.
 - mischaracterization: GENERATED describes a correct finding but with incorrect characterization
   (e.g., size, margins, stability, suspiciousness, calcification morphology/distribution).
 - wrong_location_laterality: GENERATED describes correct finding but wrong laterality or location.
 - incorrect_birads: GENERATED BI-RADS category/assessment differs from REFERENCE.
+- incorrect_breast_density: GENERATED breast density assessment differs from REFERENCE
+  in a clinically meaningful way (minor wording differences or equivalent categories
+  should NOT be penalized).
 
 Clinically insignificant errors:
 - insignificant_errors: stylistic/wording issues with no clinical impact.
@@ -146,7 +173,8 @@ Return ONLY valid JSON matching exactly this schema (no markdown, no explanation
     "missing_finding": int,
     "mischaracterization": int,
     "wrong_location_laterality": int,
-    "incorrect_birads": int
+    "incorrect_birads": int,
+    "incorrect_breast_density": int
   },
   "insignificant_errors": int
 }
@@ -159,44 +187,87 @@ All counts must be non-negative integers.
 # -----------------------------
 
 def mammo_green_score(matched_findings: int, significant_errors: Dict[str, int]) -> float:
+    """
+    Compute the MammoGREEN score.
+
+    Score = matched_findings / (matched_findings + sum(significant_errors))
+
+    Returns 0.0 if denominator is zero.
+    """
     sig_sum = sum(int(v) for v in significant_errors.values())
     denom = matched_findings + sig_sum
     return float(matched_findings / denom) if denom > 0 else 0.0
 
 
 # -----------------------------
-# OpenAI judge call + parsing
+# Error Handling
 # -----------------------------
 
 class JudgeError(RuntimeError):
+    """Exception raised when judge call fails or returns invalid response."""
     pass
 
 
+# -----------------------------
+# JSON Extraction Utilities
+# -----------------------------
+
 def _extract_json_str(text: str) -> str:
-    """Best-effort extraction if the model accidentally wraps JSON in prose."""
+    """
+    Best-effort extraction of JSON from model response.
+
+    Handles markdown code blocks and surrounding prose.
+    """
     t = (text or "").strip()
-    if t.startswith("{") and t.endswith("}"):
-        return t
-    start = t.find("{")
-    end = t.rfind("}")
-    if start != -1 and end != -1 and end > start:
-        return t[start : end + 1]
+
+    # Handle markdown code blocks (```json ... ``` or ``` ... ```)
+    code_block_pattern = r'```(?:json)?\s*([\s\S]*?)\s*```'
+    match = re.search(code_block_pattern, t)
+    if match:
+        t = match.group(1).strip()
+    else:
+        # Handle incomplete code blocks (no closing ```)
+        incomplete_pattern = r'```(?:json)?\s*([\s\S]*)'
+        match = re.search(incomplete_pattern, t)
+        if match:
+            t = match.group(1).strip()
+
+    # Extract JSON object
+    if not (t.startswith("{") and t.endswith("}")):
+        start = t.find("{")
+        end = t.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            t = t[start : end + 1]
+
+    # Fix trailing commas before closing braces/brackets (common LLM JSON error)
+    t = re.sub(r',(\s*[}\]])', r'\1', t)
+
     return t
 
 
+# -----------------------------
+# Judge Configurations
+# -----------------------------
+
 @dataclass
 class OpenAIJudgeConfig:
-    model_name: str = "gpt-4o-mini"
+    """Configuration for OpenAI judge."""
+    model_name: str = "gpt-4o"
     temperature: float = 0.0
-    max_output_tokens: int = 300
+    max_output_tokens: int = 8192
 
 
 @dataclass
 class GeminiJudgeConfig:
-    model_name: str = "gemini-1.5-flash"
+    """Configuration for Gemini judge."""
+    model_name: str = "gemini-2.5-flash"
     temperature: float = 0.0
-    max_output_tokens: int = 300
+    max_output_tokens: int = 8192*2
 
+
+# -----------------------------
+# OpenAI Judge Implementation
+# -----------------------------
 
 @retry(
     reraise=True,
@@ -210,8 +281,8 @@ def _judge_one_openai(
     reference: str,
     hypothesis: str,
 ) -> Dict[str, Any]:
-    """Judge using OpenAI API."""
-    user_msg = f"REFERENCE_REPORT:\n{reference}\n\nGENERATED_REPORT:\n{hypothesis}\n"
+    """Judge a single reference/hypothesis pair using OpenAI API."""
+    user_msg = f"REFERENCE_REPORT:\n{reference}\n\nGENERATED_REPORT:\n{hypothesis}"
 
     try:
         resp = client.chat.completions.create(
@@ -221,17 +292,34 @@ def _judge_one_openai(
                 {"role": "user", "content": user_msg},
             ],
             temperature=cfg.temperature,
-            max_tokens=cfg.max_output_tokens,
+            max_completion_tokens=cfg.max_output_tokens,
         )
     except Exception as e:
         raise JudgeError(f"OpenAI call failed: {e}") from e
 
-    raw = resp.choices[0].message.content if resp.choices else None
+    if not resp.choices:
+        raise JudgeError("OpenAI returned no choices")
+
+    choice = resp.choices[0]
+    raw = choice.message.content
+
     if raw is None:
         raise JudgeError("Could not read response content from OpenAI")
 
+    # Check for truncation
+    if choice.finish_reason == "length":
+        raw_preview = raw[:200] if raw else "(empty)"
+        raise JudgeError(
+            f"Response truncated due to max_tokens limit. "
+            f"Increase max_output_tokens. Raw head: {raw_preview}"
+        )
+
     return _parse_judge_response(raw)
 
+
+# -----------------------------
+# Gemini Judge Implementation
+# -----------------------------
 
 @retry(
     reraise=True,
@@ -240,60 +328,114 @@ def _judge_one_openai(
     retry=retry_if_exception_type(JudgeError),
 )
 def _judge_one_gemini(
-    model,  # genai.GenerativeModel
+    client,  # genai.Client
     cfg: GeminiJudgeConfig,
     reference: str,
     hypothesis: str,
 ) -> Dict[str, Any]:
-    """Judge using Google Gemini API."""
-    user_msg = f"{MAMMO_GREEN_SYSTEM_PROMPT}\n\nREFERENCE_REPORT:\n{reference}\n\nGENERATED_REPORT:\n{hypothesis}\n"
+    """Judge a single reference/hypothesis pair using Google Gemini API."""
+    user_msg = f"REFERENCE_REPORT:\n{reference}\n\nGENERATED_REPORT:\n{hypothesis}"
 
     try:
-        generation_config = genai.types.GenerationConfig(
+        config = types.GenerateContentConfig(
             temperature=cfg.temperature,
-            max_output_tokens=cfg.max_output_tokens,
+            topP=0.95,
+            topK=40,
+            maxOutputTokens=cfg.max_output_tokens,
+            systemInstruction=MAMMO_GREEN_SYSTEM_PROMPT,
         )
-        resp = model.generate_content(
-            user_msg,
-            generation_config=generation_config,
+
+        response = client.models.generate_content(
+            model=cfg.model_name,
+            contents=user_msg,
+            config=config,
         )
     except Exception as e:
         raise JudgeError(f"Gemini call failed: {e}") from e
 
-    raw = resp.text if resp else None
-    if raw is None:
-        raise JudgeError("Could not read response content from Gemini")
+    # Extract response text - handle different response formats
+    raw = None
+    try:
+        raw = response.text
+    except Exception:
+        pass
+
+    # Fallback: access candidates directly
+    if not raw:
+        try:
+            if response.candidates and len(response.candidates) > 0:
+                candidate = response.candidates[0]
+                if candidate.content and candidate.content.parts:
+                    raw = candidate.content.parts[0].text
+        except Exception:
+            pass
+
+    if not raw:
+        debug_info = ""
+        try:
+            if response.candidates:
+                candidate = response.candidates[0]
+                if hasattr(candidate, 'finish_reason'):
+                    debug_info = f" finish_reason={candidate.finish_reason}"
+                if hasattr(candidate, 'safety_ratings'):
+                    debug_info += f" safety_ratings={candidate.safety_ratings}"
+        except Exception:
+            pass
+        raise JudgeError(f"Model returned empty response.{debug_info}")
+
+    # Check for truncation (Gemini uses MAX_TOKENS or MAXTOKEN as finish reason)
+    try:
+        if response.candidates:
+            candidate = response.candidates[0]
+            finish_reason = getattr(candidate, 'finish_reason', None)
+            if finish_reason and str(finish_reason).upper() in ("MAX_TOKENS", "MAXTOKEN", "LENGTH"):
+                raw_preview = raw[:200] if raw else "(empty)"
+                raise JudgeError(
+                    f"Response truncated due to max_tokens limit. "
+                    f"Increase max_output_tokens. Raw head: {raw_preview}"
+                )
+    except JudgeError:
+        raise
+    except Exception:
+        pass  # Ignore errors in truncation check
 
     return _parse_judge_response(raw)
 
 
+# -----------------------------
+# Response Parsing
+# -----------------------------
+
 def _parse_judge_response(raw: str) -> Dict[str, Any]:
     """Parse and validate judge response JSON."""
     raw_json = _extract_json_str(raw)
+
     try:
         data = json.loads(raw_json)
     except json.JSONDecodeError as e:
-        raise JudgeError(f"Model did not return valid JSON. Raw head: {raw[:200]}") from e
+        raw_preview = raw[:500] if raw else "(empty)"
+        raise JudgeError(f"Model did not return valid JSON. Raw: {raw_preview}") from e
 
-    # Validate schema strictly
+    # Validate schema
     try:
         parsed = MammoGreenOutput(**data)
         parsed.validate_keys()
     except (ValidationError, ValueError) as e:
-        raise JudgeError(f"JSON schema invalid: {e}. Raw head: {raw[:200]}") from e
+        raw_preview = raw[:200] if raw else "(empty)"
+        raise JudgeError(f"JSON schema invalid: {e}. Raw head: {raw_preview}") from e
 
     return data
 
 
 # -----------------------------
-# Main class
+# Main Class
 # -----------------------------
 
 class MammoGREEN:
     """
     Mammography-GREEN metric using LLM judge.
 
-    Supports both OpenAI (gpt-*) and Google Gemini (gemini-*) models.
+    Supports both OpenAI (gpt-4o, gpt-5.x) and Google Gemini (gemini-2.5-*) models.
 
     Compatible with RadEval interface.
 
@@ -306,29 +448,45 @@ class MammoGREEN:
       - green_score: per-sample GREEN score
       - matched_findings: count of matched findings
       - false_finding, missing_finding, mischaracterization,
-        wrong_location_laterality, incorrect_birads: error counts
+        wrong_location_laterality, incorrect_birads, incorrect_breast_density: error counts
       - insignificant_errors: count of insignificant errors
     """
 
     def __init__(
         self,
-        model_name: str = "gpt-4o-mini",
+        model_name: str = "gpt-4o",
         provider: Optional[str] = None,
         output_dir: str = ".",
         batch_size: int = 8,
-        max_output_tokens: int = 300,
+        max_output_tokens: int = 8192,
         temperature: float = 0.0,
         sleep_s: float = 0.0,
         compute_summary_stats: bool = True,
         api_key: Optional[str] = None,
     ):
+        """
+        Initialize MammoGREEN scorer.
+
+        Args:
+            model_name: Model identifier. Supported models:
+                - OpenAI: gpt-4o, gpt-4o-mini, gpt-5.2-2025-12-11, gpt-5-mini-2025-08-07
+                - Gemini: gemini-2.5-flash, gemini-2.5-pro
+            provider: Explicit provider ("openai" or "gemini"). Auto-detected if None.
+            output_dir: Directory for output files.
+            batch_size: Batch size for processing.
+            max_output_tokens: Maximum tokens in judge response.
+            temperature: Sampling temperature (0.0 for deterministic).
+            sleep_s: Sleep duration between API calls.
+            compute_summary_stats: Whether to compute summary statistics.
+            api_key: API key. Falls back to environment variables if not provided.
+        """
         self.output_dir = output_dir
         self.batch_size = int(batch_size)
         self.sleep_s = float(sleep_s)
         self.compute_summary_stats = bool(compute_summary_stats)
         self.model_name = model_name
 
-        # Determine provider: explicit parameter takes precedence, else auto-detect
+        # Determine provider
         if provider is not None:
             if provider.lower() not in SUPPORTED_PROVIDERS:
                 raise ValueError(
@@ -339,40 +497,13 @@ class MammoGREEN:
         else:
             self.provider = _detect_provider(model_name)
 
+        # Initialize provider-specific client
         if self.provider == "gemini":
-            if not GEMINI_AVAILABLE:
-                raise ImportError(
-                    "google-generativeai is not installed. "
-                    "Install it with: pip install google-generativeai"
-                )
-            key = api_key or os.environ.get("GOOGLE_API_KEY")
-            if not key:
-                raise EnvironmentError(
-                    "GOOGLE_API_KEY is not set (or pass api_key=...). "
-                    "For Gemini models, set GOOGLE_API_KEY environment variable."
-                )
-            genai.configure(api_key=key)
-            self.gemini_model = genai.GenerativeModel(model_name)
-            self.cfg = GeminiJudgeConfig(
-                model_name=model_name,
-                temperature=temperature,
-                max_output_tokens=max_output_tokens,
-            )
-            self.client = None  # Not used for Gemini
+            self._init_gemini_client(api_key, model_name, temperature, max_output_tokens)
         else:
-            # Default to OpenAI
-            key = api_key or os.environ.get("OPENAI_API_KEY")
-            if not key:
-                raise EnvironmentError("OPENAI_API_KEY is not set (or pass api_key=...).")
-            self.client = OpenAI(api_key=key)
-            self.cfg = OpenAIJudgeConfig(
-                model_name=model_name,
-                temperature=temperature,
-                max_output_tokens=max_output_tokens,
-            )
-            self.gemini_model = None  # Not used for OpenAI
+            self._init_openai_client(api_key, model_name, temperature, max_output_tokens)
 
-        # For compatibility / introspection
+        # Metadata for introspection
         self.categories = [
             "Clinically Significant Errors",
             "Clinically Insignificant Errors",
@@ -384,6 +515,7 @@ class MammoGREEN:
             "(c) Mischaracterization of a finding",
             "(d) Misidentification of a finding's location/laterality",
             "(e) Incorrect BI-RADS category/assessment",
+            "(f) Incorrect breast density assessment",
         ]
 
         # Outputs
@@ -391,6 +523,55 @@ class MammoGREEN:
         self.completions: Optional[List[str]] = None
         self.green_scores: Optional[List[float]] = None
         self.error_counts: Optional[List[Dict[str, Any]]] = None
+
+    def _init_gemini_client(
+        self,
+        api_key: Optional[str],
+        model_name: str,
+        temperature: float,
+        max_output_tokens: int,
+    ) -> None:
+        """Initialize Gemini client and configuration."""
+        if not GEMINI_AVAILABLE:
+            raise ImportError(
+                "google-genai is not installed. "
+                "Install it with: pip install google-genai"
+            )
+
+        key = api_key or os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+        if not key:
+            raise EnvironmentError(
+                "GEMINI_API_KEY or GOOGLE_API_KEY is not set (or pass api_key=...). "
+                "For Gemini models, set GOOGLE_API_KEY environment variable."
+            )
+
+        self.gemini_client = genai.Client(api_key=key)
+        self.cfg = GeminiJudgeConfig(
+            model_name=model_name,
+            temperature=temperature,
+            max_output_tokens=max_output_tokens,
+        )
+        self.openai_client = None
+
+    def _init_openai_client(
+        self,
+        api_key: Optional[str],
+        model_name: str,
+        temperature: float,
+        max_output_tokens: int,
+    ) -> None:
+        """Initialize OpenAI client and configuration."""
+        key = api_key or os.environ.get("OPENAI_API_KEY")
+        if not key:
+            raise EnvironmentError("OPENAI_API_KEY is not set (or pass api_key=...).")
+
+        self.openai_client = OpenAI(api_key=key)
+        self.cfg = OpenAIJudgeConfig(
+            model_name=model_name,
+            temperature=temperature,
+            max_output_tokens=max_output_tokens,
+        )
+        self.gemini_client = None
 
     def __call__(self, refs: List[str], hyps: List[str]):
         """
@@ -413,12 +594,12 @@ class MammoGREEN:
         error_counts: List[Dict[str, Any]] = []
         green_scores: List[float] = []
 
-        # Process sequentially
-        for i, (r, h) in enumerate(zip(refs, hyps)):
+        for r, h in zip(refs, hyps):
             if self.provider == "gemini":
-                data = _judge_one_gemini(self.gemini_model, self.cfg, r, h)
+                data = _judge_one_gemini(self.gemini_client, self.cfg, r, h)
             else:
-                data = _judge_one_openai(self.client, self.cfg, r, h)
+                data = _judge_one_openai(self.openai_client, self.cfg, r, h)
+
             mg = MammoGreenOutput(**data)
             mg.validate_keys()
 
@@ -432,11 +613,9 @@ class MammoGREEN:
         self.error_counts = error_counts
         self.green_scores = green_scores
 
-        # Compute statistics
         mean = float(np.mean(green_scores)) if green_scores else 0.0
         std = float(np.std(green_scores)) if len(green_scores) > 1 else 0.0
 
-        # Build results DataFrame (RadEval-compatible format)
         results_df = self._build_results_df(refs, hyps, green_scores, error_counts)
 
         return mean, std, green_scores, results_df
@@ -450,7 +629,7 @@ class MammoGREEN:
     ) -> pd.DataFrame:
         """Build a pandas DataFrame with detailed results."""
         rows = []
-        for i, (ref, hyp, score, errors) in enumerate(zip(refs, hyps, green_scores, error_counts)):
+        for ref, hyp, score, errors in zip(refs, hyps, green_scores, error_counts):
             row = {
                 "reference": ref,
                 "prediction": hyp,
@@ -461,6 +640,7 @@ class MammoGREEN:
                 "mischaracterization": errors["significant_errors"]["mischaracterization"],
                 "wrong_location_laterality": errors["significant_errors"]["wrong_location_laterality"],
                 "incorrect_birads": errors["significant_errors"]["incorrect_birads"],
+                "incorrect_breast_density": errors["significant_errors"]["incorrect_breast_density"],
                 "insignificant_errors": errors["insignificant_errors"],
             }
             rows.append(row)
@@ -469,21 +649,14 @@ class MammoGREEN:
 
     def _summary(self, scores: List[float], errors: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Compute summary statistics across all samples."""
-        sig_keys = [
-            "false_finding",
-            "missing_finding",
-            "mischaracterization",
-            "wrong_location_laterality",
-            "incorrect_birads",
-        ]
-        sig_sums = {k: 0 for k in sig_keys}
+        sig_sums = {k: 0 for k in SIGNIFICANT_ERROR_KEYS}
         matched_sum = 0
         insig_sum = 0
 
         for e in errors:
             matched_sum += int(e["matched_findings"])
             insig_sum += int(e["insignificant_errors"])
-            for k in sig_keys:
+            for k in SIGNIFICANT_ERROR_KEYS:
                 sig_sums[k] += int(e["significant_errors"][k])
 
         return {
@@ -500,7 +673,7 @@ class MammoGREEN:
 
     def score(self, refs: List[str], hyps: List[str]) -> Dict[str, Any]:
         """
-        Alternative interface returning a dictionary (original mammo_green.py style).
+        Alternative interface returning a dictionary.
 
         Returns:
             Dict with keys: green_scores, error_counts, summary (optional)
@@ -519,48 +692,35 @@ class MammoGREEN:
 
 
 # -----------------------------
-# CLI demo
+# CLI Demo
 # -----------------------------
+
 if __name__ == "__main__":
-    refs = [
+    demo_refs = [
         (
-            "Bilateral digital mammography demonstrates scattered areas of fibroglandular density. "
-            "There is a spiculated mass in the upper outer quadrant of the right breast measuring approximately 1.5 cm. "
-            "Associated pleomorphic calcifications are present. "
-            "No suspicious findings are seen in the left breast. "
-            "BI-RADS 5."
+            "Bilateral mammography demonstrates scattered fibroglandular density. "
+            "There is a benign calcification at the upper outer left breast. "
+            "BI-RADS 2."
         ),
+    ]
+
+    demo_hyps = [
         (
-            "Bilateral digital mammography shows heterogeneously dense breasts. "
-            "No suspicious mass, calcifications, or architectural distortion are identified in either breast. "
+            "Bilateral mammography shows scattered fibroglandular tissue. "
+            "No suspicious findings are identified. "
             "BI-RADS 1."
         ),
     ]
 
-    hyps = [
-        (
-            "The breasts demonstrate scattered fibroglandular densities. "
-            "There is an irregular mass in the upper outer quadrant of the right breast measuring approximately 1.4 cm "
-            "with associated calcifications. "
-            "The left breast is unremarkable. "
-            "BI-RADS 4."
-        ),
-        (
-            "Bilateral mammography demonstrates heterogeneously dense breast tissue. "
-            "No suspicious masses or calcifications are identified. "
-            "BI-RADS 1."
-        ),
-    ]
-
-    # Requires OPENAI_API_KEY env var or pass api_key parameter
-    mg = MammoGREEN(
-        model_name="gpt-4o-mini",
+    # Example usage (requires OPENAI_API_KEY or GOOGLE_API_KEY)
+    scorer = MammoGREEN(
+        model_name="gpt-4o",
         temperature=0.0,
     )
 
-    mean, std, green_scores, results_df = mg(refs, hyps)
+    mean, std, scores, results_df = scorer(demo_refs, demo_hyps)
 
-    print("GREEN scores:", green_scores)
+    print("GREEN scores:", scores)
     print(f"Mean: {mean:.4f}, Std: {std:.4f}")
     print("\nResults DataFrame:")
     print(results_df.to_string())
