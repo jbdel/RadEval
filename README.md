@@ -1,4 +1,24 @@
-# TL;DR
+# RadEval
+
+<div align="center">
+
+**All-in-one metrics for evaluating AI-generated radiology text**
+
+</div>
+
+<!--- BADGES: START --->
+[![PyPI](https://img.shields.io/badge/RadEval-v0.0.1-00B7EB?logo=python&logoColor=00B7EB)](https://pypi.org/project/RadEval/)
+[![Python version](https://img.shields.io/badge/python-3.10+-important?logo=python&logoColor=important)]()
+[![Expert Dataset](https://img.shields.io/badge/Expert-%20Dataset-4CAF50?logo=googlecloudstorage&logoColor=9BF0E1)](https://huggingface.co/datasets/IAMJB/RadEvalExpertDataset)
+[![Model](https://img.shields.io/badge/Model-RadEvalModernBERT-0066CC?logo=huggingface&labelColor=grey)](https://huggingface.co/IAMJB/RadEvalModernBERT)
+[![Video](https://img.shields.io/badge/Talk-Video-9C27B0?logo=youtubeshorts&labelColor=grey)](https://justin13601.github.io/files/radeval.mp4)
+[![Gradio Demo](https://img.shields.io/badge/Gradio-Demo-FFD21E.svg?logo=gradio&logoColor=gold)](https://huggingface.co/spaces/X-iZhang/RadEval)
+[![EMNLP](https://img.shields.io/badge/paper-EMNLP-red)](https://aclanthology.org/2025.emnlp-demos.40/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg?)](https://github.com/jbdel/RadEval/main/LICENSE)
+<!--- BADGES: END --->
+
+
+### TL;DR
 ```
 pip install -e .
 ```
@@ -90,24 +110,6 @@ Generating: 100%|█████████████████████
 }
 ```
 
-# RadEval
-
-<div align="center">
-
-**All-in-one metrics for evaluating AI-generated radiology text**
-
-</div>
-
-<!--- BADGES: START --->
-[![PyPI](https://img.shields.io/badge/RadEval-v0.0.1-00B7EB?logo=python&logoColor=00B7EB)](https://pypi.org/project/RadEval/)
-[![Python version](https://img.shields.io/badge/python-3.10+-important?logo=python&logoColor=important)]()
-[![Expert Dataset](https://img.shields.io/badge/Expert-%20Dataset-4CAF50?logo=googlecloudstorage&logoColor=9BF0E1)](https://huggingface.co/datasets/IAMJB/RadEvalExpertDataset)
-[![Model](https://img.shields.io/badge/Model-RadEvalModernBERT-0066CC?logo=huggingface&labelColor=grey)](https://huggingface.co/IAMJB/RadEvalModernBERT)
-[![Video](https://img.shields.io/badge/Talk-Video-9C27B0?logo=youtubeshorts&labelColor=grey)](https://justin13601.github.io/files/radeval.mp4)
-[![Gradio Demo](https://img.shields.io/badge/Gradio-Demo-FFD21E.svg?logo=gradio&logoColor=gold)](https://huggingface.co/spaces/X-iZhang/RadEval)
-[![EMNLP](https://img.shields.io/badge/paper-EMNLP-red)](https://aclanthology.org/2025.emnlp-demos.40/)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg?)](https://github.com/jbdel/RadEval/main/LICENSE)
-<!--- BADGES: END --->
 
 ## 📖 Table of Contents
 
@@ -123,6 +125,8 @@ Generating: 100%|█████████████████████
 - [🧠 RadEval Expert Dataset](#-radeval-expert-dataset)
 - [🚦 Performance Tips](#-performance-tips)
 - [📚 Citation](#-citation)
+
+
 
 ## 🌟 Overview
 
