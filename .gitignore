@@ -16,3 +16,6 @@ __pycache__/
 
 # Ignore run_scripts
 rrg_systems/
+
+# Ignore environment variables
+.env

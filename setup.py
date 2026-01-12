@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='RadEval',
-    version='0.0.5',
+    version='0.0.6',
     author='Jean-Benoit Delbrouck, Justin Xu, Xi Zhang',
     maintainer='Xi Zhang, JB Delbrouck',
     url='https://github.com/jbdel/RadEval',
@@ -34,7 +34,7 @@ setup(
         'radgraph',
         'medical AI'
     ],
-    python_requires='>=3.9,<3.12',
+    python_requires='>=3.11,<3.12',
     install_requires=[
         'torch==2.9.1',
         'transformers==4.57.3',
@@ -52,7 +52,11 @@ setup(
         'opencv-python==4.10.0.84',
         'matplotlib',
         'accelerate==0.30.1',
-        'pandas'
+        'pandas',
+        # API calls
+        'google-genai',    
+        'openai',
+        'tenacity',
     ],
     packages=find_packages(),
     include_package_data=True,
