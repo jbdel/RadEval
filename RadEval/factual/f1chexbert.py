@@ -221,7 +221,17 @@ class F1CheXbert(nn.Module):
     # ---------------------------------------------------------------------
 
     def forward(self, hyps: List[str], refs: List[str]):
-        """Return (accuracy, per‑example‑accuracy, full classification reports)."""
+
+        """
+        Return:
+        (accuracy, pe_accuracy, cr, cr5, overall_label_acc_full, overall_label_acc_5)
+
+        Notes:
+        - accuracy: subset accuracy (exact-match) on TOP-5 labels (scalar in [0,1])
+        - pe_accuracy: per-example exact-match on TOP-5 labels (shape (N,), values {0,1})
+        - overall_label_acc_full: overall label accuracy across ALL labels (scalar in [0,1])
+        - overall_label_acc_5: overall label accuracy across TOP-5 labels (scalar in [0,1])
+        """
         # Reference labels -----------------------------------------------------
         if self.refs_filename and os.path.exists(self.refs_filename):
             with open(self.refs_filename) as f:
@@ -242,13 +252,41 @@ class F1CheXbert(nn.Module):
         refs5 = [np.array(r)[self.top5_idx] for r in refs_chexbert]
         hyps5 = [np.array(h)[self.top5_idx] for h in hyps_chexbert]
 
-        # overall accuracy -----------------------------------------------------
+        # overall accuracy (TOP-5 exact match) --------------------------------
         accuracy = accuracy_score(refs5, hyps5)
-        _, y_true, y_pred, _ = _check_targets(refs5, hyps5)
-        pe_accuracy = (count_nonzero(y_true - y_pred, axis=1) == 0).astype(float)
+
+        # TOP-5 targets (binarised) -------------------------------------------
+        _, y_true5, y_pred5, _ = _check_targets(refs5, hyps5)
+
+        # per-example exact-match accuracy on TOP-5 (0/1 per sample) ----------
+        pe_accuracy = (count_nonzero(y_true5 - y_pred5, axis=1) == 0).astype(float)
+
+        # Overall label accuracy on TOP-5 (looser) -----------------------
+        sample_label_acc_5 = (y_true5 == y_pred5).mean(axis=1)
+
+        # Overall label accuracy on FULL labels (looser) -----------------
+        _, y_true_full, y_pred_full, _ = _check_targets(refs_chexbert, hyps_chexbert)
+        sample_label_acc_full = (y_true_full == y_pred_full).mean(axis=1)
 
         # full classification reports -----------------------------------------
-        cr = classification_report(refs_chexbert, hyps_chexbert, target_names=self.TARGET_NAMES, output_dict=True)
-        cr5 = classification_report(refs5, hyps5, target_names=self.TOP5, output_dict=True)
+        cr = classification_report(
+            refs_chexbert,
+            hyps_chexbert,
+            target_names=self.TARGET_NAMES,
+            output_dict=True,
+        )
+        cr5 = classification_report(
+            refs5,
+            hyps5,
+            target_names=self.TOP5,
+            output_dict=True,
+        )
 
-        return accuracy, pe_accuracy, cr, cr5
+        return (
+            accuracy,
+            pe_accuracy,
+            cr,
+            cr5,
+            sample_label_acc_full,
+            sample_label_acc_5,
+        )

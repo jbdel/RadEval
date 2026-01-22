@@ -7,7 +7,7 @@
 </div>
 
 <!--- BADGES: START --->
-[![PyPI](https://img.shields.io/badge/RadEval-v0.0.1-00B7EB?logo=python&logoColor=00B7EB)](https://pypi.org/project/RadEval/)
+[![PyPI](https://img.shields.io/badge/RadEval-v0.0.6-00B7EB?logo=python&logoColor=00B7EB)](https://pypi.org/project/RadEval/)
 [![Python version](https://img.shields.io/badge/python-3.10+-important?logo=python&logoColor=important)]()
 [![Expert Dataset](https://img.shields.io/badge/Expert-%20Dataset-4CAF50?logo=googlecloudstorage&logoColor=9BF0E1)](https://huggingface.co/datasets/IAMJB/RadEvalExpertDataset)
 [![Model](https://img.shields.io/badge/Model-RadEvalModernBERT-0066CC?logo=huggingface&labelColor=grey)](https://huggingface.co/IAMJB/RadEvalModernBERT)
@@ -445,6 +445,7 @@ RadEval currently supports the following evaluation metrics:
 | | SRR-BERT | Structured report evaluation | Report structure quality |
 | | Temporal F1  | Time-sensitive evaluation | Temporal consistency |
 | | GREEN | LLM-based metric | Overall radiology report quality |
+| | Mammo Green | LLM-based metric | Mammography report quality |
 
 ## 🔧 Configuration Options
 
@@ -454,6 +455,7 @@ RadEval currently supports the following evaluation metrics:
 |-----------|------|---------|-------------|
 | `do_radgraph` | bool | False | Enable RadGraph evaluation |
 | `do_green` | bool | False | Enable GREEN metric |
+| `do_mammo_green` | bool | False | Enable Mammo Green metric |
 | `do_bleu` | bool | False | Enable BLEU evaluation |
 | `do_rouge` | bool | False | Enable ROUGE metrics |
 | `do_bertscore` | bool | False | Enable BERTScore |
