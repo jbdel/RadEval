@@ -19,9 +19,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 from transformers import (
-    AutoConfig,
-    BertModel,
-    BertTokenizer,
+    ModernBertModel,
+    AutoTokenizer
 )
 from sklearn.metrics import (
     accuracy_score,
@@ -29,7 +28,6 @@ from sklearn.metrics import (
 )
 from sklearn.metrics._classification import _check_targets
 from sklearn.utils.sparsefuncs import count_nonzero
-from huggingface_hub import hf_hub_download
 from appdirs import user_cache_dir
 
 # -----------------------------------------------------------------------------
@@ -66,24 +64,20 @@ class BertLabeler(nn.Module):
             self.device = device
 
         # 1) Backbone on *CPU* first – we'll move to correct device after weights load
-        config = AutoConfig.from_pretrained("bert-base-uncased")
-        self.bert = BertModel(config)
+        # config = AutoConfig.from_pretrained("answerdotai/ModernBERT-base")
+        # self.bert = BertModel(config)
+        self.bert = ModernBertModel.from_pretrained("answerdotai/ModernBERT-base")
 
         hidden = self.bert.config.hidden_size
-        # 13 heads with 4‑way logits, + 1 head with 2‑way logits
-        self.linear_heads = nn.ModuleList([nn.Linear(hidden, 4) for _ in range(13)])
+        # 26 heads with 4‑way logits, + 1 head with 2‑way logits
+        self.linear_heads = nn.ModuleList([nn.Linear(hidden, 4) for _ in range(26)])
         self.linear_heads.append(nn.Linear(hidden, 2))
 
         self.dropout = nn.Dropout(0.1)
 
         # 2) Load checkpoint weights directly onto CPU first -------------------
-        ckpt_path = hf_hub_download(
-            repo_id="StanfordAIMI/RRG_scorers",
-            filename="chexbert.pth",
-            cache_dir=CACHE_DIR,
-        )
-        state = torch.load(ckpt_path, map_location="cpu")["model_state_dict"]
-        state = {k.replace("module.", ""): v for k, v in state.items()}
+        state = torch.load('/fss/pranta_das/CheXbert/expermints_folder/25507/checkpoint_2.pth', map_location="cpu")["model"]
+        # state = {k.replace("module.", ""): v for k, v in state.items()}
         self.load_state_dict(state, strict=True)
 
         # 3) NOW move the entire module (recursively) to `self.device` ----------
@@ -116,33 +110,29 @@ class BertLabeler(nn.Module):
 # F1‑CheXbert evaluator
 # -----------------------------------------------------------------------------
 
-class F1CheXbert(nn.Module):
+class HopprF1CheXbert(nn.Module):
     """Generate CheXbert labels + handy evaluation utilities."""
 
-    CONDITION_NAMES = [
-        "Enlarged Cardiomediastinum",
-        "Cardiomegaly",
-        "Lung Opacity",
-        "Lung Lesion",
-        "Edema",
-        "Consolidation",
-        "Pneumonia",
-        "Atelectasis",
-        "Pneumothorax",
-        "Pleural Effusion",
-        "Pleural Other",
-        "Fracture",
-        "Support Devices",
-    ]
-    NO_FINDING = "No Finding"
+    CONDITION_NAMES = ['acute_rib_fracture', 'air_space_opacity', 'cardiomegaly',
+                'lung_nodule_or_mass', 'non_acute_rib_fracture', 'pleural_fluid',
+                'pneumothorax', 'pulmonary_artery_enlargement','atelectasis', 
+                'bronchial_wall_thickening', 'bullous_disease',
+                'hilar_lymphadenopathy', 'hiatus_hernia', 'hyperinflation',
+                'implantable_electronic_device', 'intercostal_drain',
+                'interstitial_thickening', 'lobar_segmental_collapse',
+                'nonsurgical_internal_foreign_body',
+                'pacemaker_electronic_cardiac_device_or_wires', 'peribronchial_cuffing',
+                'pulmonary_congestion_pulmonary_venous_congestion',
+                'shoulder_dislocation', 'subcutaneous_emphysema', 'tracheal_deviation',
+                'whole_lung_or_majority_collapse']
+    NO_FINDING = "no_inding"
     TARGET_NAMES = CONDITION_NAMES + [NO_FINDING]
 
     TOP5 = [
-        "Cardiomegaly",
-        "Edema",
-        "Consolidation",
-        "Atelectasis",
-        "Pleural Effusion",
+        "cardiomegaly",
+        "air_space_opacity",
+        "atelectasis",
+        "pleural_fluid",
     ]
 
     def __init__(
@@ -164,7 +154,7 @@ class F1CheXbert(nn.Module):
         self.hyps_filename = hyps_filename
 
         # HuggingFace tokenizer (always CPU, we just move tensors later) -------
-        self.tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+        self.tokenizer = AutoTokenizer.from_pretrained("answerdotai/ModernBERT-base")
 
         # backbone + heads ------------------------------------------------------
         self.model = BertLabeler(device=self.device).eval()
@@ -194,7 +184,7 @@ class F1CheXbert(nn.Module):
 
     @torch.no_grad()
     def get_label(self, report: str, mode: str = "rrg") -> List[int]:
-        """Return 14‑dim binary vector for the given report."""
+        """Return 27‑dim binary vector for the given report."""
         input_ids = self.tokenizer(report, truncation=True, max_length=512, return_tensors="pt").input_ids.to(self.device)
         preds = [head.argmax(dim=1).item() for head in self.model.cls_logits(input_ids)]
 
