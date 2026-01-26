@@ -256,7 +256,7 @@ class F1CheXbert(nn.Module):
         accuracy = accuracy_score(refs5, hyps5)
 
         # TOP-5 targets (binarised) -------------------------------------------
-        _, y_true5, y_pred5 = _check_targets(refs5, hyps5)
+        _, y_true5, y_pred5, _ = _check_targets(refs5, hyps5)
 
         # per-example exact-match accuracy on TOP-5 (0/1 per sample) ----------
         pe_accuracy = (count_nonzero(y_true5 - y_pred5, axis=1) == 0).astype(float)
@@ -265,7 +265,7 @@ class F1CheXbert(nn.Module):
         sample_label_acc_5 = np.asarray((y_true5 == y_pred5).mean(axis=1)).astype(float).ravel().tolist()
 
         # Overall label accuracy on FULL labels (looser) -----------------
-        _, y_true_full, y_pred_full = _check_targets(refs_chexbert, hyps_chexbert)
+        _, y_true_full, y_pred_full, _ = _check_targets(refs_chexbert, hyps_chexbert)
         sample_label_acc_full = np.asarray((y_true_full == y_pred_full).mean(axis=1)).astype(float).ravel().tolist()
         
         # full classification reports -----------------------------------------
