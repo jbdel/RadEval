@@ -4,12 +4,12 @@ from typing import List, Sequence, Tuple, Union
 
 import numpy as np
 import torch
+import warnings
 from sklearn.metrics import accuracy_score, classification_report
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
-import warnings
 
 
-class RadBERTCT:
+class F1RadbertCT:
     LABELS = [
         "Medical material",
         "Arterial wall calcification",
@@ -68,11 +68,10 @@ class RadBERTCT:
             enc = {k: v.to(self.device) for k, v in enc.items()}
             logits = self.model(**enc).logits
             probs = torch.sigmoid(logits)
-            pred = probs > self.threshold  # (B, 18)
+            pred = probs > self.threshold
 
-            # If no class is active, mark synthetic "No finding" label.
-            no_finding = (~pred.any(dim=1)).unsqueeze(1)  # (B, 1)
-            full = torch.cat([pred, no_finding], dim=1)  # (B, 19)
+            no_finding = (~pred.any(dim=1)).unsqueeze(1)
+            full = torch.cat([pred, no_finding], dim=1)
             chunks.append(full.cpu())
 
         return torch.cat(chunks, dim=0).numpy().astype(int)

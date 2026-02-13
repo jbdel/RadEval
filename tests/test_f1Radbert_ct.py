@@ -2,7 +2,7 @@ import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 
-def test_radbert_ct_exact_outputs():
+def test_f1Radbert_ct_exact_outputs():
     repo_id = "IAMJB/RadBERT-CT"
     tokenizer = AutoTokenizer.from_pretrained(repo_id, use_fast=False)
     model = AutoModelForSequenceClassification.from_pretrained(repo_id)
@@ -81,7 +81,3 @@ def test_radbert_ct_exact_outputs():
     ]
     assert [[i for i, on in enumerate(row) if on] for row in pred_mask.tolist()] == [[], [10, 12]]
 
-
-if __name__ == "__main__":
-    test_radbert_ct_exact_outputs()
-    print("RadBERT-CT inference test passed.")

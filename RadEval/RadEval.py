@@ -18,7 +18,7 @@ from sklearn.metrics import classification_report
 from sklearn.exceptions import UndefinedMetricWarning
 import json
 from .factual.f1chexbert import F1CheXbert
-from .factual.radbert_ct import RadBERTCT
+from .factual.f1Radbert_ct import F1RadbertCT
 import nltk
 from .utils import clean_numbered_list
 from .utils import multilabel_prf_per_sample
@@ -43,7 +43,7 @@ class RadEval():
                  do_bertscore=False,
                  do_srr_bert=False,
                  do_chexbert=False,
-                 do_radbert_ct=False,
+                 do_f1radbert_ct=False,
                  do_ratescore=False,
                  do_radcliq=False,
                  do_radeval_bertscore=False,
@@ -62,7 +62,7 @@ class RadEval():
         self.do_bertscore = do_bertscore
         self.do_srr_bert = do_srr_bert
         self.do_chexbert = do_chexbert
-        self.do_radbert_ct = do_radbert_ct
+        self.do_f1radbert_ct = do_f1radbert_ct
         self.do_ratescore = do_ratescore
         self.do_radcliq = do_radcliq
         self.do_temporal = do_temporal
@@ -107,8 +107,8 @@ class RadEval():
         if self.do_chexbert:
             self.chexbert_scorer = F1CheXbert()
 
-        if self.do_radbert_ct:
-            self.radbert_ct_scorer = RadBERTCT(
+        if self.do_f1radbert_ct:
+            self.f1radbert_ct_scorer = F1RadbertCT(
                 model_id="IAMJB/RadBERT-CT",
                 threshold=0.5,
                 batch_size=16,
@@ -157,12 +157,12 @@ class RadEval():
                 "chexbert-5_macro avg_f1-score",
                 "chexbert-all_macro avg_f1-score"
             ])
-        if self.do_radbert_ct:
+        if self.do_f1radbert_ct:
             self.metric_keys.extend([
-                "radbert_ct_accuracy",
-                "radbert_ct_micro avg_f1-score",
-                "radbert_ct_macro avg_f1-score",
-                "radbert_ct_weighted_f1",
+                "f1radbert_ct_accuracy",
+                "f1radbert_ct_micro avg_f1-score",
+                "f1radbert_ct_macro avg_f1-score",
+                "f1radbert_ct_weighted_f1",
             ])
 
         if self.do_ratescore:
@@ -404,32 +404,32 @@ class RadEval():
                 scores["chexbert-all_weighted_f1"] = round(
                     chexbert_all["weighted avg"]["f1-score"], 4)
 
-        if self.do_radbert_ct:
-            radbert_ct_accuracy, radbert_ct_sample_acc, radbert_ct_report = self.radbert_ct_scorer(
+        if self.do_f1radbert_ct:
+            f1radbert_ct_accuracy, f1radbert_ct_sample_acc, f1radbert_ct_report = self.f1radbert_ct_scorer(
                 hyps, refs)
             if self.do_details:
-                radbert_ct_labels = {
+                f1radbert_ct_labels = {
                     k: v["f1-score"]
-                    for k, v in list(radbert_ct_report.items())[:-4]
+                    for k, v in list(f1radbert_ct_report.items())[:-4]
                 }
-                scores["radbert_ct"] = {
-                    "radbert_ct_accuracy": radbert_ct_accuracy,
-                    "radbert_ct_micro avg_f1-score": radbert_ct_report["micro avg"]["f1-score"],
-                    "radbert_ct_macro avg_f1-score": radbert_ct_report["macro avg"]["f1-score"],
-                    "radbert_ct_weighted_f1": radbert_ct_report["weighted avg"]["f1-score"],
+                scores["f1radbert_ct"] = {
+                    "f1radbert_ct_accuracy": f1radbert_ct_accuracy,
+                    "f1radbert_ct_micro avg_f1-score": f1radbert_ct_report["micro avg"]["f1-score"],
+                    "f1radbert_ct_macro avg_f1-score": f1radbert_ct_report["macro avg"]["f1-score"],
+                    "f1radbert_ct_weighted_f1": f1radbert_ct_report["weighted avg"]["f1-score"],
                     "sample_scores": {
-                        "all_labels": radbert_ct_sample_acc,
+                        "all_labels": f1radbert_ct_sample_acc,
                     },
-                    "label_scores_f1-score": radbert_ct_labels,
+                    "label_scores_f1-score": f1radbert_ct_labels,
                 }
             else:
-                scores["radbert_ct_accuracy"] = round(radbert_ct_accuracy, 4)
-                scores["radbert_ct_micro avg_f1-score"] = round(
-                    radbert_ct_report["micro avg"]["f1-score"], 4)
-                scores["radbert_ct_macro avg_f1-score"] = round(
-                    radbert_ct_report["macro avg"]["f1-score"], 4)
-                scores["radbert_ct_weighted_f1"] = round(
-                    radbert_ct_report["weighted avg"]["f1-score"], 4)
+                scores["f1radbert_ct_accuracy"] = round(f1radbert_ct_accuracy, 4)
+                scores["f1radbert_ct_micro avg_f1-score"] = round(
+                    f1radbert_ct_report["micro avg"]["f1-score"], 4)
+                scores["f1radbert_ct_macro avg_f1-score"] = round(
+                    f1radbert_ct_report["macro avg"]["f1-score"], 4)
+                scores["f1radbert_ct_weighted_f1"] = round(
+                    f1radbert_ct_report["weighted avg"]["f1-score"], 4)
 
         if self.do_ratescore:
             rate_score, pred_pairs_raw, gt_pairs_raw = self.ratescore_scorer.compute_score(

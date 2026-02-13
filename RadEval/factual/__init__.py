@@ -1,2 +1,2 @@
 from .green_score import GREEN, MammoGREEN
-from .radbert_ct import RadBERTCT
+from .f1Radbert_ct import F1RadbertCT
