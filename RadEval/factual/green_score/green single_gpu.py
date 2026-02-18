@@ -153,7 +153,7 @@ class GREEN:
             self.tokenizer.apply_chat_template(c, tokenize=False, add_generation_prompt=True)
             for c in chats
         ]
-        toks = self.tokenizer.batch_encode_plus(
+        toks = self.tokenizer(
             texts,
             return_tensors="pt",
             padding=True,

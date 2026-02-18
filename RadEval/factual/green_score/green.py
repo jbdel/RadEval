@@ -106,7 +106,7 @@ def _worker_generate(
             for c in chats
         ]
 
-        toks = tokenizer.batch_encode_plus(
+        toks = tokenizer(
             texts,
             return_tensors="pt",
             padding=True,
@@ -361,7 +361,7 @@ class GREEN:
                 c, tokenize=False, add_generation_prompt=True)
             for c in chats
         ]
-        toks = self.tokenizer.batch_encode_plus(
+        toks = self.tokenizer(
             texts,
             return_tensors="pt",
             padding=True,
