@@ -436,10 +436,11 @@ RadEval currently supports the following evaluation metrics:
 |----------|--------|-------------|----------|
 | **Lexical** | BLEU | N-gram overlap measurement | Surface-level similarity |
 | | ROUGE | Recall-oriented evaluation | Content coverage |
-| **Semantic** | BERTScore | BERT-based semantic similarity | Semantic meaning preservation |
-| | RadEval BERTScore | Domain-adapted ModernBertModel evaluation | Medical text semantics |
-| **Clinical** | CheXbert | Clinical finding classification | Medical accuracy |
-| | RadGraph | Knowledge graph-based evaluation | Clinical relationship accuracy |
+| **Semantic** | BERTScore (`do_bertscore`) | BERT-based semantic similarity | Semantic meaning preservation |
+| | RadEval BERTScore (`do_radeval_bertscore`) | Domain-adapted ModernBertModel evaluation | Medical text semantics |
+| **Clinical** | F1CheXbert (`do_chexbert`) | Clinical finding classification | Medical accuracy |
+| | F1RadbertCT (`do_f1radbert_ct`) | Multi-label CT finding classification | CT factual consistency |
+| | F1RadGraph (`do_radgraph`) | Knowledge graph-based evaluation | Clinical relationship accuracy |
 | | RaTEScore |  Entity-level assessments | Medical synonyms |
 | **Specialized** | RadCLIQ | Composite multiple metrics | Clinical relevance |
 | | SRR-BERT | Structured report evaluation | Report structure quality |
@@ -456,11 +457,14 @@ RadEval currently supports the following evaluation metrics:
 | `do_radgraph` | bool | False | Enable RadGraph evaluation |
 | `do_green` | bool | False | Enable GREEN metric |
 | `do_mammo_green` | bool | False | Enable Mammo Green metric |
+| `mammo_green_model` | str | `"gpt-4o-mini"` | Model name used by Mammo Green |
+| `mammo_green_api_key` | str \| None | `None` | API key for Mammo Green |
 | `do_bleu` | bool | False | Enable BLEU evaluation |
 | `do_rouge` | bool | False | Enable ROUGE metrics |
 | `do_bertscore` | bool | False | Enable BERTScore |
 | `do_srr_bert` | bool | False | Enable SRR-BERT |
 | `do_chexbert` | bool | False | Enable CheXbert classification |
+| `do_f1radbert_ct` | bool | False | Enable F1RadBERT-CT classification |
 | `do_temporal` | bool | False | Enable temporal evaluation |
 | `do_ratescore` | bool | False | Enable RateScore |
 | `do_radcliq` | bool | False | Enable RadCLIQ |
@@ -480,6 +484,7 @@ light_evaluator = RadEval(
 medical_evaluator = RadEval(
     do_radgraph=True,
     do_chexbert=True,
+    do_f1radbert_ct=True,
     do_green=True
 )
 
@@ -492,6 +497,7 @@ full_evaluator = RadEval(
     do_bertscore=True,
     do_srr_bert=True,
     do_chexbert=True,
+    do_f1radbert_ct=True,
     do_temporal=True,
     do_ratescore=True,
     do_radcliq=True,
@@ -627,6 +633,7 @@ rouge_evaluator = RadEval(do_rouge=True)
 bertscore_evaluator = RadEval(do_bertscore=True)
 radgraph_evaluator = RadEval(do_radgraph=True)
 chexbert_evaluator = RadEval(do_chexbert=True)
+f1radbert_ct_evaluator = RadEval(do_f1radbert_ct=True)
 
 # Define a custom metric: average word count of generated reports
 def word_count_metric(hyps, refs):
@@ -641,6 +648,7 @@ metrics = {
     'bertscore': lambda hyps, refs: bertscore_evaluator(refs, hyps)['bertscore'],
     'radgraph': lambda hyps, refs: radgraph_evaluator(refs, hyps)['radgraph_partial'],
     'chexbert': lambda hyps, refs: chexbert_evaluator(refs, hyps)['chexbert-5_macro avg_f1-score'],
+    'f1radbert_ct': lambda hyps, refs: f1radbert_ct_evaluator(refs, hyps)['f1radbert_ct_macro avg_f1-score'],
     'word_count': word_count_metric  # ← example of a simple custom-defined metric
 }
 ```
