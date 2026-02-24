@@ -92,17 +92,25 @@ class BertLabeler(nn.Module):
     # ---------------------------------------------------------------------
 
     @torch.no_grad()
-    def cls_logits(self, input_ids: torch.LongTensor) -> List[torch.Tensor]:
+    def cls_logits(
+        self,
+        input_ids: torch.LongTensor,
+        attention_mask: torch.FloatTensor | None = None,
+    ) -> List[torch.Tensor]:
         """Returns a list of logits for each head (no softmax)."""
-        attn = _generate_attention_masks(input_ids)
+        attn = attention_mask if attention_mask is not None else _generate_attention_masks(input_ids)
         outputs = self.bert(input_ids=input_ids, attention_mask=attn)
         cls_repr = self.dropout(outputs.last_hidden_state[:, 0])
         return [head(cls_repr) for head in self.linear_heads]
 
     @torch.no_grad()
-    def cls_embeddings(self, input_ids: torch.LongTensor) -> torch.Tensor:
+    def cls_embeddings(
+        self,
+        input_ids: torch.LongTensor,
+        attention_mask: torch.FloatTensor | None = None,
+    ) -> torch.Tensor:
         """Returns pooled [CLS] representations (B, hidden_size)."""
-        attn = _generate_attention_masks(input_ids)
+        attn = attention_mask if attention_mask is not None else _generate_attention_masks(input_ids)
         outputs = self.bert(input_ids=input_ids, attention_mask=attn)
         return outputs.last_hidden_state[:, 0]  # (B, hidden)
 
@@ -141,6 +149,7 @@ class HopprF1CheXbert(nn.Module):
         refs_filename: str | None = None,
         hyps_filename: str | None = None,
         device: Union[str, torch.device] = "cuda",
+        batch_size: int = 64,
     ):
         super().__init__()
 
@@ -152,6 +161,9 @@ class HopprF1CheXbert(nn.Module):
 
         self.refs_filename = refs_filename
         self.hyps_filename = hyps_filename
+        if batch_size <= 0:
+            raise ValueError("batch_size must be a positive integer")
+        self.batch_size = batch_size
 
         # HuggingFace tokenizer (always CPU, we just move tensors later) -------
         self.tokenizer = AutoTokenizer.from_pretrained("answerdotai/ModernBERT-base")
@@ -169,42 +181,58 @@ class HopprF1CheXbert(nn.Module):
     @torch.no_grad()
     def get_embeddings(self, reports: Sequence[str]) -> List[np.ndarray]:
         """Return list[np.ndarray] of pooled [CLS] vectors for each report."""
-        # Tokenise *as a batch* for efficiency
-        encoding = self.tokenizer(
-            reports,
-            padding=True,
-            truncation=True,
-            max_length=512,
-            return_tensors="pt",
-        )
-        input_ids = encoding.input_ids.to(self.device)
-        # (B, hidden)
-        cls = self.model.cls_embeddings(input_ids)
-        return [v.cpu().numpy() for v in cls]
+        embeddings: List[np.ndarray] = []
+        for i in range(0, len(reports), self.batch_size):
+            batch_reports = reports[i:i + self.batch_size]
+            encoding = self.tokenizer(
+                batch_reports,
+                padding=True,
+                truncation=True,
+                max_length=512,
+                return_tensors="pt",
+            )
+            input_ids = encoding.input_ids.to(self.device)
+            attention_mask = encoding.attention_mask.to(self.device)
+            cls = self.model.cls_embeddings(input_ids, attention_mask=attention_mask)
+            embeddings.extend(v.cpu().numpy() for v in cls)
+        return embeddings
 
     @torch.no_grad()
     def get_label(self, report: str, mode: str = "rrg") -> List[int]:
         """Return 27‑dim binary vector for the given report."""
-        input_ids = self.tokenizer(report, truncation=True, max_length=512, return_tensors="pt").input_ids.to(self.device)
-        preds = [head.argmax(dim=1).item() for head in self.model.cls_logits(input_ids)]
+        return self.get_labels([report], mode=mode)[0]
 
-        binary = []
-        if mode == "rrg":
-            for c in preds:
-                binary.append(1 if c in {1, 3} else 0)
-        elif mode == "classification":
-            for c in preds:
-                if c == 1:
-                    binary.append(1)
-                elif c == 2:
-                    binary.append(0)
-                elif c == 3:
-                    binary.append(-1)
+    @torch.no_grad()
+    def get_labels(self, reports: Sequence[str], mode: str = "rrg") -> List[List[int]]:
+        """Return 27-dim vectors for each report using batched inference."""
+        labels: List[List[int]] = []
+        for i in range(0, len(reports), self.batch_size):
+            batch_reports = reports[i:i + self.batch_size]
+            encoding = self.tokenizer(
+                batch_reports,
+                padding=True,
+                truncation=True,
+                max_length=512,
+                return_tensors="pt",
+            )
+            input_ids = encoding.input_ids.to(self.device)
+            attention_mask = encoding.attention_mask.to(self.device)
+            logits_per_head = self.model.cls_logits(input_ids, attention_mask=attention_mask)
+            pred_matrix = torch.stack([head.argmax(dim=1) for head in logits_per_head], dim=1)
+
+            for row in pred_matrix.tolist():
+                if mode == "rrg":
+                    labels.append([1 if c in {1, 3} else 0 for c in row])
+                elif mode == "classification":
+                    labels.append(
+                        [
+                            1 if c == 1 else -1 if c == 3 else 0
+                            for c in row
+                        ]
+                    )
                 else:
-                    binary.append(0)
-        else:
-            raise ValueError(f"Unknown mode: {mode}")
-        return binary
+                    raise ValueError(f"Unknown mode: {mode}")
+        return labels
 
     # ---------------------------------------------------------------------
     # Full evaluator – unchanged logic but simplified I/O
@@ -227,13 +255,13 @@ class HopprF1CheXbert(nn.Module):
             with open(self.refs_filename) as f:
                 refs_chexbert = [eval(line) for line in f]
         else:
-            refs_chexbert = [self.get_label(r) for r in refs]
+            refs_chexbert = self.get_labels(refs)
             if self.refs_filename:
                 with open(self.refs_filename, "w") as f:
                     f.write("\n".join(map(str, refs_chexbert)))
 
         # Hypothesis labels ----------------------------------------------------
-        hyps_chexbert = [self.get_label(h) for h in hyps]
+        hyps_chexbert = self.get_labels(hyps)
         if self.hyps_filename:
             with open(self.hyps_filename, "w") as f:
                 f.write("\n".join(map(str, hyps_chexbert)))
