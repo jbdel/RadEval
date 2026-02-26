@@ -123,7 +123,7 @@ class SRRBert(nn.Module):
             for batch in tqdm(
                 batches, desc="Predicting", disable=not self.tqdm_enable
             ):
-                inputs = self.tokenizer.batch_encode_plus(
+                inputs = self.tokenizer(
                     batch,
                     add_special_tokens=True,
                     max_length=512,
