@@ -4,7 +4,7 @@ import numpy as np
 
 def test_f1chexbert():
     f1chexbert = F1CheXbert()
-    accuracy, accuracy_not_averaged, class_report, class_report_5 = f1chexbert(
+    accuracy, accuracy_not_averaged, class_report, class_report_5, _, _ = f1chexbert(
         hyps=['No pleural effusion. Normal heart size.',
               'Normal heart size.',
               'Increased mild pulmonary edema and left basal atelectasis.',
