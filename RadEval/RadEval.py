@@ -167,7 +167,8 @@ class RadEval():
                 "f1radbert_ct_accuracy",
                 "f1radbert_ct_micro avg_f1-score",
                 "f1radbert_ct_macro avg_f1-score",
-                "f1radbert_ct_weighted_f1",
+                "f1radbert_ct_weighted_f1"
+            ])
         
         if self.do_hopprchexbert:
             self.metric_keys.extend([
