@@ -56,3 +56,36 @@ def test_f1chexbert():
     assert np.array_equal(accuracy_not_averaged, expected_output[1])
     assert class_report == expected_output[2]
     assert class_report_5 == expected_output[3]
+
+
+def test_f1chexbert_probe_sentences_expected_present():
+    f1chexbert = F1CheXbert(device="cpu")
+
+    probes = [
+        ("Mild cardiomegaly is present.", "Cardiomegaly"),
+        ("Patchy right lower lobe consolidation.", "Consolidation"),
+        ("Patchy right air space opacity.", "Lung Opacity"),
+        ("Small left pleural effusion is seen.", "Pleural Effusion"),
+        ("Left apical pneumothorax is present.", "Pneumothorax"),
+        ("Bibasilar subsegmental atelectatic change.", "Atelectasis"),
+        ("Pulmonary edema is present.", "Edema"),
+        ("A right upper lobe lung lesion is identified.", "Lung Lesion"),
+        ("Acute displaced left rib fracture is present.", "Fracture"),
+        ("Endotracheal tube and enteric tube are in place.", "Support Devices"),
+        ("No focal airspace opacity. Mild right lower lobe pneumonia.", "Pneumonia"),
+    ]
+
+    sentences = [sentence for sentence, _ in probes]
+    expected_diseases = [disease for _, disease in probes]
+
+    preds = f1chexbert.get_labels(sentences, mode="rrg")
+    assert len(preds) == len(expected_diseases)
+
+    for sentence, expected, row in zip(sentences, expected_diseases, preds):
+        present = [
+            name for name, value in zip(f1chexbert.TARGET_NAMES, row) if value == 1
+        ]
+        assert expected in present, (
+            f"Expected '{expected}' to be present for sentence '{sentence}', "
+            f"but received present labels: {present}"
+        )

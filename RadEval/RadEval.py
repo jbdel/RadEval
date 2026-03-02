@@ -167,9 +167,9 @@ class RadEval():
                 "f1radbert_ct_accuracy",
                 "f1radbert_ct_micro avg_f1-score",
                 "f1radbert_ct_macro avg_f1-score",
-                "f1radbert_ct_weighted_f1"
+                "f1radbert_ct_weighted_f1",
             ])
-        
+
         if self.do_hopprchexbert:
             self.metric_keys.extend([
                 "hopprchexbert-5_micro avg_f1-score",
@@ -388,16 +388,16 @@ class RadEval():
                 }
 
                 scores["chexbert"] = {
+                    "sample_scores": {
+                        "all_labels": sample_label_acc_full,
+                        "5_labels": sample_label_acc_5,
+                    },
                     "chexbert-5_micro avg_f1-score": chexbert_5["micro avg"]["f1-score"],
                     "chexbert-all_micro avg_f1-score": chexbert_all["micro avg"]["f1-score"],
                     "chexbert-5_macro avg_f1-score": chexbert_5["macro avg"]["f1-score"],
                     "chexbert-all_macro avg_f1-score": chexbert_all["macro avg"]["f1-score"],
                     "chexbert-5_weighted_f1": chexbert_5["weighted avg"]["f1-score"],
                     "chexbert-all_weighted_f1": chexbert_all["weighted avg"]["f1-score"],
-                    "sample_scores": {
-                        "all_labels": sample_label_acc_full,
-                        "5_labels": sample_label_acc_5,
-                    },
                     "label_scores_f1-score": {
                         "chexbert-5": chexbert_5_labels,
                         "chexbert_all": chexbert_all_labels
@@ -436,7 +436,8 @@ class RadEval():
                     "label_scores_f1-score": f1radbert_ct_labels,
                 }
             else:
-                scores["f1radbert_ct_accuracy"] = round(f1radbert_ct_accuracy, 4)
+                scores["f1radbert_ct_accuracy"] = round(
+                    f1radbert_ct_accuracy, 4)
                 scores["f1radbert_ct_micro avg_f1-score"] = round(
                     f1radbert_ct_report["micro avg"]["f1-score"], 4)
                 scores["f1radbert_ct_macro avg_f1-score"] = round(
@@ -445,7 +446,8 @@ class RadEval():
                     f1radbert_ct_report["weighted avg"]["f1-score"], 4)
 
         if self.do_hopprchexbert:
-            _, _, chexbert_all, chexbert_5, sample_label_acc_full, sample_label_acc_5 = self.hopprchexbert_scorer(hyps, refs)
+            _, _, chexbert_all, chexbert_5, sample_label_acc_full, sample_label_acc_5 = self.hopprchexbert_scorer(
+                hyps, refs)
             if self.do_details:
                 chexbert_5_labels = {
                     k: v["f1-score"]
@@ -458,28 +460,34 @@ class RadEval():
                 }
 
                 scores["hopprchexbert"] = {
+                    "sample_scores": {
+                        "all_labels": sample_label_acc_full,
+                        "5_labels": sample_label_acc_5,
+                    },
                     "hopprchexbert-5_micro avg_f1-score": chexbert_5["micro avg"]["f1-score"],
                     "hopprchexbert-all_micro avg_f1-score": chexbert_all["micro avg"]["f1-score"],
                     "hopprchexbert-5_macro avg_f1-score": chexbert_5["macro avg"]["f1-score"],
                     "hopprchexbert-all_macro avg_f1-score": chexbert_all["macro avg"]["f1-score"],
                     "hopprchexbert-5_weighted_f1": chexbert_5["weighted avg"]["f1-score"],
                     "hopprchexbert-all_weighted_f1": chexbert_all["weighted avg"]["f1-score"],
-                    "sample_scores": {
-                        "all_labels": sample_label_acc_full,
-                        "5_labels": sample_label_acc_5,
-                        },
                     "label_scores_f1-score": {
-                        "chexbert-5": chexbert_5_labels,
-                        "chexbert_all": chexbert_all_labels
+                        "hopprchexbert-5": chexbert_5_labels,
+                        "hopprchexbert_all": chexbert_all_labels
                     }
                 }
             else:
-                scores["hopprchexbert-5_micro avg_f1-score"] = round(chexbert_5["micro avg"]["f1-score"], 4)
-                scores["hopprchexbert-all_micro avg_f1-score"] = round(chexbert_all["micro avg"]["f1-score"], 4)
-                scores["hopprchexbert-5_macro avg_f1-score"] = round(chexbert_5["macro avg"]["f1-score"], 4)
-                scores["hopprchexbert-all_macro avg_f1-score"] = round(chexbert_all["macro avg"]["f1-score"], 4)
-                scores["hopprchexbert-5_weighted_f1"] = round(chexbert_5["weighted avg"]["f1-score"], 4)
-                scores["hopprchexbert-all_weighted_f1"] = round(chexbert_all["weighted avg"]["f1-score"], 4)
+                scores["hopprchexbert-5_micro avg_f1-score"] = round(
+                    chexbert_5["micro avg"]["f1-score"], 4)
+                scores["hopprchexbert-all_micro avg_f1-score"] = round(
+                    chexbert_all["micro avg"]["f1-score"], 4)
+                scores["hopprchexbert-5_macro avg_f1-score"] = round(
+                    chexbert_5["macro avg"]["f1-score"], 4)
+                scores["hopprchexbert-all_macro avg_f1-score"] = round(
+                    chexbert_all["macro avg"]["f1-score"], 4)
+                scores["hopprchexbert-5_weighted_f1"] = round(
+                    chexbert_5["weighted avg"]["f1-score"], 4)
+                scores["hopprchexbert-all_weighted_f1"] = round(
+                    chexbert_all["weighted avg"]["f1-score"], 4)
 
         if self.do_ratescore:
             rate_score, pred_pairs_raw, gt_pairs_raw = self.ratescore_scorer.compute_score(
