@@ -133,7 +133,7 @@ class HopprF1CheXbert(nn.Module):
                 'pulmonary_congestion_pulmonary_venous_congestion',
                 'shoulder_dislocation', 'subcutaneous_emphysema', 'tracheal_deviation',
                 'whole_lung_or_majority_collapse']
-    NO_FINDING = "no_inding"
+    NO_FINDING = "no_finding"
     TARGET_NAMES = CONDITION_NAMES + [NO_FINDING]
 
     TOP5 = [
