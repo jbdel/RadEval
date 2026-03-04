@@ -142,7 +142,7 @@ def test_f1chexbert():
                         'recall': 0.0,
                         'f1-score': 0.0,
                         'support': 0.0},
-                        'no_inding': {'precision': 0.0,
+                        'no_finding': {'precision': 0.0,
                         'recall': 0.0,
                         'f1-score': 0.0,
                         'support': 0.0},
