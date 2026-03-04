@@ -124,6 +124,7 @@ Generating: 100%|█████████████████████
 - [🧪 Hypothesis Testing (Significance Evaluation)](#-hypothesis-testing-significance-evaluation)
 - [🧠 RadEval Expert Dataset](#-radeval-expert-dataset)
 - [🚦 Performance Tips](#-performance-tips)
+- [🧑‍💻 Contributing](#-contributing)
 - [📚 Citation](#-citation)
 
 
@@ -768,6 +769,15 @@ To support reliable benchmarking, we introduce the **RadEval Expert Dataset**, a
 3. **Batch Processing**: Process large datasets in smaller chunks
 4. **GPU Usage**: Ensure CUDA is available for faster computation
 
+## 🧑‍💻 Contributing
+
+- Contributions are welcome and encouraged.
+- For larger changes or new features, please open an issue first to discuss the proposal before starting implementation.
+- Fork the repository, clone your fork, and install in editable/development mode (see [Option 3](#option-3-install-in-development-mode-recommended-for-contributors)).
+- Before opening a pull request, make sure the test suite runs:
+  - From the repository root, run: `pytest .`
+  - A GPU is strongly recommended (unless you have a lot of free time ⏳). Tests have been successfully run on an RTX 4090 (24GB VRAM) and took ~1–2 minutes.
+- In your pull request, include a clear description and a detailed bullet list of changes.
 
 ## 📚 Citation
 
