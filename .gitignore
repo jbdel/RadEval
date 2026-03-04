@@ -13,6 +13,7 @@ __pycache__/
 
 # Ignore OS generated files
 .DS_Store
+.idea
 
 # Ignore run_scripts
 rrg_systems/
