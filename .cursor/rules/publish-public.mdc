@@ -1,0 +1,51 @@
+---
+description: How to publish RadEval to the public jbdel/RadEval repo, stripping private metrics
+globs: scripts/publish_public.py
+alwaysApply: false
+---
+
+# Publishing to jbdel/RadEval
+
+This project has two repos:
+- **hopprai/RadEval** (private, origin) -- full codebase with all metrics
+- **jbdel/RadEval** (public) -- same codebase minus private metrics (e.g. HopprCheXbert)
+
+## How to publish
+
+All development happens on hopprai/RadEval. To release publicly:
+
+```bash
+# 1. Make sure all changes are committed and pushed to hopprai/RadEval
+git add -A && git commit -m "..." && git push origin main
+
+# 2. Dry-run first (see what will be stripped, no push)
+python scripts/publish_public.py
+
+# 3. Push to public repo
+python scripts/publish_public.py --push
+```
+
+The script clones the repo to a temp dir, strips private metrics, removes `scripts/` itself, and force-pushes to `https://github.com/jbdel/RadEval.git`.
+
+## Adding a new private metric
+
+Edit `PRIVATE_METRICS` in `scripts/publish_public.py`:
+
+```python
+PRIVATE_METRICS = [
+    {
+        "name": "hoppr_f1chexbert",              # human label
+        "metric_dir": "RadEval/metrics/hoppr_f1chexbert",  # folder to delete
+        "test_file": "tests/test_hopprf1chexbert.py",      # test to delete
+        "flag": "do_hopprchexbert",               # constructor flag to strip
+        "display_name": "HopprCheXbert",          # for logging
+    },
+    # Add new private metrics here with the same structure
+]
+```
+
+The metric must also degrade gracefully when missing. Pattern:
+
+1. `__init__.py` catches import errors: `try: from .mod import Cls; except: Cls = None`
+2. `RadEval.py` wraps the init block in try/except and disables the flag on failure
+3. Test file checks `if Cls is None: pytest.skip(...)`
