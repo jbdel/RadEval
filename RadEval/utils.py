@@ -38,36 +38,39 @@ def clean_numbered_list(text):
     return nltk.sent_tokenize(text)
 
 class PairedTest:
+    """Paired approximate randomization (AR) for comparing systems.
+
+    Each metric function must return one of:
+      - A float (used directly)
+      - A tuple/list where ``[0]`` is the scalar score
+      - A dict with a ``'score'`` key (or the first value is used as fallback)
+
+    Note: every randomization trial recomputes the full corpus-level metric.
+    For heavy model-based metrics (GREEN, RadGraph, ...) this can be very
+    expensive. Use lightweight wrappers or small ``n_samples`` in that case.
     """
-    Paired significance testing for comparing radiology report generation systems.
-    
-    Supports paired approximate randomization (AR).
-    """
-    
-    def __init__(self, 
-                 systems: Dict[str, List[str]], 
+
+    def __init__(self,
+                 systems: Dict[str, List[str]],
                  metrics: Dict[str, Callable],
                  references: Optional[List[str]],
                  n_samples: int = 10000,
-                 n_jobs: int = 1,
                  seed: int = 12345):
         """
         Args:
-            systems: Dictionary mapping system names to their generated reports
-            metrics: Dictionary mapping metric names to metric functions
-            references: List of reference reports
-            n_samples: Number of resampling trials (default: 10000)
-            n_jobs: Number of parallel jobs (default: 1)
-            seed: Random seed for reproducibility
+            systems: Dictionary mapping system names to their generated reports.
+            metrics: Dictionary mapping metric names to callable scorers.
+            references: List of reference reports.
+            n_samples: Number of randomization trials (default: 10000).
+                       Minimum recommended: 1000.
+            seed: Random seed for reproducibility.
         """
         self.systems = systems
         self.metrics = metrics
         self.references = references
         self.n_samples = n_samples
-        self.n_jobs = n_jobs
         self.seed = seed
-        
-        random.seed(seed)
+        self.rng = random.Random(seed)
         
         if not systems:
             raise ValueError("At least one system is required")
@@ -118,27 +121,32 @@ class PairedTest:
         
         return signatures, scores
     
+    @staticmethod
+    def _extract_scalar(score):
+        """Normalise a metric return value to a single float."""
+        if isinstance(score, (int, float)):
+            return float(score)
+        if isinstance(score, (tuple, list)):
+            return float(score[0])
+        if isinstance(score, dict):
+            if 'score' in score:
+                return float(score['score'])
+            return float(next(iter(score.values())))
+        raise TypeError(
+            f"Metric returned unsupported type {type(score).__name__}. "
+            "Expected float, tuple/list, or dict with a 'score' key."
+        )
+
     def _calculate_baseline_scores(self) -> Dict[str, Dict[str, float]]:
         """Calculate baseline scores for all systems and metrics."""
         scores = defaultdict(dict)
-        
         for system_name, outputs in self.systems.items():
             for metric_name, metric_func in self.metrics.items():
                 if self.references:
-                    score = metric_func(outputs, self.references)
+                    raw = metric_func(outputs, self.references)
                 else:
-                    score = metric_func(outputs)
-                
-                if isinstance(score, dict):
-                    if 'score' in score:
-                        scores[system_name][metric_name] = score['score']
-                    else:
-                        scores[system_name][metric_name] = list(score.values())[0]
-                elif isinstance(score, (tuple, list)):
-                    scores[system_name][metric_name] = score[0]
-                else:
-                    scores[system_name][metric_name] = score
-        
+                    raw = metric_func(outputs)
+                scores[system_name][metric_name] = self._extract_scalar(raw)
         return scores
     
     def _calculate_p_value(self, 
@@ -179,7 +187,7 @@ class PairedTest:
             randomized_system = []
             
             for i in range(self.n_instances):
-                if random.random() < 0.5:
+                if self.rng.random() < 0.5:
                     # Don't swap
                     randomized_baseline.append(baseline_outputs[i])
                     randomized_system.append(system_outputs[i])
@@ -189,23 +197,14 @@ class PairedTest:
                     randomized_system.append(baseline_outputs[i])
             
             if self.references:
-                rand_baseline_score = metric_func(randomized_baseline, self.references)
-                rand_system_score = metric_func(randomized_system, self.references)
+                raw_b = metric_func(randomized_baseline, self.references)
+                raw_s = metric_func(randomized_system, self.references)
             else:
-                rand_baseline_score = metric_func(randomized_baseline)
-                rand_system_score = metric_func(randomized_system)
-            
-            if isinstance(rand_baseline_score, dict):
-                rand_baseline_score = rand_baseline_score.get('score', list(rand_baseline_score.values())[0])
-            elif isinstance(rand_baseline_score, (tuple, list)):
-                rand_baseline_score = rand_baseline_score[0]
-                
-            if isinstance(rand_system_score, dict):
-                rand_system_score = rand_system_score.get('score', list(rand_system_score.values())[0])
-            elif isinstance(rand_system_score, (tuple, list)):
-                rand_system_score = rand_system_score[0]
-            
-            rand_delta = abs(rand_system_score - rand_baseline_score)
+                raw_b = metric_func(randomized_baseline)
+                raw_s = metric_func(randomized_system)
+
+            rand_delta = abs(
+                self._extract_scalar(raw_s) - self._extract_scalar(raw_b))
             
             if rand_delta >= original_delta:
                 count_greater += 1
@@ -290,39 +289,25 @@ def compare_systems(systems: Dict[str, List[str]],
                    significance_level: float = 0.05,
                    seed: int = 12345,
                    print_results: bool = True) -> Tuple[Dict[str, str], Dict[str, Dict[str, float]]]:
-    """    
+    """Compare multiple systems using paired approximate randomization.
+
+    The first system in ``systems`` is treated as the baseline.  Each
+    subsequent system is compared pairwise against it.
+
     Args:
-        systems: Dictionary mapping system names to their generated reports
-        metrics: Dictionary mapping metric names to metric functions
-        references: Optional list of reference reports
-        n_samples: Number of resampling trials
-        significance_level: Significance threshold for printing results
-        seed: Random seed for reproducibility
-        print_results: Whether to print formatted results
-    
+        systems: ``{name: [report, ...]}`` -- the first entry is the baseline.
+        metrics: ``{name: callable}`` -- each callable receives
+            ``(hyps, refs)`` and must return a float, a tuple/list whose
+            first element is the score, or a dict with a ``'score'`` key.
+        references: Reference reports (same length as each system's outputs).
+        n_samples: Number of randomization trials (>=1000 recommended).
+        significance_level: Alpha for the significance markers in the table.
+        seed: Random seed for reproducibility.
+        print_results: Print a formatted results table to stdout.
+
     Returns:
-        Tuple of (signatures, scores)
-    
-    Example:
-        ```python
-        systems = {
-            'baseline_model': baseline_reports,
-            'new_model': new_model_reports,
-            'other_model': other_model_reports
-        }
-        
-        metrics = {
-            'bleu': lambda hyp, ref: bleu_score(hyp, ref),
-            'rouge': lambda hyp, ref: rouge_score(hyp, ref),
-            'bertscore': lambda hyp, ref: bert_score(hyp, ref)
-            'custom_metric': lambda hyp, ref: custom_metric(hyp, ref)
-        }
-        
-        signatures, scores = compare_systems(
-            systems, metrics, references, 
-            n_samples=10000
-        )
-        ```
+        ``(signatures, scores)`` where *signatures* maps metric names to
+        audit strings and *scores* maps system names to score/p-value dicts.
     """
     
     paired_test = PairedTest(

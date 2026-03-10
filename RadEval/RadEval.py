@@ -1,35 +1,12 @@
-from collections import defaultdict
-import stanza
+import math
 import warnings
 import logging
 import os
-import re
-from .nlg.rouge.rouge import Rouge
-from .nlg.bleu.bleu import Bleu
-from .nlg.bertscore.bertscore import BertScore
-from radgraph import F1RadGraph
-from .factual.green_score import GREEN, MammoGREEN
-from .factual.RaTEScore import RaTEScore
-from .factual.f1temporal import F1Temporal
-from torch import nn
-import pandas as pd
-import numpy as np
-from sklearn.metrics import classification_report
-from sklearn.exceptions import UndefinedMetricWarning
 import json
-from .factual.f1chexbert import F1CheXbert
-from .factual.f1Radbert_ct import F1RadbertCT
-from .factual.hoppr_f1chexbert import HopprF1CheXbert
-import nltk
-from .utils import clean_numbered_list
-from .utils import multilabel_prf_per_sample
-from .factual.RadCliQv1.radcliq import CompositeMetric
-from .factual.SRRBert.srr_bert import SRRBert, srr_bert_parse_sentences
-from .nlg.radevalbertscore import RadEvalBERTScorer
-# Suppress Warning
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
-warnings.filterwarnings('ignore')
-logging.basicConfig(level=logging.ERROR)
+from rich.progress import (
+    Progress, SpinnerColumn, TextColumn, BarColumn,
+    MofNCompleteColumn, TimeElapsedColumn,
+)
 
 
 class RadEval():
@@ -51,8 +28,13 @@ class RadEval():
                  do_radeval_bertscore=False,
                  do_temporal=False,
                  do_details=False,
+                 show_progress=True,
                  ):
         super(RadEval, self).__init__()
+
+        os.environ["TOKENIZERS_PARALLELISM"] = "false"
+        warnings.filterwarnings('ignore')
+        logging.getLogger("RadEval").setLevel(logging.ERROR)
 
         self.do_radgraph = do_radgraph
         self.do_green = do_green
@@ -71,25 +53,29 @@ class RadEval():
         self.do_temporal = do_temporal
         self.do_radeval_bertscore = do_radeval_bertscore
         self.do_details = do_details
+        self.show_progress = show_progress
 
-        # Initialize scorers only once
         if self.do_radgraph:
+            from radgraph import F1RadGraph
             self.radgraph_scorer = F1RadGraph(
                 reward_level="all", model_type="radgraph-xl")
         if self.do_bleu:
+            from .metrics.bleu.bleu import Bleu
             self.bleu_scorer = Bleu()
             self.bleu_scorer_1 = Bleu(n=1)
             self.bleu_scorer_2 = Bleu(n=2)
             self.bleu_scorer_3 = Bleu(n=3)
         if self.do_bertscore:
+            from .metrics.bertscore.bertscore import BertScore
             self.bertscore_scorer = BertScore(model_type='distilbert-base-uncased',
                                               num_layers=5)
         if self.do_green:
-            # Initialize green scorer here if needed
+            from .metrics.green_score import GREEN
             self.green_scorer = GREEN("StanfordAIMI/GREEN-radllama2-7b",
                                       output_dir=".")
 
         if self.do_mammo_green:
+            from .metrics.green_score import MammoGREEN
             self.mammo_green_scorer = MammoGREEN(
                 model_name=self.mammo_green_model,
                 api_key=self.mammo_green_api_key,
@@ -97,46 +83,62 @@ class RadEval():
             )
 
         if self.do_rouge:
-            self.rouge_scorers = {
-                "rouge1": Rouge(rouges=["rouge1"]),
-                "rouge2": Rouge(rouges=["rouge2"]),
-                "rougeL": Rouge(rouges=["rougeL"])
-            }
+            from rouge_score import rouge_scorer
+            self._rouge_types = ["rouge1", "rouge2", "rougeL"]
+            self._rouge_scorer = rouge_scorer.RougeScorer(
+                self._rouge_types, use_stemmer=True)
 
         if self.do_srr_bert:
+            import nltk
+            from .metrics.SRRBert.srr_bert import SRRBert
             nltk.download('punkt_tab', quiet=True)
             self.srr_bert_scorer = SRRBert(model_type="leaves_with_statuses")
 
         if self.do_chexbert:
+            from .metrics.f1chexbert import F1CheXbert
             self.chexbert_scorer = F1CheXbert()
 
         if self.do_f1radbert_ct:
+            from .metrics.f1Radbert_ct import F1RadbertCT
             self.f1radbert_ct_scorer = F1RadbertCT(
                 model_id="IAMJB/RadBERT-CT",
                 threshold=0.5,
                 batch_size=16,
             )
         if self.do_hopprchexbert:
-            self.hopprchexbert_scorer = HopprF1CheXbert()
+            try:
+                from .metrics.hoppr_f1chexbert import HopprF1CheXbert
+                if HopprF1CheXbert is None:
+                    raise ImportError("HopprF1CheXbert is not available")
+                self.hopprchexbert_scorer = HopprF1CheXbert()
+            except (ImportError, FileNotFoundError, OSError) as e:
+                warnings.warn(
+                    f"HopprCheXbert unavailable ({e}); disabling do_hopprchexbert.")
+                self.do_hopprchexbert = False
 
         if self.do_ratescore:
+            from .metrics.RaTEScore import RaTEScore
             self.ratescore_scorer = RaTEScore()
 
         if self.do_radcliq:
+            from .metrics.RadCliQv1.radcliq import CompositeMetric
             self.radcliq_scorer = CompositeMetric()
 
         if self.do_temporal:
+            import stanza
+            from .metrics.f1temporal import F1Temporal
             stanza.download('en', package='radiology',
                             processors={'ner': 'radiology'})
             self.F1Temporal = F1Temporal
 
         if self.do_radeval_bertscore:
+            from .metrics.radevalbertscore import RadEvalBERTScorer
             self.radeval_bertscore = RadEvalBERTScorer(
                 model_type="IAMJB/RadEvalModernBERT",
                 num_layers=22,
                 use_fast_tokenizer=True,
                 rescale_with_baseline=False)
-        # Store the metric keys
+
         self.metric_keys = []
         if self.do_radgraph:
             self.metric_keys.extend(
@@ -150,11 +152,10 @@ class RadEval():
         if self.do_bertscore:
             self.metric_keys.append("bertscore")
         if self.do_rouge:
-            self.metric_keys.extend(self.rouge_scorers.keys())
+            self.metric_keys.extend(["rouge1", "rouge2", "rougeL"])
         if self.do_srr_bert:
             self.metric_keys.extend(
                 ["samples_avg_precision", "samples_avg_recall", "samples_avg_f1-score"])
-
         if self.do_chexbert:
             self.metric_keys.extend([
                 "chexbert-5_micro avg_f1-score",
@@ -169,7 +170,6 @@ class RadEval():
                 "f1radbert_ct_macro avg_f1-score",
                 "f1radbert_ct_weighted_f1",
             ])
-
         if self.do_hopprchexbert:
             self.metric_keys.extend([
                 "hopprchexbert-5_micro avg_f1-score",
@@ -177,7 +177,6 @@ class RadEval():
                 "hopprchexbert-5_macro avg_f1-score",
                 "hopprchexbert-all_macro avg_f1-score"
             ])
-
         if self.do_ratescore:
             self.metric_keys.append("ratescore")
         if self.do_radcliq:
@@ -198,361 +197,393 @@ class RadEval():
         scores = self.compute_scores(refs=refs, hyps=hyps)
         return scores
 
+    def _make_progress(self):
+        return Progress(
+            SpinnerColumn(),
+            TextColumn("[bold]{task.description}"),
+            BarColumn(),
+            MofNCompleteColumn(),
+            TimeElapsedColumn(),
+            disable=not self.show_progress,
+        )
+
+    def _score_chexbert(self, scores, prefix, scorer, hyps, refs,
+                        n_samples, progress, metric_task):
+        display = prefix[0].upper() + prefix[1:]
+        progress.update(metric_task, description=f"Computing {display}")
+        n_batches = math.ceil(n_samples / scorer.batch_size) * 2
+        batch_task = progress.add_task("  [dim]Batches", total=n_batches)
+        _, _, cr_all, cr_5, sample_acc_full, sample_acc_5 = scorer.forward(
+            hyps, refs, on_batch_done=lambda: progress.advance(batch_task))
+        progress.remove_task(batch_task)
+        if self.do_details:
+            labels_5 = {k: v["f1-score"] for k, v in list(cr_5.items())[:-4]}
+            labels_all = {k: v["f1-score"] for k, v in list(cr_all.items())[:-4]}
+            scores[prefix] = {
+                "sample_scores": {
+                    "all_labels": sample_acc_full,
+                    "5_labels": sample_acc_5,
+                },
+                f"{prefix}-5_micro avg_f1-score": cr_5["micro avg"]["f1-score"],
+                f"{prefix}-all_micro avg_f1-score": cr_all["micro avg"]["f1-score"],
+                f"{prefix}-5_macro avg_f1-score": cr_5["macro avg"]["f1-score"],
+                f"{prefix}-all_macro avg_f1-score": cr_all["macro avg"]["f1-score"],
+                f"{prefix}-5_weighted_f1": cr_5["weighted avg"]["f1-score"],
+                f"{prefix}-all_weighted_f1": cr_all["weighted avg"]["f1-score"],
+                "label_scores_f1-score": {
+                    f"{prefix}-5": labels_5,
+                    f"{prefix}_all": labels_all,
+                },
+            }
+        else:
+            scores[f"{prefix}-5_micro avg_f1-score"] = round(cr_5["micro avg"]["f1-score"], 4)
+            scores[f"{prefix}-all_micro avg_f1-score"] = round(cr_all["micro avg"]["f1-score"], 4)
+            scores[f"{prefix}-5_macro avg_f1-score"] = round(cr_5["macro avg"]["f1-score"], 4)
+            scores[f"{prefix}-all_macro avg_f1-score"] = round(cr_all["macro avg"]["f1-score"], 4)
+            scores[f"{prefix}-5_weighted_f1"] = round(cr_5["weighted avg"]["f1-score"], 4)
+            scores[f"{prefix}-all_weighted_f1"] = round(cr_all["weighted avg"]["f1-score"], 4)
+        progress.advance(metric_task)
+
     def compute_scores(self, refs, hyps):
-        if not (isinstance(hyps, list) and isinstance(refs, list)):
-            raise TypeError("hyps and refs must be of type list")
-        if len(hyps) != len(refs):
-            raise ValueError("hyps and refs lists don't have the same size")
-
         scores = {}
-        if self.do_radgraph:
-            radgraph_scores = self.radgraph_scorer(refs=refs, hyps=hyps)
+        n_samples = len(refs)
 
-            if self.do_details:
-                f1_scores = radgraph_scores[0]
-                individual_scores = radgraph_scores[1]
-                hyps_entities = radgraph_scores[2]
-                refs_entities = radgraph_scores[3]
+        enabled = []
+        if self.do_radgraph:        enabled.append("RadGraph")
+        if self.do_bleu:            enabled.append("BLEU")
+        if self.do_bertscore:       enabled.append("BERTScore")
+        if self.do_green:           enabled.append("GREEN")
+        if self.do_mammo_green:     enabled.append("MammoGREEN")
+        if self.do_rouge:           enabled.append("ROUGE")
+        if self.do_srr_bert:        enabled.append("SRR-BERT")
+        if self.do_chexbert:        enabled.append("CheXbert")
+        if self.do_f1radbert_ct:    enabled.append("F1RadBERT-CT")
+        if self.do_hopprchexbert:   enabled.append("HopprCheXbert")
+        if self.do_ratescore:       enabled.append("RaTEScore")
+        if self.do_radcliq:         enabled.append("RadCliQ-v1")
+        if self.do_temporal:        enabled.append("Temporal F1")
+        if self.do_radeval_bertscore: enabled.append("RadEval-BERTScore")
 
-                scores["radgraph"] = {
-                    "radgraph_simple": f1_scores[0],
-                    "radgraph_partial": f1_scores[1],
-                    "radgraph_complete": f1_scores[2],
-                    "sample_scores": individual_scores,
-                    "hypothesis_annotation_lists": hyps_entities,
-                    "reference_annotation_lists": refs_entities
-                }
+        with self._make_progress() as progress:
+            metric_task = progress.add_task(
+                "Starting...", total=len(enabled))
 
-            else:
-                radgraph_scores = radgraph_scores[0]
-                scores["radgraph_simple"] = round(radgraph_scores[0], 4)
-                scores["radgraph_partial"] = round(radgraph_scores[1], 4)
-                scores["radgraph_complete"] = round(radgraph_scores[2], 4)
+            # ----------------------------------------------------------
+            if self.do_radgraph:
+                progress.update(metric_task, description="Computing RadGraph")
+                radgraph_scores = self.radgraph_scorer(refs=refs, hyps=hyps)
 
-        if self.do_bleu:
-            if self.do_details:
-                bleu_1_score, bleu_1_samples = self.bleu_scorer_1(refs, hyps)
-                bleu_2_score, bleu_2_samples = self.bleu_scorer_2(refs, hyps)
-                bleu_3_score, bleu_3_samples = self.bleu_scorer_3(refs, hyps)
-                bleu_4_score, bleu_4_samples = self.bleu_scorer(refs, hyps)
+                if self.do_details:
+                    f1_scores = radgraph_scores[0]
+                    individual_scores = radgraph_scores[1]
+                    hyps_entities = radgraph_scores[2]
+                    refs_entities = radgraph_scores[3]
 
-                scores["bleu"] = {
-                    "bleu_1": {"mean_score": bleu_1_score, "sample_scores": bleu_1_samples},
-                    "bleu_2": {"mean_score": bleu_2_score, "sample_scores": bleu_2_samples},
-                    "bleu_3": {"mean_score": bleu_3_score, "sample_scores": bleu_3_samples},
-                    "bleu_4": {"mean_score": bleu_4_score, "sample_scores": bleu_4_samples}
-                }
-            else:
-                scores["bleu"] = round(self.bleu_scorer(refs, hyps)[0], 4)
+                    scores["radgraph"] = {
+                        "radgraph_simple": f1_scores[0],
+                        "radgraph_partial": f1_scores[1],
+                        "radgraph_complete": f1_scores[2],
+                        "sample_scores": individual_scores,
+                        "hypothesis_annotation_lists": hyps_entities,
+                        "reference_annotation_lists": refs_entities
+                    }
+                else:
+                    radgraph_scores = radgraph_scores[0]
+                    scores["radgraph_simple"] = round(radgraph_scores[0], 4)
+                    scores["radgraph_partial"] = round(radgraph_scores[1], 4)
+                    scores["radgraph_complete"] = round(radgraph_scores[2], 4)
+                progress.advance(metric_task)
 
-        if self.do_bertscore:
-            if self.do_details:
-                bertscore_scores, sample_scores = self.bertscore_scorer(
-                    refs, hyps)
-                scores["bertscore"] = {
-                    "mean_score": bertscore_scores,
-                    "sample_scores": sample_scores
-                }
-            else:
-                scores["bertscore"] = round(
-                    self.bertscore_scorer(refs, hyps)[0], 4)
+            # ----------------------------------------------------------
+            if self.do_bleu:
+                progress.update(metric_task, description="Computing BLEU")
+                if self.do_details:
+                    bleu_1_score, bleu_1_samples = self.bleu_scorer_1(refs, hyps)
+                    bleu_2_score, bleu_2_samples = self.bleu_scorer_2(refs, hyps)
+                    bleu_3_score, bleu_3_samples = self.bleu_scorer_3(refs, hyps)
+                    bleu_4_score, bleu_4_samples = self.bleu_scorer(refs, hyps)
 
-        if self.do_green:
-            # Use the initialized green scorer
-            mean, std, sample_scores, _ = self.green_scorer(refs, hyps)
-            if self.do_details:
-                scores["green"] = {
-                    "mean": mean,
-                    "std": std,
-                    "sample_scores": sample_scores,
-                }
-            else:
-                scores["green"] = round(mean, 4)
+                    scores["bleu"] = {
+                        "bleu_1": {"mean_score": bleu_1_score, "sample_scores": bleu_1_samples},
+                        "bleu_2": {"mean_score": bleu_2_score, "sample_scores": bleu_2_samples},
+                        "bleu_3": {"mean_score": bleu_3_score, "sample_scores": bleu_3_samples},
+                        "bleu_4": {"mean_score": bleu_4_score, "sample_scores": bleu_4_samples}
+                    }
+                else:
+                    scores["bleu"] = round(self.bleu_scorer(refs, hyps)[0], 4)
+                progress.advance(metric_task)
 
-        if self.do_mammo_green:
-            # Use the MammoGREEN scorer (OpenAI-based, mammography-specific)
-            mean, std, sample_scores, results_df = self.mammo_green_scorer(
-                refs, hyps)
-            if self.do_details:
-                scores["mammo_green"] = {
-                    "mean": mean,
-                    "std": std,
-                    "sample_scores": sample_scores,
-                    "error_counts": results_df[[
-                        "matched_findings", "false_finding", "missing_finding",
-                        "mischaracterization", "wrong_location_laterality",
-                        "incorrect_birads", "insignificant_errors"
-                    ]].to_dict(orient="records"),
-                }
-            else:
-                scores["mammo_green"] = round(mean, 4)
-
-        if self.do_rouge:
-            if self.do_details:
-                rouge_scores = {}
-                for key, scorer in self.rouge_scorers.items():
-                    mean, sample_scores = scorer(refs, hyps)
-                    rouge_scores[key] = {
-                        "mean_score": mean,
+            # ----------------------------------------------------------
+            if self.do_bertscore:
+                progress.update(metric_task, description="Computing BERTScore")
+                n_batches = math.ceil(n_samples / self.bertscore_scorer.batch_size)
+                batch_task = progress.add_task("  [dim]Batches", total=n_batches)
+                cb = lambda: progress.advance(batch_task)
+                if self.do_details:
+                    bertscore_scores, sample_scores = self.bertscore_scorer(
+                        refs, hyps, on_batch_done=cb)
+                    scores["bertscore"] = {
+                        "mean_score": bertscore_scores,
                         "sample_scores": sample_scores
                     }
+                else:
+                    scores["bertscore"] = round(
+                        self.bertscore_scorer(refs, hyps, on_batch_done=cb)[0], 4)
+                progress.remove_task(batch_task)
+                progress.advance(metric_task)
 
-                scores["rouge"] = rouge_scores
-            else:
-                for key, scorer in self.rouge_scorers.items():
-                    scores[key] = round(scorer(refs, hyps)[0], 4)
-
-        if self.do_srr_bert:
-            # Clean reports before tokenization
-            parsed_refs = [srr_bert_parse_sentences(ref) for ref in refs]
-            parsed_hyps = [srr_bert_parse_sentences(hyp) for hyp in hyps]
-
-            section_level_hyps_pred = []
-            section_level_refs_pred = []
-
-            for parsed_hyp, parsed_ref in zip(parsed_hyps, parsed_refs):
-                outputs, _ = self.srr_bert_scorer(
-                    sentences=parsed_ref + parsed_hyp)
-
-                refs_preds = outputs[:len(parsed_ref)]
-                hyps_preds = outputs[len(parsed_ref):]
-
-                merged_refs_preds = np.any(refs_preds, axis=0).astype(int)
-                merged_hyps_preds = np.any(hyps_preds, axis=0).astype(int)
-
-                section_level_hyps_pred.append(merged_hyps_preds)
-                section_level_refs_pred.append(merged_refs_preds)
-
-            label_names = [label for label, idx in sorted(
-                self.srr_bert_scorer.mapping.items(), key=lambda x: x[1])]
-            classification_dict = classification_report(section_level_refs_pred,
-                                                        section_level_hyps_pred,
-                                                        target_names=label_names,
-                                                        output_dict=True,
-                                                        zero_division=0)
-
-            sample_precision, sample_recall, sample_f1 = multilabel_prf_per_sample(
-                section_level_refs_pred,
-                section_level_hyps_pred
-            )
-
-            if self.do_details:
-                label_scores = {}
-                for label in label_names:
-                    if label in classification_dict:
-                        f1 = classification_dict[label]["f1-score"]
-                        support = classification_dict[label]["support"]
-                        if f1 > 0 or support > 0:
-                            label_scores[label] = {
-                                "f1-score": f1,
-                                "precision": classification_dict[label]["precision"],
-                                "recall": classification_dict[label]["recall"],
-                                "support": support
-                            }
-
-                scores["srr_bert"] = {
-                    "srr_bert_weighted_f1": {
-                        "weighted_mean_score": classification_dict["weighted avg"]["f1-score"],
-                        "sample_scores": sample_f1.tolist(),
-                    },
-                    "srr_bert_weighted_precision": {
-                        "weighted_mean_score": classification_dict["weighted avg"]["precision"],
-                        "sample_scores": sample_precision.tolist(),
-                    },
-                    "srr_bert_weighted_recall": {
-                        "weighted_mean_score": classification_dict["weighted avg"]["recall"],
-                        "sample_scores": sample_recall.tolist(),
-                    },
-                    "label_scores": label_scores
-                }
-            else:
-                scores["srr_bert_weighted_f1"] = round(
-                    classification_dict["weighted avg"]["f1-score"], 4)
-                scores["srr_bert_weighted_precision"] = round(
-                    classification_dict["weighted avg"]["precision"], 4)
-                scores["srr_bert_weighted_recall"] = round(
-                    classification_dict["weighted avg"]["recall"], 4)
-
-        if self.do_chexbert:
-            _, _, chexbert_all, chexbert_5, sample_label_acc_full, sample_label_acc_5 = self.chexbert_scorer(
-                hyps, refs)
-            if self.do_details:
-                chexbert_5_labels = {
-                    k: v["f1-score"]
-                    for k, v in list(chexbert_5.items())[:-4]
-                }
-
-                chexbert_all_labels = {
-                    k: v["f1-score"]
-                    for k, v in list(chexbert_all.items())[:-4]
-                }
-
-                scores["chexbert"] = {
-                    "sample_scores": {
-                        "all_labels": sample_label_acc_full,
-                        "5_labels": sample_label_acc_5,
-                    },
-                    "chexbert-5_micro avg_f1-score": chexbert_5["micro avg"]["f1-score"],
-                    "chexbert-all_micro avg_f1-score": chexbert_all["micro avg"]["f1-score"],
-                    "chexbert-5_macro avg_f1-score": chexbert_5["macro avg"]["f1-score"],
-                    "chexbert-all_macro avg_f1-score": chexbert_all["macro avg"]["f1-score"],
-                    "chexbert-5_weighted_f1": chexbert_5["weighted avg"]["f1-score"],
-                    "chexbert-all_weighted_f1": chexbert_all["weighted avg"]["f1-score"],
-                    "label_scores_f1-score": {
-                        "chexbert-5": chexbert_5_labels,
-                        "chexbert_all": chexbert_all_labels
+            # ----------------------------------------------------------
+            if self.do_green:
+                progress.update(metric_task, description="Computing GREEN")
+                mean, std, sample_scores, _ = self.green_scorer(refs, hyps)
+                if self.do_details:
+                    scores["green"] = {
+                        "mean": mean,
+                        "std": std,
+                        "sample_scores": sample_scores,
                     }
-                }
-            else:
-                scores["chexbert-5_micro avg_f1-score"] = round(
-                    chexbert_5["micro avg"]["f1-score"], 4)
-                scores["chexbert-all_micro avg_f1-score"] = round(
-                    chexbert_all["micro avg"]["f1-score"], 4)
-                scores["chexbert-5_macro avg_f1-score"] = round(
-                    chexbert_5["macro avg"]["f1-score"], 4)
-                scores["chexbert-all_macro avg_f1-score"] = round(
-                    chexbert_all["macro avg"]["f1-score"], 4)
-                scores["chexbert-5_weighted_f1"] = round(
-                    chexbert_5["weighted avg"]["f1-score"], 4)
-                scores["chexbert-all_weighted_f1"] = round(
-                    chexbert_all["weighted avg"]["f1-score"], 4)
+                else:
+                    scores["green"] = round(mean, 4)
+                progress.advance(metric_task)
 
-        if self.do_f1radbert_ct:
-            f1radbert_ct_accuracy, f1radbert_ct_sample_acc, f1radbert_ct_report = self.f1radbert_ct_scorer(
-                hyps, refs)
-            if self.do_details:
-                f1radbert_ct_labels = {
-                    k: v["f1-score"]
-                    for k, v in list(f1radbert_ct_report.items())[:-4]
-                }
-                scores["f1radbert_ct"] = {
-                    "f1radbert_ct_accuracy": f1radbert_ct_accuracy,
-                    "f1radbert_ct_micro avg_f1-score": f1radbert_ct_report["micro avg"]["f1-score"],
-                    "f1radbert_ct_macro avg_f1-score": f1radbert_ct_report["macro avg"]["f1-score"],
-                    "f1radbert_ct_weighted_f1": f1radbert_ct_report["weighted avg"]["f1-score"],
-                    "sample_scores": {
-                        "all_labels": f1radbert_ct_sample_acc,
-                    },
-                    "label_scores_f1-score": f1radbert_ct_labels,
-                }
-            else:
-                scores["f1radbert_ct_accuracy"] = round(
-                    f1radbert_ct_accuracy, 4)
-                scores["f1radbert_ct_micro avg_f1-score"] = round(
-                    f1radbert_ct_report["micro avg"]["f1-score"], 4)
-                scores["f1radbert_ct_macro avg_f1-score"] = round(
-                    f1radbert_ct_report["macro avg"]["f1-score"], 4)
-                scores["f1radbert_ct_weighted_f1"] = round(
-                    f1radbert_ct_report["weighted avg"]["f1-score"], 4)
-
-        if self.do_hopprchexbert:
-            _, _, chexbert_all, chexbert_5, sample_label_acc_full, sample_label_acc_5 = self.hopprchexbert_scorer(
-                hyps, refs)
-            if self.do_details:
-                chexbert_5_labels = {
-                    k: v["f1-score"]
-                    for k, v in list(chexbert_5.items())[:-4]
-                }
-
-                chexbert_all_labels = {
-                    k: v["f1-score"]
-                    for k, v in list(chexbert_all.items())[:-4]
-                }
-
-                scores["hopprchexbert"] = {
-                    "sample_scores": {
-                        "all_labels": sample_label_acc_full,
-                        "5_labels": sample_label_acc_5,
-                    },
-                    "hopprchexbert-5_micro avg_f1-score": chexbert_5["micro avg"]["f1-score"],
-                    "hopprchexbert-all_micro avg_f1-score": chexbert_all["micro avg"]["f1-score"],
-                    "hopprchexbert-5_macro avg_f1-score": chexbert_5["macro avg"]["f1-score"],
-                    "hopprchexbert-all_macro avg_f1-score": chexbert_all["macro avg"]["f1-score"],
-                    "hopprchexbert-5_weighted_f1": chexbert_5["weighted avg"]["f1-score"],
-                    "hopprchexbert-all_weighted_f1": chexbert_all["weighted avg"]["f1-score"],
-                    "label_scores_f1-score": {
-                        "hopprchexbert-5": chexbert_5_labels,
-                        "hopprchexbert_all": chexbert_all_labels
+            # ----------------------------------------------------------
+            if self.do_mammo_green:
+                progress.update(metric_task, description="Computing MammoGREEN")
+                mean, std, sample_scores, results_df = self.mammo_green_scorer(
+                    refs, hyps)
+                if self.do_details:
+                    scores["mammo_green"] = {
+                        "mean": mean,
+                        "std": std,
+                        "sample_scores": sample_scores,
+                        "error_counts": results_df[[
+                            "matched_findings", "false_finding", "missing_finding",
+                            "mischaracterization", "wrong_location_laterality",
+                            "incorrect_birads", "insignificant_errors"
+                        ]].to_dict(orient="records"),
                     }
-                }
-            else:
-                scores["hopprchexbert-5_micro avg_f1-score"] = round(
-                    chexbert_5["micro avg"]["f1-score"], 4)
-                scores["hopprchexbert-all_micro avg_f1-score"] = round(
-                    chexbert_all["micro avg"]["f1-score"], 4)
-                scores["hopprchexbert-5_macro avg_f1-score"] = round(
-                    chexbert_5["macro avg"]["f1-score"], 4)
-                scores["hopprchexbert-all_macro avg_f1-score"] = round(
-                    chexbert_all["macro avg"]["f1-score"], 4)
-                scores["hopprchexbert-5_weighted_f1"] = round(
-                    chexbert_5["weighted avg"]["f1-score"], 4)
-                scores["hopprchexbert-all_weighted_f1"] = round(
-                    chexbert_all["weighted avg"]["f1-score"], 4)
+                else:
+                    scores["mammo_green"] = round(mean, 4)
+                progress.advance(metric_task)
 
-        if self.do_ratescore:
-            rate_score, pred_pairs_raw, gt_pairs_raw = self.ratescore_scorer.compute_score(
-                candidate_list=hyps, reference_list=refs)
-            f1_ratescore = float(np.mean(rate_score))
-            if self.do_details:
-                pred_pairs = [
-                    {ent: label for ent, label in sample}
-                    for sample in pred_pairs_raw
+            # ----------------------------------------------------------
+            if self.do_rouge:
+                progress.update(metric_task, description="Computing ROUGE")
+                raw_scores = [
+                    self._rouge_scorer.score(ref, hyp)
+                    for ref, hyp in zip(refs, hyps)
                 ]
-                gt_pairs = [
-                    {ent: label for ent, label in sample}
-                    for sample in gt_pairs_raw
-                ]
-                scores["ratescore"] = {
-                    "f1-score": f1_ratescore,
-                    "sample_scores": rate_score,
-                    "hyps_pairs": pred_pairs,
-                    "refs_pairs": gt_pairs
-                }
-            else:
-                scores["ratescore"] = round(f1_ratescore, 4)
+                if self.do_details:
+                    rouge_results = {}
+                    for rt in self._rouge_types:
+                        f1s = [s[rt].fmeasure for s in raw_scores]
+                        rouge_results[rt] = {
+                            "mean_score": sum(f1s) / len(f1s),
+                            "sample_scores": f1s,
+                        }
+                    scores["rouge"] = rouge_results
+                else:
+                    for rt in self._rouge_types:
+                        f1s = [s[rt].fmeasure for s in raw_scores]
+                        scores[rt] = round(sum(f1s) / len(f1s), 4)
+                progress.advance(metric_task)
 
-        if self.do_radcliq:
-            mean_scores, detail_scores = self.radcliq_scorer.predict(
-                refs, hyps)
-            if self.do_details:
-                scores["radcliq-v1"] = {
-                    "mean_score": mean_scores,
-                    "sample_scores": detail_scores.tolist()
-                }
-            else:
-                scores["radcliq-v1"] = round(mean_scores, 4)
+            # ----------------------------------------------------------
+            if self.do_srr_bert:
+                progress.update(metric_task, description="Computing SRR-BERT")
+                sample_task = progress.add_task(
+                    "  [dim]Samples", total=n_samples)
 
-        if self.do_temporal:
-            temporal_scores = self.F1Temporal(
-                predictions=hyps, references=refs)
-            if self.do_details:
-                hyp_entities = [
-                    sorted(list(group)) if group else []
-                    for group in temporal_scores.get("prediction_entities", [])
-                ]
-                ref_entities = [
-                    sorted(list(group)) if group else []
-                    for group in temporal_scores.get("reference_entities", [])
-                ]
-                scores["temporal_f1"] = {
-                    "f1-score": temporal_scores["f1"],
-                    "sample_scores": temporal_scores["sample_scores"],
-                    "hyps_entities": hyp_entities,
-                    "refs_entities": ref_entities
-                }
-            else:
-                scores["temporal_f1"] = round(temporal_scores["f1"], 4)
+                classification_dict, sample_precision, sample_recall, sample_f1 = \
+                    self.srr_bert_scorer.evaluate(
+                        refs, hyps,
+                        on_sample_done=lambda: progress.advance(sample_task),
+                    )
+                progress.remove_task(sample_task)
 
-        if self.do_radeval_bertscore:
-            radeval_bertscores = self.radeval_bertscore.score(
-                refs=refs, hyps=hyps)
-            if self.do_details:
-                scores["radeval_bertscore"] = {
-                    "f1-score": radeval_bertscores[0],
-                    "sample_scores": radeval_bertscores[1].tolist()
-                }
-            else:
-                scores["radeval_bertscore"] = round(radeval_bertscores[0], 4)
+                if self.do_details:
+                    label_names = [
+                        label for label, idx in sorted(
+                            self.srr_bert_scorer.mapping.items(),
+                            key=lambda x: x[1])
+                    ]
+                    label_scores = {}
+                    for label in label_names:
+                        if label in classification_dict:
+                            f1 = classification_dict[label]["f1-score"]
+                            support = classification_dict[label]["support"]
+                            if f1 > 0 or support > 0:
+                                label_scores[label] = {
+                                    "f1-score": f1,
+                                    "precision": classification_dict[label]["precision"],
+                                    "recall": classification_dict[label]["recall"],
+                                    "support": support
+                                }
+
+                    scores["srr_bert"] = {
+                        "srr_bert_weighted_f1": {
+                            "weighted_mean_score": classification_dict["weighted avg"]["f1-score"],
+                            "sample_scores": sample_f1.tolist(),
+                        },
+                        "srr_bert_weighted_precision": {
+                            "weighted_mean_score": classification_dict["weighted avg"]["precision"],
+                            "sample_scores": sample_precision.tolist(),
+                        },
+                        "srr_bert_weighted_recall": {
+                            "weighted_mean_score": classification_dict["weighted avg"]["recall"],
+                            "sample_scores": sample_recall.tolist(),
+                        },
+                        "label_scores": label_scores
+                    }
+                else:
+                    scores["srr_bert_weighted_f1"] = round(
+                        classification_dict["weighted avg"]["f1-score"], 4)
+                    scores["srr_bert_weighted_precision"] = round(
+                        classification_dict["weighted avg"]["precision"], 4)
+                    scores["srr_bert_weighted_recall"] = round(
+                        classification_dict["weighted avg"]["recall"], 4)
+                progress.advance(metric_task)
+
+            # ----------------------------------------------------------
+            if self.do_chexbert:
+                self._score_chexbert(
+                    scores, "chexbert", self.chexbert_scorer,
+                    hyps, refs, n_samples, progress, metric_task)
+
+            # ----------------------------------------------------------
+            if self.do_f1radbert_ct:
+                progress.update(metric_task, description="Computing F1RadBERT-CT")
+                n_batches = math.ceil(n_samples / self.f1radbert_ct_scorer.batch_size) * 2
+                batch_task = progress.add_task("  [dim]Batches", total=n_batches)
+                f1radbert_ct_accuracy, f1radbert_ct_sample_acc, f1radbert_ct_report = self.f1radbert_ct_scorer(
+                    hyps, refs, on_batch_done=lambda: progress.advance(batch_task))
+                progress.remove_task(batch_task)
+                if self.do_details:
+                    f1radbert_ct_labels = {
+                        k: v["f1-score"]
+                        for k, v in list(f1radbert_ct_report.items())[:-4]
+                    }
+                    scores["f1radbert_ct"] = {
+                        "f1radbert_ct_accuracy": f1radbert_ct_accuracy,
+                        "f1radbert_ct_micro avg_f1-score": f1radbert_ct_report["micro avg"]["f1-score"],
+                        "f1radbert_ct_macro avg_f1-score": f1radbert_ct_report["macro avg"]["f1-score"],
+                        "f1radbert_ct_weighted_f1": f1radbert_ct_report["weighted avg"]["f1-score"],
+                        "sample_scores": {
+                            "all_labels": f1radbert_ct_sample_acc,
+                        },
+                        "label_scores_f1-score": f1radbert_ct_labels,
+                    }
+                else:
+                    scores["f1radbert_ct_accuracy"] = round(
+                        f1radbert_ct_accuracy, 4)
+                    scores["f1radbert_ct_micro avg_f1-score"] = round(
+                        f1radbert_ct_report["micro avg"]["f1-score"], 4)
+                    scores["f1radbert_ct_macro avg_f1-score"] = round(
+                        f1radbert_ct_report["macro avg"]["f1-score"], 4)
+                    scores["f1radbert_ct_weighted_f1"] = round(
+                        f1radbert_ct_report["weighted avg"]["f1-score"], 4)
+                progress.advance(metric_task)
+
+            # ----------------------------------------------------------
+            if self.do_hopprchexbert:
+                self._score_chexbert(
+                    scores, "hopprchexbert", self.hopprchexbert_scorer,
+                    hyps, refs, n_samples, progress, metric_task)
+
+            # ----------------------------------------------------------
+            if self.do_ratescore:
+                progress.update(metric_task, description="Computing RaTEScore")
+                sample_task = progress.add_task(
+                    "  [dim]Samples", total=n_samples)
+
+                rate_score, pred_pairs_raw, gt_pairs_raw = self.ratescore_scorer.compute_score(
+                    candidate_list=hyps, reference_list=refs,
+                    on_sample_done=lambda: progress.advance(sample_task),
+                )
+                progress.remove_task(sample_task)
+
+                f1_ratescore = sum(rate_score) / len(rate_score)
+                if self.do_details:
+                    pred_pairs = [
+                        {ent: label for ent, label in sample}
+                        for sample in pred_pairs_raw
+                    ]
+                    gt_pairs = [
+                        {ent: label for ent, label in sample}
+                        for sample in gt_pairs_raw
+                    ]
+                    scores["ratescore"] = {
+                        "f1-score": f1_ratescore,
+                        "sample_scores": rate_score,
+                        "hyps_pairs": pred_pairs,
+                        "refs_pairs": gt_pairs
+                    }
+                else:
+                    scores["ratescore"] = round(f1_ratescore, 4)
+                progress.advance(metric_task)
+
+            # ----------------------------------------------------------
+            if self.do_radcliq:
+                progress.update(metric_task, description="Computing RadCliQ-v1")
+                mean_scores, detail_scores = self.radcliq_scorer.predict(
+                    refs, hyps)
+                if self.do_details:
+                    scores["radcliq-v1"] = {
+                        "mean_score": mean_scores,
+                        "sample_scores": detail_scores.tolist()
+                    }
+                else:
+                    scores["radcliq-v1"] = round(mean_scores, 4)
+                progress.advance(metric_task)
+
+            # ----------------------------------------------------------
+            if self.do_temporal:
+                progress.update(metric_task, description="Computing Temporal F1")
+                sample_task = progress.add_task(
+                    "  [dim]Samples", total=n_samples)
+
+                temporal_scores = self.F1Temporal(
+                    predictions=hyps, references=refs,
+                    on_sample_done=lambda: progress.advance(sample_task),
+                )
+                progress.remove_task(sample_task)
+
+                if self.do_details:
+                    hyp_entities = [
+                        sorted(list(group)) if group else []
+                        for group in temporal_scores.get("prediction_entities", [])
+                    ]
+                    ref_entities = [
+                        sorted(list(group)) if group else []
+                        for group in temporal_scores.get("reference_entities", [])
+                    ]
+                    scores["temporal_f1"] = {
+                        "f1-score": temporal_scores["f1"],
+                        "sample_scores": temporal_scores["sample_scores"],
+                        "hyps_entities": hyp_entities,
+                        "refs_entities": ref_entities
+                    }
+                else:
+                    scores["temporal_f1"] = round(temporal_scores["f1"], 4)
+                progress.advance(metric_task)
+
+            # ----------------------------------------------------------
+            if self.do_radeval_bertscore:
+                progress.update(metric_task, description="Computing RadEval-BERTScore")
+                n_batches = math.ceil(n_samples / self.radeval_bertscore.batch_size)
+                batch_task = progress.add_task("  [dim]Batches", total=n_batches)
+                radeval_bertscores = self.radeval_bertscore.score(
+                    refs=refs, hyps=hyps,
+                    on_batch_done=lambda: progress.advance(batch_task))
+                progress.remove_task(batch_task)
+                if self.do_details:
+                    scores["radeval_bertscore"] = {
+                        "mean_score": radeval_bertscores[0],
+                        "sample_scores": radeval_bertscores[1].tolist()
+                    }
+                else:
+                    scores["radeval_bertscore"] = round(radeval_bertscores[0], 4)
+                progress.advance(metric_task)
 
         return scores
 

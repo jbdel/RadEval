@@ -8,7 +8,7 @@
 
 <!--- BADGES: START --->
 [![PyPI](https://img.shields.io/badge/RadEval-v0.0.6-00B7EB?logo=python&logoColor=00B7EB)](https://pypi.org/project/RadEval/)
-[![Python version](https://img.shields.io/badge/python-3.10+-important?logo=python&logoColor=important)]()
+[![Python version](https://img.shields.io/badge/python-3.11+-important?logo=python&logoColor=important)]()
 [![Expert Dataset](https://img.shields.io/badge/Expert-%20Dataset-4CAF50?logo=googlecloudstorage&logoColor=9BF0E1)](https://huggingface.co/datasets/IAMJB/RadEvalExpertDataset)
 [![Model](https://img.shields.io/badge/Model-RadEvalModernBERT-0066CC?logo=huggingface&labelColor=grey)](https://huggingface.co/IAMJB/RadEvalModernBERT)
 [![Video](https://img.shields.io/badge/Talk-Video-9C27B0?logo=youtubeshorts&labelColor=grey)](https://justin13601.github.io/files/radeval.mp4)
@@ -51,727 +51,80 @@ print(json.dumps(results, indent=2))
   "bleu": 0.36
 }
 ```
-With GREEN:
 
-```python
-export CUDA_VISIBLE_DEVICES=0,1 # define your available gpus for faster processing
-[..]
-evaluator = RadEval(
-    do_radgraph=True,
-    do_bleu=True,
-    do_green=True
-)
-
-results = evaluator(refs=refs, hyps=hyps)
-print(json.dumps(results, indent=2))
-```
-```json
-(GREEN) Multi-GPU inference across 2 GPUs
-Loading checkpoint shards: 100%|████████████████████████████████████████████████| 3/3 [00:02<00:00,  1.46it/s]
-Loading checkpoint shards: 100%|████████████████████████████████████████████████| 3/3 [00:02<00:00,  1.45it/s]
-Generating: 100%|███████████████████████████████████████████████████████████████| 2/2 [00:25<00:00, 12.61s/ex]
-
-{
-  "radgraph_simple": 0.72,
-  "radgraph_partial": 0.61,
-  "radgraph_complete": 0.61,
-  "bleu": 0.36,
-  "green": 0.875
-}
-```
-```bibtex
-@inproceedings{xu-etal-2025-radeval,
-    title = "{R}ad{E}val: A framework for radiology text evaluation",
-    author = "Xu, Justin  and
-      Zhang, Xi  and
-      Abderezaei, Javid  and
-      Bauml, Julie  and
-      Boodoo, Roger  and
-      Haghighi, Fatemeh  and
-      Ganjizadeh, Ali  and
-      Brattain, Eric  and
-      Van Veen, Dave  and
-      Meng, Zaiqiao  and
-      Eyre, David W  and
-      Delbrouck, Jean-Benoit",
-    editor = {Habernal, Ivan  and
-      Schulam, Peter  and
-      Tiedemann, J{\"o}rg},
-    booktitle = "Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing: System Demonstrations",
-    month = nov,
-    year = "2025",
-    address = "Suzhou, China",
-    publisher = "Association for Computational Linguistics",
-    url = "https://aclanthology.org/2025.emnlp-demos.40/",
-    doi = "10.18653/v1/2025.emnlp-demos.40",
-    pages = "546--557",
-    ISBN = "979-8-89176-334-0",
-    abstract = "We introduce RadEval, a unified, open-source framework for evaluating radiology texts. RadEval consolidates a diverse range of metrics - from classic n{-}gram overlap (BLEU, ROUGE) and contextual measures (BERTScore) to clinical concept-based scores (F1CheXbert, F1RadGraph, RaTEScore, SRR-BERT, TemporalEntityF1) and advanced LLM{-}based evaluators (GREEN). We refine and standardize implementations, extend GREEN to support multiple imaging modalities with a more lightweight model, and pretrain a domain-specific radiology encoder - demonstrating strong zero-shot retrieval performance. We also release a richly annotated expert dataset with over 450 clinically significant error labels and show how different metrics correlate with radiologist judgment. Finally, RadEval provides statistical testing tools and baseline model evaluations across multiple publicly available datasets, facilitating reproducibility and robust benchmarking in radiology report generation."
-}
-```
-
-
-## 📖 Table of Contents
-
-- [🌟 Overview](#-overview)
-  - [❓ Why RadEval](#-why-radeval)
-  - [✨ Key Features](#-key-features)
-- [⚙️ Installation](#️-installation)
-- [🚀 Quick Start](#-quick-start)
-- [📊 Evaluation Metrics](#-evaluation-metrics)
-- [🔧 Configuration Options](#-configuration-options)
-- [📁 File Format Suggestion](#-file-format-suggestion)
-- [🧪 Hypothesis Testing (Significance Evaluation)](#-hypothesis-testing-significance-evaluation)
-- [🧠 RadEval Expert Dataset](#-radeval-expert-dataset)
-- [🚦 Performance Tips](#-performance-tips)
-- [📚 Citation](#-citation)
-
-
-
-## 🌟 Overview
-
-**RadEval** is a comprehensive evaluation framework specifically designed for assessing the quality of AI-generated radiology text. It provides a unified interface to multiple state-of-the-art evaluation metrics, enabling researchers and practitioners to thoroughly evaluate their radiology text generation models.
-
-### ❓ Why RadEval
-> [!TIP]
-> - **Domain-Specific**: Tailored for radiology text evaluation with medical knowledge integration
-> - **Multi-Metric**: Supports 11+ different evaluation metrics in one framework
-> - **Easy to Use**: Simple API with flexible configuration options
-> - **Comprehensive**: From traditional n-gram metrics to advanced LLM-based evaluations
-> - **Research-Ready**: Built for reproducible evaluation in radiology AI research
-
-### ✨ Key Features
-> [!NOTE]
-> - **Multiple Evaluation Perspectives**: Lexical, semantic, clinical, and temporal evaluations
-> - **Statistical Testing**: Built-in hypothesis testing for system comparison
-> - **Batch Processing**: Efficient evaluation of large datasets
-> - **Flexible Configuration**: Enable/disable specific metrics based on your needs
-> - **Detailed Results**: Comprehensive output with metric explanations
-> - **File Format Support**: Direct evaluation from common file formats (.tok, .txt, .json)
-
-## ⚙️ Installation
-RadEval supports Python **3.10+** and can be installed via PyPI or from source.
-
-### Option 1: Install via PyPI (Recommended)
+## Installation
 
 ```bash
-pip install RadEval
+pip install RadEval              # from PyPI
+pip install RadEval[api]         # include OpenAI/Gemini for MammoGREEN
 ```
-> [!TIP]
-> We recommend using a virtual environment to avoid dependency conflicts, especially since some metrics require loading large inference models.
 
-### Option 2: Install from GitHub (Latest Development Version)
-Install the most up-to-date version directly from GitHub:
+Or install from source:
 ```bash
-pip install git+https://github.com/jbdel/RadEval.git
-```
-> This is useful if you want the latest features or bug fixes before the next PyPI release.
-
-### Option 3: Install in Development Mode (Recommended for Contributors)
-```bash
-# Clone the repository
-git clone https://github.com/jbdel/RadEval.git
-cd RadEval
-
-# Create and activate a conda environment
-conda create -n RadEval python=3.11 -y
-conda activate RadEval
-
-# Install in development (editable) mode
-pip install -e .
-```
-> This setup allows you to modify the source code and reflect changes immediately without reinstallation.
-
-## 🚀 Quick Start
-
-### Example 1: Basic Evaluation
-Evaluate a few reports using selected metrics:
-```python
-from RadEval import RadEval
-import json
-
-refs = [
-    "Mild cardiomegaly with small bilateral pleural effusions and basilar atelectasis.",
-    "No pleural effusions or pneumothoraces.",
-]
-hyps = [
-    "Mildly enlarged cardiac silhouette with small pleural effusions and dependent bibasilar atelectasis.",
-    "No pleural effusions or pneumothoraces.",
-]
-
-evaluator = RadEval(
-    do_radgraph=True,
-    do_bleu=True
-)
-
-results = evaluator(refs=refs, hyps=hyps)
-print(json.dumps(results, indent=2))
-```
-<details>
-<summary> Output </summary>
-
-```json
-{
-  "radgraph_simple": 0.7222,
-  "radgraph_partial": 0.6111,
-  "radgraph_complete": 0.6111,
-  "bleu": 0.3605
-}
+git clone https://github.com/jbdel/RadEval.git && cd RadEval
+conda create -n radeval python=3.11 -y && conda activate radeval
+pip install -e '.[api]'
 ```
 
-</details>
+## Supported Metrics
 
-### Example 2: Comprehensive Evaluation
-Set `do_details=True` to enable per-metric detailed outputs, including entity-level comparisons and score-specific breakdowns when supported.
+| Category | Metric | Flag | Best For |
+|----------|--------|------|----------|
+| **Lexical** | BLEU | `do_bleu` | Surface-level n-gram overlap |
+| | ROUGE | `do_rouge` | Content coverage |
+| **Semantic** | BERTScore | `do_bertscore` | Semantic similarity |
+| | RadEval BERTScore | `do_radeval_bertscore` | Domain-adapted radiology semantics |
+| **Clinical** | F1CheXbert | `do_chexbert` | CheXpert finding classification |
+| | F1RadBERT-CT | `do_f1radbert_ct` | CT finding classification |
+| | F1RadGraph | `do_radgraph` | Clinical entity/relation accuracy |
+| | RaTEScore | `do_ratescore` | Entity-level synonym-aware scoring |
+| **Specialized** | RadCliQ-v1 | `do_radcliq` | Composite clinical relevance |
+| | SRR-BERT | `do_srr_bert` | Structured report evaluation |
+| | Temporal F1 | `do_temporal` | Temporal consistency |
+| | GREEN | `do_green` | LLM-based overall quality (7B model) |
+| | MammoGREEN | `do_mammo_green` | Mammography-specific LLM scoring |
 
-```python
-from RadEval import RadEval
-import json
+Enable only the metrics you need -- each one is loaded lazily.
 
-evaluator = RadEval(
-    do_srr_bert=True,
-    do_rouge=True,
-    do_details=True
-)
+## Detailed Output
 
-refs = [
-    "Mild cardiomegaly with small bilateral pleural effusions and basilar atelectasis.",
-    "No pleural effusions or pneumothoraces.",
-]
-hyps = [
-    "Mildly enlarged cardiac silhouette with small pleural effusions and dependent bibasilar atelectasis.",
-    "No pleural effusions or pneumothoraces.",
-]
+Pass `do_details=True` to get per-sample scores, label breakdowns, and entity annotations for every enabled metric. See [docs/metrics.md](docs/metrics.md) for the full output schema of each metric.
 
-results = evaluator(refs=refs, hyps=hyps)
-print(json.dumps(results, indent=2))
-```
+## Comparing Systems
 
-<details>
-<summary> Output </summary>
-
-```json
-{
-  "rouge": {
-    "rouge1": {
-      "mean_score": 0.7727272727272727,
-      "sample_scores": [
-        0.5454545454545454,
-        1.0
-      ]
-    },
-    "rouge2": {
-      "mean_score": 0.65,
-      "sample_scores": [
-        0.3,
-        1.0
-      ]
-    },
-    "rougeL": {
-      "mean_score": 0.7727272727272727,
-      "sample_scores": [
-        0.5454545454545454,
-        1.0
-      ]
-    }
-  },
-  "srr_bert": {
-    "srr_bert_weighted_f1": {
-      "weighted_mean_score": 1.0,
-      "sample_scores": [
-        0.999999995,
-        0.999999995
-      ]
-    },
-    "srr_bert_weighted_precision": {
-      "weighted_mean_score": 1.0,
-      "sample_scores": [
-        0.9999999900000002,
-        0.9999999900000002
-      ]
-    },
-    "srr_bert_weighted_recall": {
-      "weighted_mean_score": 1.0,
-      "sample_scores": [
-        0.9999999900000002,
-        0.9999999900000002
-      ]
-    },
-    "label_scores": {
-      "Atelectasis (Present)": {
-        "f1-score": 1.0,
-        "precision": 1.0,
-        "recall": 1.0,
-        "support": 1.0
-      },
-      "Simple pleural effusion (Present)": {
-        "f1-score": 1.0,
-        "precision": 1.0,
-        "recall": 1.0,
-        "support": 1.0
-      },
-      "Cardiomegaly (Present)": {
-        "f1-score": 1.0,
-        "precision": 1.0,
-        "recall": 1.0,
-        "support": 1.0
-      },
-      "No Finding": {
-        "f1-score": 1.0,
-        "precision": 1.0,
-        "recall": 1.0,
-        "support": 1.0
-      }
-    }
-  }
-}
-```
-
-</details>
-
-### Example 3: Quick Hypothesis Testing
-Compare two systems statistically to validate improvements:
+Use `compare_systems` to run paired approximate randomization tests between any number of systems:
 
 ```python
 from RadEval import RadEval, compare_systems
 
-# Define systems to compare
-systems = {
-    'baseline': [
-        "No acute findings.",
-        "Mild heart enlargement."
-    ],
-    'improved': [
-        "No acute cardiopulmonary process.",
-        "Mild cardiomegaly with clear lung fields."
-    ]
-}
-
-# Reference ground truth
-references = [
-    "No acute cardiopulmonary process.",
-    "Mild cardiomegaly with clear lung fields."
-]
-
-# Initialise evaluators only for selected metrics
-bleu_evaluator = RadEval(do_bleu=True)
-rouge_evaluator = RadEval(do_rouge=True)
-
-# Wrap metrics into callable functions
-metrics = {
-    'bleu': lambda hyps, refs: bleu_evaluator(refs, hyps)['bleu'],
-    'rouge1': lambda hyps, refs: rouge_evaluator(refs, hyps)['rouge1'],
-}
-
-# Run statistical test
+evaluator = RadEval(do_bleu=True)
 signatures, scores = compare_systems(
-    systems=systems,
-    metrics=metrics, 
-    references=references,
-    n_samples=50,           # Number of bootstrap samples
-    print_results=True      # Print significance table
+    systems={
+        'baseline': baseline_reports,
+        'improved': improved_reports,
+    },
+    metrics={'bleu': lambda hyps, refs: evaluator(refs, hyps)['bleu']},
+    references=reference_reports,
+    n_samples=10000,
 )
 ```
 
-<details>
-<summary> Output </summary>
+See [docs/hypothesis_testing.md](docs/hypothesis_testing.md) for a full walkthrough and interpretation guide.
 
-<pre lang="md">
-================================================================================
-PAIRED SIGNIFICANCE TEST RESULTS
-================================================================================
-System                                             bleu         rouge1
-----------------------------------------------------------------------
-Baseline: baseline                              0.0000         0.3968   
-----------------------------------------------------------------------
-improved                                      1.0000         1.0000   
-                                           (p=0.4800)     (p=0.4600)  
-----------------------------------------------------------------------
-- Significance level: 0.05
-- '*' indicates significant difference (p < significance level)
-- Null hypothesis: systems are essentially the same
-- Significant results suggest systems are meaningfully different
+## Documentation
 
-METRIC SIGNATURES:
-- bleu: bleu|ar:50|seed:12345
-- rouge1: rouge1|ar:50|seed:12345
-</pre>
+| Page | Contents |
+|------|----------|
+| [docs/metrics.md](docs/metrics.md) | What each metric measures, `do_details` output schemas |
+| [docs/configuration.md](docs/configuration.md) | Full parameter reference, example presets |
+| [docs/hypothesis_testing.md](docs/hypothesis_testing.md) | Statistical background, full example, performance notes |
+| [docs/file_formats.md](docs/file_formats.md) | Loading data from .tok, .json, and Python lists |
 
-</details>
+## RadEval Expert Dataset
 
-### Example 4: File-based Evaluation
-Recommended for batch evaluation of large sets of generated reports.
-```python
-import json
-from RadEval import RadEval
+A curated evaluation set annotated by board-certified radiologists for validating automatic metrics. Available on [HuggingFace](https://huggingface.co/datasets/IAMJB/RadEvalExpertDataset).
 
-def evaluate_from_files():
-    def read_reports(filepath):
-        with open(filepath, 'r') as f:
-            return [line.strip() for line in f if line.strip()]
-    
-    refs = read_reports('ground_truth.tok')
-    hyps = read_reports('model_predictions.tok')
-    
-    evaluator = RadEval(
-        do_radgraph=True,
-        do_bleu=True,
-        do_bertscore=True,
-        do_chexbert=True
-    )
-    
-    results = evaluator(refs=refs, hyps=hyps)
-    
-    with open('evaluation_results.json', 'w') as f:
-        json.dump(results, f, indent=2)
-
-    return results
-```
-
-## 📊 Evaluation Metrics
-
-RadEval currently supports the following evaluation metrics:
-
-| Category | Metric | Description | Best For |
-|----------|--------|-------------|----------|
-| **Lexical** | BLEU | N-gram overlap measurement | Surface-level similarity |
-| | ROUGE | Recall-oriented evaluation | Content coverage |
-| **Semantic** | BERTScore (`do_bertscore`) | BERT-based semantic similarity | Semantic meaning preservation |
-| | RadEval BERTScore (`do_radeval_bertscore`) | Domain-adapted ModernBertModel evaluation | Medical text semantics |
-| **Clinical** | F1CheXbert (`do_chexbert`) | Clinical finding classification | Medical accuracy |
-| | F1RadbertCT (`do_f1radbert_ct`) | Multi-label CT finding classification | CT factual consistency |
-| | F1RadGraph (`do_radgraph`) | Knowledge graph-based evaluation | Clinical relationship accuracy |
-| | RaTEScore |  Entity-level assessments | Medical synonyms |
-| **Specialized** | RadCLIQ | Composite multiple metrics | Clinical relevance |
-| | SRR-BERT | Structured report evaluation | Report structure quality |
-| | Temporal F1  | Time-sensitive evaluation | Temporal consistency |
-| | GREEN | LLM-based metric | Overall radiology report quality |
-| | Mammo Green | LLM-based metric | Mammography report quality |
-
-## 🔧 Configuration Options
-
-### RadEval Constructor Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `do_radgraph` | bool | False | Enable RadGraph evaluation |
-| `do_green` | bool | False | Enable GREEN metric |
-| `do_mammo_green` | bool | False | Enable Mammo Green metric |
-| `mammo_green_model` | str | `"gpt-4o-mini"` | Model name used by Mammo Green |
-| `mammo_green_api_key` | str \| None | `None` | API key for Mammo Green |
-| `do_bleu` | bool | False | Enable BLEU evaluation |
-| `do_rouge` | bool | False | Enable ROUGE metrics |
-| `do_bertscore` | bool | False | Enable BERTScore |
-| `do_srr_bert` | bool | False | Enable SRR-BERT |
-| `do_chexbert` | bool | False | Enable CheXbert classification |
-| `do_f1radbert_ct` | bool | False | Enable F1RadBERT-CT classification |
-| `do_temporal` | bool | False | Enable temporal evaluation |
-| `do_ratescore` | bool | False | Enable RateScore |
-| `do_radcliq` | bool | False | Enable RadCLIQ |
-| `do_radeval_bertscore` | bool | False | Enable RadEval BERTScore |
-| `do_details` | bool | False | Include detailed metrics |
-
-### Example Configurations
-
-```python
-# Lightweight evaluation (fast)
-light_evaluator = RadEval(
-    do_bleu=True,
-    do_rouge=True
-)
-
-# Medical focus (clinical accuracy)
-medical_evaluator = RadEval(
-    do_radgraph=True,
-    do_chexbert=True,
-    do_f1radbert_ct=True,
-    do_green=True
-)
-
-# Comprehensive evaluation (all metrics)
-full_evaluator = RadEval(
-    do_radgraph=True,
-    do_green=True,
-    do_bleu=True,
-    do_rouge=True,
-    do_bertscore=True,
-    do_srr_bert=True,
-    do_chexbert=True,
-    do_f1radbert_ct=True,
-    do_temporal=True,
-    do_ratescore=True,
-    do_radcliq=True,
-    do_radeval_bertscore=True,
-    do_details=False           # Optional: return detailed metric breakdowns
-)
-```
-
-## 📁 File Format Suggestion
-
-To ensure efficient evaluation, we recommend formatting your data in one of the following ways:
-
-### 📄 Text Files (.tok, .txt)
-Each line contains one report
-```
-No acute cardiopulmonary process.
-Mild cardiomegaly noted.
-Normal chest radiograph.
-```
-Use two separate files:
-> - ground_truth.tok — reference reports
-> - model_predictions.tok — generated reports
-
-### 🧾 JSON Files
-```json
-{
-  "references": [
-    "No acute cardiopulmonary process.",
-    "Mild cardiomegaly noted."
-  ],
-  "hypotheses": [
-    "Normal chest X-ray.",
-    "Enlarged heart observed."
-  ]
-}
-```
-
-### 🐍 Python Lists
-```python
-refs = ["Report 1", "Report 2"]
-hyps = ["Generated 1", "Generated 2"]
-```
-> [!TIP]
-> File-based input is recommended for batch evaluation and reproducibility in research workflows.
-
-
-## 🧪 Hypothesis Testing (Significance Evaluation)
-RadEval supports **paired significance testing** to statistically compare different radiology report generation systems using **Approximate Randomization (AR)**.
-
-This allows you to determine whether an observed improvement in metric scores is **statistically significant**, rather than due to chance.
-
-### 📌 Key Features
-
-- **Paired comparison** of any number of systems against a baseline
-- **Statistical rigor** using Approximate Randomization (AR) testing
-- **All built-in metrics** supported (BLEU, ROUGE, BERTScore, RadGraph, CheXbert, etc.)  
-- **Custom metrics** integration for domain-specific evaluation
-- **P-values** and significance markers (`*`) for easy interpretation
-
-### 🧮 Statistical Background
-
-The hypothesis testing uses **Approximate Randomization** to determine if observed metric differences are statistically significant:
-
-1. **Null Hypothesis (H₀)**: The two systems perform equally well
-2. **Test Statistic**: Difference in metric scores between systems
-3. **Randomization**: Shuffle system assignments and recalculate differences
-4. **P-value**: Proportion of random shuffles with differences ≥ observed
-5. **Significance**: If p < 0.05, reject H₀ (systems are significantly different)
-
-> [!NOTE]
-> **Why AR testing?** 
-> Unlike parametric tests, AR makes no assumptions about score distributions, making it ideal for evaluation metrics that may not follow normal distributions.
-
-### 👀 Understanding the Results
-
-**Interpreting P-values:**
-- **p < 0.05**: Statistically significant difference (marked with `*`)
-- **p ≥ 0.05**: No significant evidence of difference
-- **Lower p-values**: Stronger evidence of real differences
-
-**Practical Significance:**
-- Look for consistent improvements across multiple metrics
-- Consider domain relevance (e.g., RadGraph for clinical accuracy)  
-- Balance statistical and clinical significance
-
-### 🖇️ Example: Compare RadEval Default Metrics and a Custom Metric
-
-#### Step 1: Initialize packages and dataset
-```python
-from RadEval import RadEval, compare_systems
-
-# Reference ground truth reports
-references = [
-    "No acute cardiopulmonary process.",
-    "No radiographic findings to suggest pneumonia.",
-    "Mild cardiomegaly with clear lung fields.",
-    "Small pleural effusion on the right side.",
-    "Status post cardiac surgery with stable appearance.",
-]
-# Three systems: baseline, improved, and poor
-systems = {
-    'baseline': [
-        "No acute findings.",
-        "No pneumonia.",
-        "Mild cardiomegaly, clear lungs.",
-        "Small right pleural effusion.",
-        "Post-cardiac surgery, stable."
-    ],
-    'improved': [
-        "No acute cardiopulmonary process.",
-        "No radiographic findings suggesting pneumonia.",
-        "Mild cardiomegaly with clear lung fields bilaterally.",
-        "Small pleural effusion present on the right side.",
-        "Status post cardiac surgery with stable appearance."
-    ],
-    'poor': [
-        "Normal.",
-        "OK.",
-        "Heart big.",
-        "Some fluid.",
-        "Surgery done."
-    ]
-}
-```
-
-#### Step 2: Define Evaluation Metrics and Parameters
-We define each evaluation metric using a dedicated RadEval instance (configured to compute one specific score), and also include a simple custom metric — average word count. All metrics are wrapped into a unified metrics dictionary for flexible evaluation and comparison.
-
-```python
-# Initialise each evaluator with the corresponding metric
-bleu_evaluator = RadEval(do_bleu=True)
-rouge_evaluator = RadEval(do_rouge=True)
-bertscore_evaluator = RadEval(do_bertscore=True)
-radgraph_evaluator = RadEval(do_radgraph=True)
-chexbert_evaluator = RadEval(do_chexbert=True)
-f1radbert_ct_evaluator = RadEval(do_f1radbert_ct=True)
-
-# Define a custom metric: average word count of generated reports
-def word_count_metric(hyps, refs):
-    return sum(len(report.split()) for report in hyps) / len(hyps)
-
-# Wrap metrics into a unified dictionary of callables
-metrics = {
-    'bleu': lambda hyps, refs: bleu_evaluator(refs, hyps)['bleu'],
-    'rouge1': lambda hyps, refs: rouge_evaluator(refs, hyps)['rouge1'],
-    'rouge2': lambda hyps, refs: rouge_evaluator(refs, hyps)['rouge2'],
-    'rougeL': lambda hyps, refs: rouge_evaluator(refs, hyps)['rougeL'],
-    'bertscore': lambda hyps, refs: bertscore_evaluator(refs, hyps)['bertscore'],
-    'radgraph': lambda hyps, refs: radgraph_evaluator(refs, hyps)['radgraph_partial'],
-    'chexbert': lambda hyps, refs: chexbert_evaluator(refs, hyps)['chexbert-5_macro avg_f1-score'],
-    'f1radbert_ct': lambda hyps, refs: f1radbert_ct_evaluator(refs, hyps)['f1radbert_ct_macro avg_f1-score'],
-    'word_count': word_count_metric  # ← example of a simple custom-defined metric
-}
-```
-
-> [!TIP] 
-> - Each metric function takes (hyps, refs) as input and returns a single float score.
-> - This modular design allows you to flexibly plug in or remove metrics without changing the core logic of RadEval or compare_systems.
-> - For advanced, you may define your own `RadEval(do_xxx=True)` variant or custom metrics and include them seamlessly here.
-
-#### Step 3 Run significance testing
-
-Use `compare_systems` to evaluate all defined systems against the reference reports using the metrics specified above. This step performs randomization-based significance testing to assess whether differences between systems are statistically meaningful.
-
-```python
-print("Running significance tests...")
-
-signatures, scores = compare_systems(
-    systems=systems,
-    metrics=metrics,
-    references=references,
-    n_samples=50,                    # Number of randomization samples
-    significance_level=0.05,         # Alpha level for significance testing
-    print_results=True              # Print formatted results table
-)
-```
-
-<details>
-<summary> Output </summary>
-
-<pre lang="md">
-Running tests...
-================================================================================
-PAIRED SIGNIFICANCE TEST RESULTS
-================================================================================
-System                                             bleu         rouge1         rouge2         rougeL      bertscore       radgraph       chexbert     word_count
-----------------------------------------------------------------------------------------------------------------------------------------------------------------
-Baseline: baseline                              0.0000         0.6652         0.3133         0.6288         0.6881         0.5538         1.0000         3.2000   
-----------------------------------------------------------------------------------------------------------------------------------------------------------------
-improved                                      0.6874         0.9531         0.8690         0.9531         0.9642         0.9818         1.0000         6.2000   
-                                           (p=0.0000)*    (p=0.0800)     (p=0.1200)     (p=0.0600)     (p=0.0400)*    (p=0.1200)     (p=1.0000)     (p=0.0600)  
-----------------------------------------------------------------------------------------------------------------------------------------------------------------
-poor                                          0.0000         0.0444         0.0000         0.0444         0.1276         0.0000         0.8000         1.6000   
-                                           (p=0.4000)     (p=0.0400)*    (p=0.0600)     (p=0.1200)     (p=0.0400)*    (p=0.0200)*    (p=1.0000)     (p=0.0400)* 
-----------------------------------------------------------------------------------------------------------------------------------------------------------------
-- Significance level: 0.05
-- '*' indicates significant difference (p < significance level)
-- Null hypothesis: systems are essentially the same
-- Significant results suggest systems are meaningfully different
-
-METRIC SIGNATURES:
-- bleu: bleu|ar:50|seed:12345
-- rouge1: rouge1|ar:50|seed:12345
-- rouge2: rouge2|ar:50|seed:12345
-- rougeL: rougeL|ar:50|seed:12345
-- bertscore: bertscore|ar:50|seed:12345
-- radgraph: radgraph|ar:50|seed:12345
-- chexbert: chexbert|ar:50|seed:12345
-- word_count: word_count|ar:50|seed:12345
-</pre>
-
-</details>
-
-> [!TIP]
-> - The output includes mean scores for each metric and system, along with p-values comparing each system to the baseline.
-> - Statistically significant improvements (or declines) are marked with an asterisk `*` if p < 0.05.
-> - `signatures` stores each metric configuration (e.g. random seed, sample size), and `scores` contains raw score values per system for further analysis or plotting.
-
-#### Step 4: Summarise Significant Findings
-
-```python
-# Significance testing
-print("\nSignificant differences (p < 0.05):")
-baseline_name = list(systems.keys())[0] # Assume first one is the baseline
-
-for system_name in systems.keys():
-    if system_name == baseline_name:
-        continue
-        
-    significant_metrics = []
-    for metric_name in metrics.keys():
-        pvalue_key = f"{metric_name}_pvalue"
-        if pvalue_key in scores[system_name]:
-            p_val = scores[system_name][pvalue_key]
-            if p_val < 0.05:
-                significant_metrics.append(metric_name)
-    
-    if significant_metrics:
-        print(f"  {system_name} vs {baseline_name}: {', '.join(significant_metrics)}")
-    else:
-        print(f"  {system_name} vs {baseline_name}: No significant differences")
-```
-
-<details>
-<summary> Output </summary>
-
-<pre lang="md">
-Significant differences (p < 0.05):
-  improved vs baseline: bleu, bertscore
-  poor vs baseline: rouge1, bertscore, radgraph, word_count
-</pre>
-
-</details>
-
-> [!TIP]
-> This makes it easy to:
-> - Verify whether model improvements are meaningful
-> - Test new metrics or design your own
-> - Report statistically sound results in your paper
-
-## 🧠 RadEval Expert Dataset
-To support reliable benchmarking, we introduce the **RadEval Expert Dataset**, a carefully curated evaluation set annotated by board-certified radiologists. This dataset consists of realistic radiology reports and challenging model generations, enabling nuanced evaluation across clinical accuracy, temporal consistency, and language quality. It serves as a gold standard to validate automatic metrics and model performance under expert review.
-
-## 🚦 Performance Tips
-
-1. **Start Small**: Test with a few examples before full evaluation
-2. **Select Metrics**: Only enable metrics you actually need
-3. **Batch Processing**: Process large datasets in smaller chunks
-4. **GPU Usage**: Ensure CUDA is available for faster computation
-
-
-## 📚 Citation
-
-If you use RadEval in your research, please cite:
+## Citation
 
 ```BibTeX
 @inproceedings{xu-etal-2025-radeval,
@@ -788,9 +141,6 @@ If you use RadEval in your research, please cite:
       Meng, Zaiqiao  and
       Eyre, David W  and
       Delbrouck, Jean-Benoit",
-    editor = {Habernal, Ivan  and
-      Schulam, Peter  and
-      Tiedemann, J{\"o}rg},
     booktitle = "Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing: System Demonstrations",
     month = nov,
     year = "2025",
@@ -799,12 +149,10 @@ If you use RadEval in your research, please cite:
     url = "https://aclanthology.org/2025.emnlp-demos.40/",
     doi = "10.18653/v1/2025.emnlp-demos.40",
     pages = "546--557",
-    ISBN = "979-8-89176-334-0",
-    abstract = "We introduce RadEval, a unified, open-source framework for evaluating radiology texts. RadEval consolidates a diverse range of metrics - from classic n{-}gram overlap (BLEU, ROUGE) and contextual measures (BERTScore) to clinical concept-based scores (F1CheXbert, F1RadGraph, RaTEScore, SRR-BERT, TemporalEntityF1) and advanced LLM{-}based evaluators (GREEN). We refine and standardize implementations, extend GREEN to support multiple imaging modalities with a more lightweight model, and pretrain a domain-specific radiology encoder - demonstrating strong zero-shot retrieval performance. We also release a richly annotated expert dataset with over 450 clinically significant error labels and show how different metrics correlate with radiologist judgment. Finally, RadEval provides statistical testing tools and baseline model evaluations across multiple publicly available datasets, facilitating reproducibility and robust benchmarking in radiology report generation."
 }
 ```
 
-### 📦 Codebase Contributors
+### Contributors
 <table>
   <tbody>
     <tr>
@@ -839,27 +187,11 @@ If you use RadEval in your research, please cite:
   </tbody>
 </table>
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
-This project would not be possible without the foundational work of the radiology AI community.  
-We extend our gratitude to the authors and maintainers of the following open-source projects and metrics:
-
-- 🧠 **CheXbert**, **RadGraph**, and **CheXpert** from Stanford AIMI for their powerful labelers and benchmarks.
-- 📐 **BERTScore** and **BLEU/ROUGE** for general-purpose NLP evaluation.
-- 🏥 **RadCliQ** and **RaTE Score** for clinically grounded evaluation of radiology reports.
-- 🧪 **SRR-BERT** for structured report understanding in radiology.
-- 🔍 Researchers contributing to temporal and factual consistency metrics in medical imaging.
-
-Special thanks to:
-- All contributors to open datasets such as **MIMIC-CXR**, which make reproducible research possible.
-- Our collaborators for their support and inspiration throughout development.
-
-We aim to build on these contributions and promote accessible, fair, and robust evaluation of AI-generated radiology text.
-
+Built on the work of the radiology AI community: [CheXbert](https://github.com/stanfordmlgroup/CheXbert), [RadGraph](https://github.com/jbdel/RadGraph), [BERTScore](https://github.com/Tiiiger/bert_score), [RaTEScore](https://github.com/MAGIC-AI4Med/RaTEScore), [SRR-BERT](https://github.com/StanfordAIMI/SRR-BERT), [GREEN](https://github.com/Stanford-AIMI/GREEN), and datasets like [MIMIC-CXR](https://physionet.org/content/mimic-cxr/2.0.0/).
 
 ---
-
 <div align="center">
-  <p>⭐ If you find RadEval useful, please give us a star! ⭐</p>
-  <p>Made with ❤️ for the radiology AI research community</p>
+  <p>If you find RadEval useful, please give us a star!</p>
 </div>

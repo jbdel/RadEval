@@ -1,22 +1,17 @@
 import os
 import logging
 import pytest
-from RadEval.factual.hoppr_f1chexbert import HopprF1CheXbert
 import numpy as np
 
+from RadEval.metrics.hoppr_f1chexbert import HopprF1CheXbert
 
 logger = logging.getLogger(__name__)
 
-# Keep in sync with the hard-coded path in RadEval/factual/hoppr_f1chexbert.py
 _HOPPR_CHEXPERT_CKPT = "/fss/pranta_das/CheXbert/expermints_folder/25507/checkpoint_2.pth"
 
-if not os.path.exists(_HOPPR_CHEXPERT_CKPT):
-    logger.warning(
-        "Skipping test_hopprf1chexbert because the model checkpoint is missing: %s",
-        _HOPPR_CHEXPERT_CKPT,
-    )
+if HopprF1CheXbert is None or not os.path.exists(_HOPPR_CHEXPERT_CKPT):
     pytest.skip(
-        f"Missing Hoppr CheXbert checkpoint: {_HOPPR_CHEXPERT_CKPT}",
+        "HopprCheXbert not available (missing module or checkpoint)",
         allow_module_level=True,
     )
 

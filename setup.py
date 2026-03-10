@@ -1,8 +1,9 @@
+from pathlib import Path
 from setuptools import setup, find_packages
 
 setup(
     name='RadEval',
-    version='0.0.6',
+    version='0.1.0',
     author='Jean-Benoit Delbrouck, Justin Xu, Xi Zhang',
     maintainer='Xi Zhang, JB Delbrouck',
     url='https://github.com/jbdel/RadEval',
@@ -13,7 +14,7 @@ setup(
     },
     license='MIT',
     description='All-in-one metrics for evaluating AI-generated radiology text',
-    long_description=open("README.md").read(),
+    long_description=Path("README.md").read_text(encoding="utf-8"),
     long_description_content_type="text/markdown",
     classifiers=[
         'Intended Audience :: Science/Research',
@@ -34,34 +35,38 @@ setup(
         'radgraph',
         'medical AI'
     ],
-    python_requires='>=3.11,<3.12',
+    python_requires='>=3.11',
     install_requires=[
-        'torch==2.9.1',
-        'transformers==4.57.3',
+        'torch>=2.0',
+        'torchvision',
+        'transformers>=4.40,<5',
         'radgraph',
         'rouge_score',
-        'bert-score==0.3.13',
+        'bert-score>=0.3.13',
         'scikit-learn>=1.8.0',
         'numpy<2',
         'medspacy',
         'stanza',
-        'pillow==10.3.0',
-        'sentencepiece==0.2.0', # for GREEN
-        'datasets==2.19.0',
-        'torchvision',
-        'opencv-python==4.10.0.84',
-        'matplotlib',
-        'accelerate==0.30.1',
+        'pillow',
+        'sentencepiece',
+        'datasets>=2.19',
+        'accelerate>=0.30',
         'pandas',
-        # API calls
-        'google-genai',    
-        'openai',
-        'tenacity',
+        'rich',
+        'appdirs',
+        'huggingface_hub',
     ],
+    extras_require={
+        'api': [
+            'google-genai',
+            'openai',
+            'tenacity',
+        ],
+    },
     packages=find_packages(),
     include_package_data=True,
     package_data={
-        "RadEval.factual.SRRBert": ["*.json"],
+        "RadEval.metrics.SRRBert": ["*.json"],
     },
     zip_safe=False,
-    )
+)

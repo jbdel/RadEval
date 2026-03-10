@@ -19,3 +19,14 @@ rrg_systems/
 
 # Ignore environment variables
 .env
+
+# IDE
+.vscode/
+.idea/
+
+# Dev scripts and data
+cmd
+pypi
+run_main.py
+inspect_eval_json.py
+pred_ref_*.json
