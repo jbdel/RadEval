@@ -1,0 +1,47 @@
+---
+description: How to publish RadEval to PyPI. Must always build from the public jbdel/RadEval repo, never from hopprai.
+globs: scripts/pypi
+alwaysApply: false
+---
+
+# Publishing to PyPI
+
+CRITICAL: Always build from the PUBLIC repo (jbdel/RadEval), never from hopprai/RadEval.
+The private repo contains proprietary metrics that must not appear on PyPI.
+
+## Full workflow
+
+```bash
+# 1. Push latest to hopprai/RadEval (private)
+cd /fss/jb/RadEval
+git push origin main
+
+# 2. Publish to jbdel/RadEval (public, strips private metrics)
+python scripts/publish_public.py --push
+
+# 3. Clone the PUBLIC repo into a temp dir and build from there
+cd /tmp
+git clone --depth 1 https://github.com/jbdel/RadEval.git radeval_pypi
+cd radeval_pypi
+python -m build --sdist
+
+# 4. Upload (token is in scripts/pypi, use __token__ as username)
+TWINE_USERNAME=__token__ TWINE_PASSWORD="<token from scripts/pypi>" twine upload dist/*
+
+# 5. Clean up
+rm -rf /tmp/radeval_pypi
+```
+
+## Version bumping
+
+Before uploading, bump the version in `setup.py` (line `version='...'`).
+PyPI rejects duplicate versions, so every upload must have a new version string.
+
+## Dependencies
+
+Ensure `twine` and `build` are installed: `pip install twine build`
+
+## The scripts/pypi file
+
+Contains the PyPI API token. It is NOT a script to execute directly.
+Read the token from it and pass it as TWINE_PASSWORD.
