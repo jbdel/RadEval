@@ -22,7 +22,6 @@ class RadEval():
                  do_srr_bert=False,
                  do_chexbert=False,
                  do_f1radbert_ct=False,
-                 do_hopprchexbert=False,
                  do_ratescore=False,
                  do_radcliq=False,
                  do_radeval_bertscore=False,
@@ -47,7 +46,6 @@ class RadEval():
         self.do_srr_bert = do_srr_bert
         self.do_chexbert = do_chexbert
         self.do_f1radbert_ct = do_f1radbert_ct
-        self.do_hopprchexbert = do_hopprchexbert
         self.do_ratescore = do_ratescore
         self.do_radcliq = do_radcliq
         self.do_temporal = do_temporal
@@ -105,16 +103,6 @@ class RadEval():
                 threshold=0.5,
                 batch_size=16,
             )
-        if self.do_hopprchexbert:
-            try:
-                from .metrics.hoppr_f1chexbert import HopprF1CheXbert
-                if HopprF1CheXbert is None:
-                    raise ImportError("HopprF1CheXbert is not available")
-                self.hopprchexbert_scorer = HopprF1CheXbert()
-            except (ImportError, FileNotFoundError, OSError) as e:
-                warnings.warn(
-                    f"HopprCheXbert unavailable ({e}); disabling do_hopprchexbert.")
-                self.do_hopprchexbert = False
 
         if self.do_ratescore:
             from .metrics.RaTEScore import RaTEScore
@@ -170,13 +158,7 @@ class RadEval():
                 "f1radbert_ct_macro avg_f1-score",
                 "f1radbert_ct_weighted_f1",
             ])
-        if self.do_hopprchexbert:
-            self.metric_keys.extend([
-                "hopprchexbert-5_micro avg_f1-score",
-                "hopprchexbert-all_micro avg_f1-score",
-                "hopprchexbert-5_macro avg_f1-score",
-                "hopprchexbert-all_macro avg_f1-score"
-            ])
+
         if self.do_ratescore:
             self.metric_keys.append("ratescore")
         if self.do_radcliq:
@@ -258,7 +240,7 @@ class RadEval():
         if self.do_srr_bert:        enabled.append("SRR-BERT")
         if self.do_chexbert:        enabled.append("CheXbert")
         if self.do_f1radbert_ct:    enabled.append("F1RadBERT-CT")
-        if self.do_hopprchexbert:   enabled.append("HopprCheXbert")
+
         if self.do_ratescore:       enabled.append("RaTEScore")
         if self.do_radcliq:         enabled.append("RadCliQ-v1")
         if self.do_temporal:        enabled.append("Temporal F1")
@@ -485,12 +467,6 @@ class RadEval():
                 progress.advance(metric_task)
 
             # ----------------------------------------------------------
-            if self.do_hopprchexbert:
-                self._score_chexbert(
-                    scores, "hopprchexbert", self.hopprchexbert_scorer,
-                    hyps, refs, n_samples, progress, metric_task)
-
-            # ----------------------------------------------------------
             if self.do_ratescore:
                 progress.update(metric_task, description="Computing RaTEScore")
                 sample_task = progress.add_task(
@@ -614,7 +590,6 @@ def main():
                         do_bertscore=True,
                         do_srr_bert=True,
                         do_chexbert=True,
-                        do_hopprchexbert=True,
                         do_temporal=True,
                         do_ratescore=True,
                         do_radcliq=True,
