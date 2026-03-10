@@ -34,6 +34,13 @@ PRIVATE_METRICS = [
         "flag": "do_hopprchexbert",
         "display_name": "HopprCheXbert",
     },
+    {
+        "name": "hoppr_f1chexbert_ct",
+        "metric_dir": "RadEval/metrics/hoppr_f1chexbert_ct",
+        "test_file": "tests/test_hoppr_f1chexbert_ct.py",
+        "flag": "do_hoppr_f1chexbert_ct",
+        "display_name": "HopprF1CheXbertCT",
+    },
 ]
 
 

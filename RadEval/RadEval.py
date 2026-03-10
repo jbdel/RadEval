@@ -23,6 +23,7 @@ class RadEval():
                  do_chexbert=False,
                  do_f1radbert_ct=False,
                  do_hopprchexbert=False,
+                 do_hoppr_f1chexbert_ct=False,
                  do_ratescore=False,
                  do_radcliq=False,
                  do_radeval_bertscore=False,
@@ -48,6 +49,7 @@ class RadEval():
         self.do_chexbert = do_chexbert
         self.do_f1radbert_ct = do_f1radbert_ct
         self.do_hopprchexbert = do_hopprchexbert
+        self.do_hoppr_f1chexbert_ct = do_hoppr_f1chexbert_ct
         self.do_ratescore = do_ratescore
         self.do_radcliq = do_radcliq
         self.do_temporal = do_temporal
@@ -116,6 +118,17 @@ class RadEval():
                     f"HopprCheXbert unavailable ({e}); disabling do_hopprchexbert.")
                 self.do_hopprchexbert = False
 
+        if self.do_hoppr_f1chexbert_ct:
+            try:
+                from .metrics.hoppr_f1chexbert_ct import HopprF1CheXbertCT
+                if HopprF1CheXbertCT is None:
+                    raise ImportError("HopprF1CheXbertCT is not available")
+                self.hoppr_f1chexbert_ct_scorer = HopprF1CheXbertCT()
+            except (ImportError, FileNotFoundError, OSError) as e:
+                warnings.warn(
+                    f"HopprF1CheXbertCT unavailable ({e}); disabling do_hoppr_f1chexbert_ct.")
+                self.do_hoppr_f1chexbert_ct = False
+
         if self.do_ratescore:
             from .metrics.RaTEScore import RaTEScore
             self.ratescore_scorer = RaTEScore()
@@ -176,6 +189,13 @@ class RadEval():
                 "hopprchexbert-all_micro avg_f1-score",
                 "hopprchexbert-5_macro avg_f1-score",
                 "hopprchexbert-all_macro avg_f1-score"
+            ])
+        if self.do_hoppr_f1chexbert_ct:
+            self.metric_keys.extend([
+                "hoppr_f1chexbert_ct_accuracy",
+                "hoppr_f1chexbert_ct_micro avg_f1-score",
+                "hoppr_f1chexbert_ct_macro avg_f1-score",
+                "hoppr_f1chexbert_ct_weighted_f1",
             ])
         if self.do_ratescore:
             self.metric_keys.append("ratescore")
@@ -259,6 +279,7 @@ class RadEval():
         if self.do_chexbert:        enabled.append("CheXbert")
         if self.do_f1radbert_ct:    enabled.append("F1RadBERT-CT")
         if self.do_hopprchexbert:   enabled.append("HopprCheXbert")
+        if self.do_hoppr_f1chexbert_ct: enabled.append("HopprF1CheXbertCT")
         if self.do_ratescore:       enabled.append("RaTEScore")
         if self.do_radcliq:         enabled.append("RadCliQ-v1")
         if self.do_temporal:        enabled.append("Temporal F1")
@@ -489,6 +510,38 @@ class RadEval():
                 self._score_chexbert(
                     scores, "hopprchexbert", self.hopprchexbert_scorer,
                     hyps, refs, n_samples, progress, metric_task)
+
+            # ----------------------------------------------------------
+            if self.do_hoppr_f1chexbert_ct:
+                progress.update(metric_task, description="Computing HopprF1CheXbertCT")
+                n_prompts = n_samples * 16
+                n_batches = math.ceil(n_prompts / self.hoppr_f1chexbert_ct_scorer.batch_size) * 2
+                batch_task = progress.add_task("  [dim]Batches", total=n_batches)
+                ct_accuracy, ct_sample_acc, ct_report = self.hoppr_f1chexbert_ct_scorer(
+                    hyps, refs, on_batch_done=lambda: progress.advance(batch_task))
+                progress.remove_task(batch_task)
+                if self.do_details:
+                    ct_labels = {
+                        k: v["f1-score"]
+                        for k, v in list(ct_report.items())[:-4]
+                    }
+                    scores["hoppr_f1chexbert_ct"] = {
+                        "hoppr_f1chexbert_ct_accuracy": ct_accuracy,
+                        "hoppr_f1chexbert_ct_micro avg_f1-score": ct_report["micro avg"]["f1-score"],
+                        "hoppr_f1chexbert_ct_macro avg_f1-score": ct_report["macro avg"]["f1-score"],
+                        "hoppr_f1chexbert_ct_weighted_f1": ct_report["weighted avg"]["f1-score"],
+                        "sample_scores": {"all_labels": ct_sample_acc},
+                        "label_scores_f1-score": ct_labels,
+                    }
+                else:
+                    scores["hoppr_f1chexbert_ct_accuracy"] = round(ct_accuracy, 4)
+                    scores["hoppr_f1chexbert_ct_micro avg_f1-score"] = round(
+                        ct_report["micro avg"]["f1-score"], 4)
+                    scores["hoppr_f1chexbert_ct_macro avg_f1-score"] = round(
+                        ct_report["macro avg"]["f1-score"], 4)
+                    scores["hoppr_f1chexbert_ct_weighted_f1"] = round(
+                        ct_report["weighted avg"]["f1-score"], 4)
+                progress.advance(metric_task)
 
             # ----------------------------------------------------------
             if self.do_ratescore:
