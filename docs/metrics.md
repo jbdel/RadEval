@@ -98,12 +98,22 @@ Entity-aware metric that extracts medical entities via NER, computes synonym-awa
 
 ### RadCliQ-v1 (`do_radcliq`)
 
-Composite metric that combines BERTScore, RadGraph, semantic embeddings, and BLEU via a learned linear model. Lower values indicate better reports.
+Composite metric that combines four sub-metrics via a learned linear model, aligned with the [reference implementation](https://github.com/rajpurkarlab/CXR-Report-Metric) (radcliq-v1.pkl).
+
+**Sub-metrics** (computed internally, not exposed):
+- **BERTScore**: `distilroberta-base`, `rescale_with_baseline=True`, IDF-weighted with refs as corpus
+- **BLEU-2**: bigram BLEU (not BLEU-4)
+- **RadGraph**: `(entity_F1 + relation_F1) / 2` per pair
+- **Semantic embeddings**: CheXbert `[CLS]` cosine similarity per pair
+
+**Composite**: The four per-pair scores are standardized (pre-fitted `StandardScaler`) and combined with learned coefficients via a linear model. The raw RadCliQ-v1 score is **lower for better reports** (more negative = closer match).
+
+**Return value**: The default output is `1 / mean(raw_scores)`, not the raw mean. In `do_details` mode, `sample_scores` contains the raw per-pair RadCliQ-v1 values.
 
 | Mode | Output key | Value |
 |------|-----------|-------|
-| Default | `radcliq-v1` | float |
-| Details | `radcliq-v1` | `{mean_score, sample_scores}` |
+| Default | `radcliq-v1` | float (`1 / mean(per_pair_radcliq)`) |
+| Details | `radcliq-v1` | `{mean_score, sample_scores}` where `sample_scores` are raw per-pair values |
 
 ### SRR-BERT (`do_srr_bert`)
 
