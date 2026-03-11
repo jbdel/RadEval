@@ -1,7 +1,6 @@
 """Shared test fixtures and helpers."""
 import pytest
 
-
 def read_reports(filepath):
     with open(filepath, 'r') as f:
         return [line.strip() for line in f if line.strip()]

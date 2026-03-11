@@ -82,6 +82,7 @@ pip install -e '.[api]'
 | | SRR-BERT | `do_srr_bert` | Structured report evaluation |
 | | Temporal F1 | `do_temporal` | Temporal consistency |
 | | GREEN | `do_green` | LLM-based overall quality (7B model) |
+| | CRIMSON | `do_crimson` | Clinically grounded LLM judge (HF-MedGemma or OpenAI) |
 | | MammoGREEN | `do_mammo_green` | Mammography-specific LLM scoring |
 
 Enable only the metrics you need -- each one is loaded lazily.

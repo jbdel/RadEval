@@ -8,6 +8,10 @@
 |-----------|------|---------|-------------|
 | `do_radgraph` | bool | `False` | F1RadGraph -- knowledge-graph clinical evaluation |
 | `do_green` | bool | `False` | GREEN -- LLM-based quality scorer (loads a 7B model) |
+| `do_crimson` | bool | `False` | CRIMSON -- clinically grounded LLM judge |
+| `crimson_api` | str | `"hf"` | CRIMSON backend: `"hf"`/`"huggingface"` (local MedGemma-4B) or `"openai"` (API) |
+| `crimson_api_key` | str / None | `None` | OpenAI API key for CRIMSON (falls back to `OPENAI_API_KEY`; only needed when `crimson_api="openai"`) |
+| `crimson_batch_size` | int | `1` | HuggingFace generation batch size for CRIMSON |
 | `do_mammo_green` | bool | `False` | MammoGREEN -- mammography-specific LLM scorer |
 | `mammo_green_model` | str | `"gpt-4o-mini"` | Model name for MammoGREEN (OpenAI or Gemini) |
 | `mammo_green_api_key` | str / None | `None` | API key for MammoGREEN (falls back to env vars) |
@@ -49,6 +53,7 @@ evaluator = RadEval(
 evaluator = RadEval(
     do_radgraph=True,
     do_green=True,
+    do_crimson=True,
     do_bleu=True,
     do_rouge=True,
     do_bertscore=True,
@@ -66,6 +71,8 @@ evaluator = RadEval(
 ### GPU tips
 
 - **GREEN** loads a 7B-parameter LLM. Set `CUDA_VISIBLE_DEVICES` to control which GPUs it uses for multi-GPU inference.
+- **CRIMSON** with `crimson_api="hf"` (default) loads `CRIMSONScore/medgemma-4b-it-crimson` locally. Requires a GPU.
+- **CRIMSON** with `crimson_api="openai"` calls the OpenAI API. Requires `crimson_api_key` or `OPENAI_API_KEY`.
 - **MammoGREEN** calls an external API and does not require a GPU.
 - All other metrics load smaller models (< 1GB) and run on a single GPU or CPU.
 - Metrics are loaded lazily -- only the ones you enable consume memory.

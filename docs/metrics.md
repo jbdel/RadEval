@@ -132,6 +132,18 @@ LLM-based evaluation using [GREEN-radllama2-7B](https://huggingface.co/StanfordA
 | Default | `green` | float (mean score) |
 | Details | `green` | `{mean, std, sample_scores}` |
 
+### CRIMSON (`do_crimson`)
+
+Clinically grounded LLM-as-judge metric from [CRIMSON](https://github.com/rajpurkarlab/CRIMSON). Supports two backends:
+
+- **HuggingFace** (`crimson_api="hf"`, default) -- loads [CRIMSONScore/medgemma-4b-it-crimson](https://huggingface.co/CRIMSONScore/medgemma-4b-it-crimson) locally. Requires a GPU.
+- **OpenAI** (`crimson_api="openai"`) -- calls the OpenAI API. Requires `crimson_api_key` or `OPENAI_API_KEY` in env.
+
+| Mode | Output key | Value |
+|------|-----------|-------|
+| Default | `crimson` | float (mean score) |
+| Details | `crimson` | `{mean, std, sample_scores, error_counts}` |
+
 ### MammoGREEN (`do_mammo_green`)
 
 Mammography-specific LLM-as-judge metric. Calls an OpenAI or Gemini model to count clinically significant errors (false findings, missing findings, mischaracterization, wrong location, incorrect BI-RADS, incorrect breast density).

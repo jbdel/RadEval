@@ -28,6 +28,10 @@ class RadEval():
                  do_temporal=False,
                  do_details=False,
                  show_progress=True,
+                 do_crimson=False,
+                 crimson_api="hf",
+                 crimson_api_key=None,
+                 crimson_batch_size=1,
                  ):
         super(RadEval, self).__init__()
 
@@ -37,6 +41,10 @@ class RadEval():
 
         self.do_radgraph = do_radgraph
         self.do_green = do_green
+        self.do_crimson = do_crimson
+        self.crimson_api = crimson_api
+        self.crimson_api_key = crimson_api_key
+        self.crimson_batch_size = crimson_batch_size
         self.do_mammo_green = do_mammo_green
         self.mammo_green_model = mammo_green_model
         self.mammo_green_api_key = mammo_green_api_key
@@ -71,6 +79,14 @@ class RadEval():
             from .metrics.green_score import GREEN
             self.green_scorer = GREEN("StanfordAIMI/GREEN-radllama2-7b",
                                       output_dir=".")
+
+        if self.do_crimson:
+            from .metrics.crimson import CRIMSON
+            self.crimson_scorer = CRIMSON(
+                api=self.crimson_api,
+                api_key=self.crimson_api_key,
+                batch_size=self.crimson_batch_size,
+            )
 
         if self.do_mammo_green:
             from .metrics.green_score import MammoGREEN
@@ -135,6 +151,8 @@ class RadEval():
             self.metric_keys.append("bleu")
         if self.do_green:
             self.metric_keys.append("green")
+        if self.do_crimson:
+            self.metric_keys.append("crimson")
         if self.do_mammo_green:
             self.metric_keys.append("mammo_green")
         if self.do_bertscore:
@@ -235,6 +253,7 @@ class RadEval():
         if self.do_bleu:            enabled.append("BLEU")
         if self.do_bertscore:       enabled.append("BERTScore")
         if self.do_green:           enabled.append("GREEN")
+        if self.do_crimson:         enabled.append("CRIMSON")
         if self.do_mammo_green:     enabled.append("MammoGREEN")
         if self.do_rouge:           enabled.append("ROUGE")
         if self.do_srr_bert:        enabled.append("SRR-BERT")
@@ -326,6 +345,38 @@ class RadEval():
                     }
                 else:
                     scores["green"] = round(mean, 4)
+                progress.advance(metric_task)
+
+            # ----------------------------------------------------------
+            if self.do_crimson:
+                progress.update(metric_task, description="Computing CRIMSON")
+                mean, std, sample_scores, results_df = self.crimson_scorer(refs, hyps)
+                if self.do_details:
+                    error_columns = [
+                        "false_findings",
+                        "missing_findings",
+                        "attribute_errors",
+                        "location_errors",
+                        "severity_errors",
+                        "descriptor_errors",
+                        "measurement_errors",
+                        "certainty_errors",
+                        "unspecific_errors",
+                        "overinterpretation_errors",
+                        "temporal_errors",
+                    ]
+                    if len(results_df):
+                        error_counts = results_df[error_columns].to_dict(orient="records")
+                    else:
+                        error_counts = []
+                    scores["crimson"] = {
+                        "mean": mean,
+                        "std": std,
+                        "sample_scores": sample_scores,
+                        "error_counts": error_counts,
+                    }
+                else:
+                    scores["crimson"] = round(mean, 4)
                 progress.advance(metric_task)
 
             # ----------------------------------------------------------
