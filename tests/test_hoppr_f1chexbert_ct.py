@@ -5,7 +5,7 @@ from RadEval.metrics.hoppr_f1chexbert_ct import HopprF1CheXbertCT
 
 _CKPT_DIR = (
     "/nfs/cluster/hoppr_vlm_ressources/radeval_checkpoints/"
-    "hoppr_f1chexbert_ct_modernbert"
+    "hoppr_f1chexbert_ct"
 )
 
 if HopprF1CheXbertCT is None or not os.path.isdir(_CKPT_DIR):

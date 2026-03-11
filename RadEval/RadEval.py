@@ -514,8 +514,7 @@ class RadEval():
             # ----------------------------------------------------------
             if self.do_hoppr_f1chexbert_ct:
                 progress.update(metric_task, description="Computing HopprF1CheXbertCT")
-                n_prompts = n_samples * 16
-                n_batches = math.ceil(n_prompts / self.hoppr_f1chexbert_ct_scorer.batch_size) * 2
+                n_batches = math.ceil(n_samples / self.hoppr_f1chexbert_ct_scorer.batch_size) * 2
                 batch_task = progress.add_task("  [dim]Batches", total=n_batches)
                 ct_accuracy, ct_sample_acc, ct_report = self.hoppr_f1chexbert_ct_scorer(
                     hyps, refs, on_batch_done=lambda: progress.advance(batch_task))

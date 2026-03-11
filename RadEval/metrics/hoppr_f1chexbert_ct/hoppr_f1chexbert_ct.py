@@ -1,25 +1,26 @@
-"""HopprF1CheXbertCT: per-condition CT report evaluator (ModernBERT).
+"""HopprF1CheXbertCT: multi-output CT report evaluator (ModernBERT-large).
 
-Classifies each of 16 CT conditions independently per report by formatting
-a prompt for each condition and running a 4-way classifier. The 4 classes
-(definitely absent / not reported / uncertain / definitely present) are
-collapsed to binary (negative = 0,1; positive = 2,3) for F1 evaluation.
+A single forward pass classifies 16 CT conditions simultaneously.
+Each condition head outputs 4-way logits (definitely absent / not reported /
+uncertain / definitely present), collapsed to binary for F1 evaluation.
 """
 from __future__ import annotations
 
 import os
 import warnings
 from collections import OrderedDict
-from typing import List, Sequence, Tuple, Union
+from typing import List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
+import torch.nn as nn
 from sklearn.metrics import accuracy_score, classification_report
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from transformers import AutoConfig, AutoModel, AutoTokenizer, PreTrainedModel
+from transformers.modeling_outputs import ModelOutput
+from dataclasses import dataclass
 
 _DEFAULT_CKPT = (
-    "/nfs/cluster/hoppr_vlm_ressources/radeval_checkpoints/"
-    "hoppr_f1chexbert_ct_modernbert"
+    "/nfs/cluster/hoppr_vlm_ressources/radeval_checkpoints/hoppr_f1chexbert_ct"
 )
 
 CONDITION_NAMES = OrderedDict([
@@ -41,36 +42,80 @@ CONDITION_NAMES = OrderedDict([
     ("prior_myocardial_infarction", "Prior myocardial infarction"),
 ])
 
-ID_TO_LABEL = {0: "definitely absent", 1: "not reported",
-               2: "uncertain", 3: "definitely present"}
+NUM_CONDITIONS = len(CONDITION_NAMES)
+NUM_CLASSES = 4  # definitely absent, not reported, uncertain, definitely present
+
+# ---------------------------------------------------------------------------
+# Model definition (must match the training code for from_pretrained to work)
+# ---------------------------------------------------------------------------
 
 
-def _format_prompt(condition_pretty: str, findings: str) -> str:
-    return (
-        f"Condition: {condition_pretty}\n"
-        f"Report findings:\n{findings}\n"
-        "Classify this condition as one of: "
-        "definitely absent, not reported, uncertain, definitely present."
-    )
+@dataclass
+class MultiOutputClassifierOutput(ModelOutput):
+    loss: Optional[torch.FloatTensor] = None
+    logits: Optional[torch.FloatTensor] = None
+
+
+class MultiOutputClassifier(PreTrainedModel):
+    """16 independent 4-class heads sharing one BERT-style encoder."""
+
+    config_class = AutoConfig
+    _keys_to_ignore_on_load_unexpected = [r"cls", r"classifier", r"score"]
+
+    def __init__(self, config):
+        super().__init__(config)
+        self.encoder = AutoModel.from_config(config)
+        hidden = config.hidden_size
+        self.heads = nn.ModuleList(
+            [nn.Linear(hidden, NUM_CLASSES) for _ in range(NUM_CONDITIONS)]
+        )
+        self.post_init()
+
+    def forward(
+        self,
+        input_ids: Optional[torch.LongTensor] = None,
+        attention_mask: Optional[torch.FloatTensor] = None,
+        labels: Optional[torch.LongTensor] = None,
+        **kwargs,
+    ) -> MultiOutputClassifierOutput:
+        outputs = self.encoder(input_ids=input_ids, attention_mask=attention_mask)
+        cls_hidden = outputs.last_hidden_state[:, 0]
+        all_logits = torch.stack([head(cls_hidden) for head in self.heads], dim=1)
+
+        loss = None
+        if labels is not None:
+            total_loss = torch.tensor(0.0, device=all_logits.device,
+                                      dtype=all_logits.dtype)
+            for i in range(NUM_CONDITIONS):
+                total_loss = total_loss + nn.functional.cross_entropy(
+                    all_logits[:, i, :], labels[:, i])
+            loss = total_loss / NUM_CONDITIONS
+
+        return MultiOutputClassifierOutput(loss=loss, logits=all_logits)
+
+
+# ---------------------------------------------------------------------------
+# Evaluator
+# ---------------------------------------------------------------------------
 
 
 class HopprF1CheXbertCT:
-    """Per-condition CT finding classifier for report evaluation.
+    """Multi-output CT finding classifier for report evaluation.
 
-    For each report, the model is queried once per condition (16 passes).
-    4-way predictions are collapsed to binary for computing F1.
+    A single forward pass produces (batch, 16, 4) logits. Predictions are
+    collapsed to binary (classes 0-1 = negative, 2-3 = positive) and
+    compared via sklearn classification_report.
     """
 
     LABELS = list(CONDITION_NAMES.keys())
-    LABELS_PRETTY = list(CONDITION_NAMES.values())
     NO_FINDING = "no_finding"
 
     def __init__(
         self,
         checkpoint_dir: str = _DEFAULT_CKPT,
         device: Union[str, torch.device] = "cuda",
-        batch_size: int = 64,
-        max_length: int = 1536,
+        batch_size: int = 16,
+        max_length: int = 2048,
     ):
         if not os.path.isdir(checkpoint_dir):
             raise FileNotFoundError(
@@ -83,9 +128,14 @@ class HopprF1CheXbertCT:
             warnings.warn("CUDA requested but unavailable; falling back to CPU.")
             self.device = torch.device("cpu")
 
-        self.tokenizer = AutoTokenizer.from_pretrained(checkpoint_dir)
-        self.model = AutoModelForSequenceClassification.from_pretrained(
-            checkpoint_dir,
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            checkpoint_dir, use_fast=True, trust_remote_code=True)
+        if self.tokenizer.pad_token is None:
+            self.tokenizer.pad_token = (
+                self.tokenizer.eos_token or self.tokenizer.unk_token)
+
+        self.model = MultiOutputClassifier.from_pretrained(
+            checkpoint_dir, trust_remote_code=True,
         ).to(self.device)
         self.model.eval()
 
@@ -93,39 +143,29 @@ class HopprF1CheXbertCT:
     def _predict_label_matrix(
         self, reports: Sequence[str], on_batch_done=None,
     ) -> np.ndarray:
-        """Return binary label matrix of shape (N, 16+1).
+        """Return binary label matrix of shape (N, 17).
 
-        For each report, runs 16 condition prompts through the model.
-        4-way logits are argmaxed, then collapsed to binary:
-          classes 0-1 (absent/not reported) -> 0
-          classes 2-3 (uncertain/present)   -> 1
-        A 17th "no_finding" column is appended (1 when all others are 0).
+        Logits (N, 16, 4) -> argmax -> binary (classes 2,3 = positive).
+        A 17th "no_finding" column is 1 when all 16 conditions are 0.
         """
-        all_prompts = []
-        for report in reports:
-            for pretty_name in self.LABELS_PRETTY:
-                all_prompts.append(_format_prompt(pretty_name, report))
+        all_binary = []
+        report_list = list(reports)
 
-        n_conditions = len(self.LABELS)
-        all_preds = []
-
-        for start in range(0, len(all_prompts), self.batch_size):
-            batch = all_prompts[start:start + self.batch_size]
+        for start in range(0, len(report_list), self.batch_size):
+            batch = report_list[start:start + self.batch_size]
             enc = self.tokenizer(
                 batch, padding=True, truncation=True,
                 max_length=self.max_length, return_tensors="pt",
             )
             enc = {k: v.to(self.device) for k, v in enc.items()}
-            logits = self.model(**enc).logits
-            pred_ids = logits.argmax(dim=-1).cpu()
-            binary = (pred_ids >= 2).int()
-            all_preds.append(binary)
+            logits = self.model(**enc).logits  # (B, 16, 4)
+            pred_ids = logits.argmax(dim=-1)   # (B, 16)
+            binary = (pred_ids >= 2).int().cpu()
+            all_binary.append(binary)
             if on_batch_done:
                 on_batch_done()
 
-        all_preds = torch.cat(all_preds, dim=0)
-        matrix = all_preds.view(len(reports), n_conditions)
-
+        matrix = torch.cat(all_binary, dim=0)  # (N, 16)
         no_finding = (~matrix.any(dim=1)).unsqueeze(1).int()
         full = torch.cat([matrix, no_finding], dim=1)
         return full.numpy()
