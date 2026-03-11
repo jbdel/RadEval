@@ -83,26 +83,6 @@ Extracts clinical entities and relations as a knowledge graph using [RadGraph-XL
 | Default | `radgraph_simple`, `radgraph_partial`, `radgraph_complete` | float |
 | Details | `radgraph` | `{sample_scores, hypothesis_annotation_lists, reference_annotation_lists}` |
 
-### RadGraph-RadCliQ (`do_radgraph_radcliq`)
-
-Per-pair RadGraph entity and relation F1, matching the RadGraph sub-metric used inside [RadCliQ-v1](https://github.com/rajpurkarlab/CXR-Report-Metric). For each pair, entities and relations are extracted via `RadGraph(model_type='radgraph')`, and the score is `(entity_F1 + relation_F1) / 2`.
-
-**How it differs from `do_radgraph`:**
-
-| | `do_radgraph` (F1RadGraph) | `do_radgraph_radcliq` |
-|---|---|---|
-| Model | `radgraph-xl` | `radgraph` (standard) |
-| Scoring | Reward-level F1 (simple, partial, complete) | Raw entity F1 + relation F1, averaged |
-| Granularity | 3 aggregate scores | 1 score per pair |
-| Source | Official `radgraph` package `F1RadGraph` | Reimplemented from RadCliQ reference |
-
-Use `do_radgraph` for the official RadGraph evaluation. Use `do_radgraph_radcliq` when you need the exact same RadGraph computation that feeds into RadCliQ-v1.
-
-| Mode | Output key | Value |
-|------|-----------|-------|
-| Default | `radgraph_radcliq` | float (mean over pairs) |
-| Details | `radgraph_radcliq` | `{mean_score, sample_scores}` |
-
 ### RaTEScore (`do_ratescore`)
 
 Entity-aware metric that extracts medical entities via NER, computes synonym-aware embeddings, and scores precision/recall using a learned affinity matrix.
@@ -116,24 +96,30 @@ Entity-aware metric that extracts medical entities via NER, computes synonym-awa
 
 ## Specialized Metrics
 
-### RadCliQ-v1 (`do_radcliq`)
+### RadGraph-RadCliQ (`do_radgraph_radcliq`)
 
-Composite metric that combines four sub-metrics via a learned linear model, aligned with the [reference implementation](https://github.com/rajpurkarlab/CXR-Report-Metric) (radcliq-v1.pkl).
+The RadGraph sub-score as computed in the RadCliQ-v1 pipeline. Unlike the official `F1RadGraph` metric (`do_radgraph`), which uses `radgraph-xl` and entity-matching at three reward levels, this metric:
 
-**Sub-metrics** (computed internally, not exposed):
-- **BERTScore**: `distilroberta-base`, `rescale_with_baseline=True`, IDF-weighted with refs as corpus
-- **BLEU-2**: bigram BLEU (not BLEU-4)
-- **RadGraph**: `(entity_F1 + relation_F1) / 2` per pair
-- **Semantic embeddings**: CheXbert `[CLS]` cosine similarity per pair
+- Uses the original `radgraph` model (the one RadCliQ-v1 was trained with)
+- Extracts entity **and relation** sets from each report
+- Computes per-pair `(entity_f1 + relation_f1) / 2`
+- Returns per-sample scores
 
-**Composite**: The four per-pair scores are standardized (pre-fitted `StandardScaler`) and combined with learned coefficients via a linear model. The raw RadCliQ-v1 score is **lower for better reports** (more negative = closer match).
-
-**Return value**: The default output is `1 / mean(raw_scores)`, not the raw mean. In `do_details` mode, `sample_scores` contains the raw per-pair RadCliQ-v1 values.
+Use `do_radgraph` for the standard metric. Use `do_radgraph_radcliq` when you need per-pair entity+relation F1 scores or exact alignment with the RadCliQ-v1 composite.
 
 | Mode | Output key | Value |
 |------|-----------|-------|
-| Default | `radcliq-v1` | float (`1 / mean(per_pair_radcliq)`) |
-| Details | `radcliq-v1` | `{mean_score, sample_scores}` where `sample_scores` are raw per-pair values |
+| Default | `radgraph_radcliq` | float (mean score) |
+| Details | `radgraph_radcliq` | `{mean_score, sample_scores}` |
+
+### RadCliQ-v1 (`do_radcliq`)
+
+Composite metric that combines BERTScore, RadGraph, semantic embeddings, and BLEU via a learned linear model. Lower values indicate better reports.
+
+| Mode | Output key | Value |
+|------|-----------|-------|
+| Default | `radcliq-v1` | float |
+| Details | `radcliq-v1` | `{mean_score, sample_scores}` |
 
 ### SRR-BERT (`do_srr_bert`)
 

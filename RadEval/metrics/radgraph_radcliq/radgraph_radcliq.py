@@ -1,15 +1,26 @@
-"""RadGraph entity+relation F1 (RadCliQ variant).
+"""RadGraph-RadCliQ: entity + relation F1 as used in the RadCliQ-v1 composite.
 
-Computes per-pair (entity_F1 + relation_F1) / 2 using the RadGraph model,
-matching the RadGraph sub-metric used inside RadCliQ-v1 from:
-  https://github.com/rajpurkarlab/CXR-Report-Metric
+This metric isolates the RadGraph sub-score from the RadCliQ-v1 pipeline
+(rajpurkarlab/CXR-Report-Metric). It differs from the official ``F1RadGraph``
+metric (from the ``radgraph`` package) in several ways:
 
-This differs from the official F1RadGraph metric (``do_radgraph``) which
-uses radgraph-xl and returns simple/partial/complete reward-level scores.
+**Official F1RadGraph** (``do_radgraph``):
+  - Uses ``radgraph-xl`` (larger, more accurate model)
+  - Computes entity overlap at three reward levels: simple, partial, complete
+  - Returns three aggregate F1 scores across all pairs
+
+**RadGraph-RadCliQ** (``do_radgraph_radcliq``):
+  - Uses the original ``radgraph`` model (the one RadCliQ-v1 was trained with)
+  - Extracts entity *and* relation sets from the RadGraph output
+  - Computes per-pair ``(entity_f1 + relation_f1) / 2``
+  - Returns per-sample scores (useful for correlation analysis and details)
+
+Use ``do_radgraph`` for the standard metric and ``do_radgraph_radcliq``
+when you need per-pair scores or exact alignment with the RadCliQ-v1 composite.
 """
 from __future__ import annotations
 
-from typing import List, Sequence, Tuple, Union
+from typing import List, Sequence, Tuple
 
 import numpy as np
 from radgraph import RadGraph
@@ -45,13 +56,7 @@ def _extract_relations(output: dict) -> set:
 
 
 class RadGraphRadCliQ:
-    """Per-pair RadGraph entity+relation F1 (RadCliQ variant).
-
-    For each (ref, hyp) pair:
-      entity_f1  = F1 over the set of (tokens, label) tuples
-      relation_f1 = F1 over the set of (src, tgt, relation) tuples
-      score = (entity_f1 + relation_f1) / 2
-    """
+    """Per-pair (entity_f1 + relation_f1) / 2 using the RadGraph model."""
 
     def __init__(self, model_type: str = "radgraph"):
         self._radgraph = RadGraph(model_type=model_type)
@@ -78,10 +83,8 @@ class RadGraphRadCliQ:
         for i in range(len(refs)):
             gt_out = gt_outputs.get(str(i), {})
             pred_out = pred_outputs.get(str(i), {})
-            ent_f1 = _compute_f1(
-                _extract_entities(gt_out), _extract_entities(pred_out))
-            rel_f1 = _compute_f1(
-                _extract_relations(gt_out), _extract_relations(pred_out))
+            ent_f1 = _compute_f1(_extract_entities(gt_out), _extract_entities(pred_out))
+            rel_f1 = _compute_f1(_extract_relations(gt_out), _extract_relations(pred_out))
             scores.append((ent_f1 + rel_f1) / 2)
             if on_sample_done:
                 on_sample_done()
