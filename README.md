@@ -77,6 +77,7 @@ pip install -e '.[api]'
 | **Clinical** | F1CheXbert | `do_chexbert` | CheXpert finding classification |
 | | F1RadBERT-CT | `do_f1radbert_ct` | CT finding classification |
 | | F1RadGraph | `do_radgraph` | Clinical entity/relation accuracy |
+| | RadGraph-RadCliQ | `do_radgraph_radcliq` | RadGraph entity+relation F1 (RadCliQ variant) |
 | | RaTEScore | `do_ratescore` | Entity-level synonym-aware scoring |
 | **Specialized** | RadCliQ-v1 | `do_radcliq` | Composite clinical relevance |
 | | SRR-BERT | `do_srr_bert` | Structured report evaluation |

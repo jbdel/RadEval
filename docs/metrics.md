@@ -83,6 +83,26 @@ Extracts clinical entities and relations as a knowledge graph using [RadGraph-XL
 | Default | `radgraph_simple`, `radgraph_partial`, `radgraph_complete` | float |
 | Details | `radgraph` | `{sample_scores, hypothesis_annotation_lists, reference_annotation_lists}` |
 
+### RadGraph-RadCliQ (`do_radgraph_radcliq`)
+
+Per-pair RadGraph entity and relation F1, matching the RadGraph sub-metric used inside [RadCliQ-v1](https://github.com/rajpurkarlab/CXR-Report-Metric). For each pair, entities and relations are extracted via `RadGraph(model_type='radgraph')`, and the score is `(entity_F1 + relation_F1) / 2`.
+
+**How it differs from `do_radgraph`:**
+
+| | `do_radgraph` (F1RadGraph) | `do_radgraph_radcliq` |
+|---|---|---|
+| Model | `radgraph-xl` | `radgraph` (standard) |
+| Scoring | Reward-level F1 (simple, partial, complete) | Raw entity F1 + relation F1, averaged |
+| Granularity | 3 aggregate scores | 1 score per pair |
+| Source | Official `radgraph` package `F1RadGraph` | Reimplemented from RadCliQ reference |
+
+Use `do_radgraph` for the official RadGraph evaluation. Use `do_radgraph_radcliq` when you need the exact same RadGraph computation that feeds into RadCliQ-v1.
+
+| Mode | Output key | Value |
+|------|-----------|-------|
+| Default | `radgraph_radcliq` | float (mean over pairs) |
+| Details | `radgraph_radcliq` | `{mean_score, sample_scores}` |
+
 ### RaTEScore (`do_ratescore`)
 
 Entity-aware metric that extracts medical entities via NER, computes synonym-aware embeddings, and scores precision/recall using a learned affinity matrix.

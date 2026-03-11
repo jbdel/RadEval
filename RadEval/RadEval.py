@@ -26,6 +26,7 @@ class RadEval():
                  do_hoppr_f1chexbert_ct=False,
                  do_ratescore=False,
                  do_radcliq=False,
+                 do_radgraph_radcliq=False,
                  do_radeval_bertscore=False,
                  do_temporal=False,
                  do_details=False,
@@ -52,6 +53,7 @@ class RadEval():
         self.do_hoppr_f1chexbert_ct = do_hoppr_f1chexbert_ct
         self.do_ratescore = do_ratescore
         self.do_radcliq = do_radcliq
+        self.do_radgraph_radcliq = do_radgraph_radcliq
         self.do_temporal = do_temporal
         self.do_radeval_bertscore = do_radeval_bertscore
         self.do_details = do_details
@@ -137,6 +139,10 @@ class RadEval():
             from .metrics.RadCliQv1.radcliq import CompositeMetric
             self.radcliq_scorer = CompositeMetric()
 
+        if self.do_radgraph_radcliq:
+            from .metrics.radgraph_radcliq import RadGraphRadCliQ
+            self.radgraph_radcliq_scorer = RadGraphRadCliQ()
+
         if self.do_temporal:
             import stanza
             from .metrics.f1temporal import F1Temporal
@@ -201,6 +207,8 @@ class RadEval():
             self.metric_keys.append("ratescore")
         if self.do_radcliq:
             self.metric_keys.append("radcliqv1")
+        if self.do_radgraph_radcliq:
+            self.metric_keys.append("radgraph_radcliq")
         if self.do_temporal:
             self.metric_keys.append("temporal_f1")
         if self.do_radeval_bertscore:
@@ -282,6 +290,7 @@ class RadEval():
         if self.do_hoppr_f1chexbert_ct: enabled.append("HopprF1CheXbertCT")
         if self.do_ratescore:       enabled.append("RaTEScore")
         if self.do_radcliq:         enabled.append("RadCliQ-v1")
+        if self.do_radgraph_radcliq: enabled.append("RadGraph-RadCliQ")
         if self.do_temporal:        enabled.append("Temporal F1")
         if self.do_radeval_bertscore: enabled.append("RadEval-BERTScore")
 
@@ -586,6 +595,24 @@ class RadEval():
                     }
                 else:
                     scores["radcliq-v1"] = round(mean_scores, 4)
+                progress.advance(metric_task)
+
+            # ----------------------------------------------------------
+            if self.do_radgraph_radcliq:
+                progress.update(metric_task, description="Computing RadGraph-RadCliQ")
+                sample_task = progress.add_task(
+                    "  [dim]Samples", total=n_samples)
+                rg_mean, rg_scores = self.radgraph_radcliq_scorer(
+                    hyps, refs,
+                    on_sample_done=lambda: progress.advance(sample_task))
+                progress.remove_task(sample_task)
+                if self.do_details:
+                    scores["radgraph_radcliq"] = {
+                        "mean_score": rg_mean,
+                        "sample_scores": rg_scores,
+                    }
+                else:
+                    scores["radgraph_radcliq"] = round(rg_mean, 4)
                 progress.advance(metric_task)
 
             # ----------------------------------------------------------
