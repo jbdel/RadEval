@@ -53,6 +53,8 @@ tests/
 5. Add metric_keys, enabled list entry, and scoring block in `compute_scores()`
 6. Scoring block must have progress bar (metric-level, optionally batch/sample-level via callbacks)
    - Include `if self.do_details: ... elif self.do_per_sample: ... else: ...` for output modes
+   - `do_details`: flat keys (same as default) + extra aggregate scores (label breakdowns, std, etc.) — no per-sample lists, no annotations
+   - `do_per_sample`: flat keys, values are `list[float]`
 7. Add tests, update docs/metrics.md, README.md
 8. If private: register in `scripts/publish_public.py` PRIVATE_METRICS list
 

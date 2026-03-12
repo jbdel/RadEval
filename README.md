@@ -106,14 +106,16 @@ See [docs/metrics.md](docs/metrics.md) for the full list of per-sample output ke
 
 ## Detailed Output
 
-Pass `do_details=True` to get per-sample scores, label breakdowns, and entity annotations for every enabled metric.
+Pass `do_details=True` to get additional aggregate scores beyond the defaults: per-label F1 breakdowns for classifiers, BLEU-1/2/3, standard deviations for LLM-based metrics. Same flat keys as default, no nesting.
 
 ```python
-evaluator = RadEval(do_radgraph=True, do_bleu=True, do_details=True)
+evaluator = RadEval(do_bleu=True, do_f1chexbert=True, do_crimson=True, do_details=True)
 results = evaluator(refs=refs, hyps=hyps)
-# results["radgraph"]["sample_scores"]              → per-pair scores
-# results["radgraph"]["hypothesis_annotation_lists"] → extracted entities
-# results["bleu"]["bleu_1"]["sample_scores"]         → per-sample BLEU-1
+# results["bleu"]       → 0.36     (same as default)
+# results["bleu_1"]     → 0.55     (extra: BLEU-1)
+# results["bleu_2"]     → 0.42     (extra: BLEU-2)
+# results["crimson_std"] → 0.15    (extra: std)
+# results["f1chexbert_label_scores_f1"] → {"f1chexbert_5": {"Cardiomegaly": 0.59, ...}, ...}
 ```
 
 See [docs/metrics.md](docs/metrics.md) for the full output schema of each metric.

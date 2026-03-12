@@ -79,11 +79,9 @@ def test_via_radeval_interface():
 
 
 def test_via_radeval_details():
+    """do_details returns same scalar as default for radgraph_radcliq."""
     from RadEval import RadEval
     evaluator = RadEval(
         do_radgraph_radcliq=True, do_details=True, show_progress=False)
     results = evaluator(refs=REFS, hyps=HYPS)
-    detail = results["radgraph_radcliq"]
-    assert "mean_score" in detail
-    assert "sample_scores" in detail
-    assert len(detail["sample_scores"]) == len(REFS)
+    assert isinstance(results["radgraph_radcliq"], float)

@@ -168,11 +168,9 @@ class TestHopprF1CheXbertCTViaRadEval:
         evaluator = RadEval(
             do_f1hopprchexbert_ct=True, do_details=True, show_progress=False)
         results = evaluator(refs=REAL_REFS, hyps=REAL_REFS)
-        assert "f1hopprchexbert_ct" in results
-        detail = results["f1hopprchexbert_ct"]
-        assert "f1hopprchexbert_ct_accuracy" in detail
-        assert "sample_scores" in detail
-        assert "label_scores_f1" in detail
+        assert "f1hopprchexbert_ct_accuracy" in results
+        assert "f1hopprchexbert_ct_label_scores_f1" in results
+        assert isinstance(results["f1hopprchexbert_ct_label_scores_f1"], dict)
 
     def test_per_sample_output(self):
         from RadEval import RadEval
