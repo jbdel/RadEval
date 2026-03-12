@@ -194,3 +194,26 @@ def test_f1chexbert():
     assert np.array_equal(accuracy_not_averaged, expected_output[1])
     assert class_report == expected_output[2]
     assert class_report_5 == expected_output[3]
+
+
+def test_f1hopprchexbert_per_sample():
+    """do_per_sample returns flat per-sample accuracy lists via RadEval."""
+    from RadEval import RadEval
+    from tests.conftest import CHEXBERT_HYPS, CHEXBERT_REFS
+
+    evaluator = RadEval(
+        do_f1hopprchexbert=True, do_per_sample=True, show_progress=False)
+    if not evaluator.do_f1hopprchexbert:
+        pytest.skip("HopprF1CheXbert was disabled during init")
+
+    results = evaluator(refs=CHEXBERT_REFS, hyps=CHEXBERT_HYPS)
+
+    assert "f1hopprchexbert_sample_acc_5" in results
+    assert "f1hopprchexbert_sample_acc_all" in results
+
+    for key in ("f1hopprchexbert_sample_acc_5", "f1hopprchexbert_sample_acc_all"):
+        assert isinstance(results[key], list)
+        assert len(results[key]) == len(CHEXBERT_REFS)
+        for val in results[key]:
+            assert isinstance(val, (int, float))
+            assert 0.0 <= val <= 1.0

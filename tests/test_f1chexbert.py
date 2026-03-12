@@ -89,3 +89,26 @@ def test_f1chexbert_probe_sentences_expected_present():
             f"Expected '{expected}' to be present for sentence '{sentence}', "
             f"but received present labels: {present}"
         )
+
+
+def test_f1chexbert_per_sample():
+    """do_per_sample returns flat per-sample accuracy lists."""
+    from RadEval import RadEval
+    from tests.conftest import CHEXBERT_HYPS, CHEXBERT_REFS
+
+    evaluator = RadEval(
+        do_f1chexbert=True, do_per_sample=True, show_progress=False)
+    results = evaluator(refs=CHEXBERT_REFS, hyps=CHEXBERT_HYPS)
+
+    assert "f1chexbert_sample_acc_5" in results
+    assert "f1chexbert_sample_acc_all" in results
+
+    for key in ("f1chexbert_sample_acc_5", "f1chexbert_sample_acc_all"):
+        assert isinstance(results[key], list)
+        assert len(results[key]) == len(CHEXBERT_REFS)
+        for val in results[key]:
+            assert isinstance(val, (int, float))
+            assert 0.0 <= val <= 1.0
+
+    assert "f1chexbert_5_micro_f1" not in results
+    assert "f1chexbert" not in results

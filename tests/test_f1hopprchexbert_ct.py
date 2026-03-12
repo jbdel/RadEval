@@ -7,7 +7,7 @@ Binary mapping: {0,1} -> negative, {2,3} -> positive.
 import os
 import pytest
 
-from RadEval.metrics.hoppr_f1chexbert_ct import HopprF1CheXbertCT
+from RadEval.metrics.f1hopprchexbert_ct import HopprF1CheXbertCT
 
 _CKPT_DIR = (
     "/nfs/cluster/hoppr_vlm_ressources/radeval_checkpoints/hoppr_f1chexbert_ct"
@@ -158,18 +158,33 @@ class TestHopprF1CheXbertCTViaRadEval:
 
     def test_basic_output(self):
         from RadEval import RadEval
-        evaluator = RadEval(do_hoppr_f1chexbert_ct=True, show_progress=False)
+        evaluator = RadEval(do_f1hopprchexbert_ct=True, show_progress=False)
         results = evaluator(refs=REAL_REFS, hyps=REAL_REFS)
-        assert "hoppr_f1chexbert_ct_accuracy" in results
-        assert results["hoppr_f1chexbert_ct_accuracy"] == 1.0
+        assert "f1hopprchexbert_ct_accuracy" in results
+        assert results["f1hopprchexbert_ct_accuracy"] == 1.0
 
     def test_details_output(self):
         from RadEval import RadEval
         evaluator = RadEval(
-            do_hoppr_f1chexbert_ct=True, do_details=True, show_progress=False)
+            do_f1hopprchexbert_ct=True, do_details=True, show_progress=False)
         results = evaluator(refs=REAL_REFS, hyps=REAL_REFS)
-        assert "hoppr_f1chexbert_ct" in results
-        detail = results["hoppr_f1chexbert_ct"]
-        assert "hoppr_f1chexbert_ct_accuracy" in detail
+        assert "f1hopprchexbert_ct" in results
+        detail = results["f1hopprchexbert_ct"]
+        assert "f1hopprchexbert_ct_accuracy" in detail
         assert "sample_scores" in detail
-        assert "label_scores_f1-score" in detail
+        assert "label_scores_f1" in detail
+
+    def test_per_sample_output(self):
+        from RadEval import RadEval
+        evaluator = RadEval(
+            do_f1hopprchexbert_ct=True, do_per_sample=True, show_progress=False)
+        results = evaluator(refs=REAL_REFS, hyps=REAL_REFS)
+
+        assert "f1hopprchexbert_ct_sample_acc" in results
+        assert isinstance(results["f1hopprchexbert_ct_sample_acc"], list)
+        assert len(results["f1hopprchexbert_ct_sample_acc"]) == len(REAL_REFS)
+
+        assert all(s == 1.0 for s in results["f1hopprchexbert_ct_sample_acc"])
+
+        assert "f1hopprchexbert_ct" not in results
+        assert "f1hopprchexbert_ct_accuracy" not in results

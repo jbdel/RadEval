@@ -29,11 +29,11 @@ def test_radeval():
                         do_bleu=True,
                         do_rouge=True,
                         do_bertscore=True,
-                        do_chexbert=True,
+                        do_f1chexbert=True,
                         do_ratescore=True,
                         do_radcliq=True,
                         do_temporal=True,
-                        do_srr_bert=False,
+                        do_srrbert=False,
                         do_radeval_bertscore=False,
                         )
 
@@ -50,12 +50,12 @@ def test_radeval():
         "rouge1": pytest.approx(0.44681719607092746, 0.01),
         "rouge2": pytest.approx(0.4205128205128205, 0.01),
         "rougeL": pytest.approx(0.44681719607092746, 0.01),
-        "chexbert-5_micro avg_f1-score": pytest.approx(0.2857142857142857, 0.01),
-        "chexbert-all_micro avg_f1-score": pytest.approx(0.3333333333333333, 0.01),
-        "chexbert-5_macro avg_f1-score": pytest.approx(0.13333333333333333, 0.01),
-        "chexbert-all_macro avg_f1-score": pytest.approx(0.08333333333333333, 0.01),
+        "f1chexbert_5_micro_f1": pytest.approx(0.2857142857142857, 0.01),
+        "f1chexbert_all_micro_f1": pytest.approx(0.3333333333333333, 0.01),
+        "f1chexbert_5_macro_f1": pytest.approx(0.13333333333333333, 0.01),
+        "f1chexbert_all_macro_f1": pytest.approx(0.08333333333333333, 0.01),
         "ratescore": pytest.approx(0.5877872073859466, 0.01),
-        "radcliq-v1": pytest.approx(1.4997, 0.05),
+        "radcliq_v1": pytest.approx(1.4997, 0.05),
         "temporal_f1": pytest.approx(0.500000000075, 0.01),
     }
 

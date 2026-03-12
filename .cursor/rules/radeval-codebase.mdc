@@ -1,0 +1,89 @@
+---
+description: RadEval codebase overview and conventions. Essential context for any development task.
+alwaysApply: true
+---
+
+# RadEval Codebase
+
+RadEval is a unified evaluation framework for AI-generated radiology text. Two repos:
+- **hopprai/RadEval** (private, `origin`) — full codebase, all metrics
+- **jbdel/RadEval** (public) — published via `python scripts/publish_public.py --push`
+
+## Repo layout
+
+```
+RadEval/
+  RadEval.py              # Main orchestrator: __init__ (lazy imports), compute_scores() (progress bars)
+  __init__.py             # Exports RadEval, compare_systems
+  utils.py                # PairedTest (hypothesis testing), multilabel_prf_per_sample, clean_numbered_list
+  metrics/
+    _chexbert_base.py     # Shared base for F1CheXbert / F1HopprCheXbert
+    bertscore/            # BERTScore (also base class BertScoreBase used by RadEvalBERTScorer)
+    bleu/
+    rouge/
+    radevalbertscore/
+    f1chexbert/           # Stanford CheXpert labels (14 conditions)
+    hoppr_f1chexbert/     # PRIVATE — Hoppr CXR labels (27 conditions), ModernBERT backbone
+    f1Radbert_ct/         # CT multi-label classification (18 labels)
+    f1hopprchexbert_ct/   # PRIVATE — CT multi-output ModernBERT-large (16 conditions)
+    green_score/          # GREEN + MammoGREEN
+    crimson/              # CRIMSON (LLM-based, OpenAI or HuggingFace MedGemma)
+    radfact_ct/           # RadFact-CT (LLM-based, ported from microsoft/RadFact)
+    RaTEScore/
+    RadCliQv1/            # RadCliQ-v1 composite (BERTScore+IDF, RadGraph, SemEmb, BLEU-2)
+    radgraph_radcliq/     # Isolated RadGraph sub-score from RadCliQ pipeline
+    SRRBert/              # Structured radiology report evaluation
+    f1temporal/           # Temporal entity F1
+docs/                     # metrics.md, hypothesis_testing.md, file_formats.md
+scripts/
+  publish_public.py       # Strips private metrics, pushes to jbdel/RadEval
+  pypi                    # Contains PyPI API token (NOT a script to execute)
+tests/
+  conftest.py             # Shared fixtures
+  fixtures/               # Test CSV files
+```
+
+## Conventions
+
+### Adding a new metric
+1. Create `RadEval/metrics/<name>/` with `__init__.py` and `<name>.py`
+2. `__init__.py` must have try/except: `try: from .<name> import Class; except: Class = None`
+3. Add `do_<name>=False` flag to `RadEval.__init__()` (before `do_per_sample`/`do_details`/`show_progress`)
+4. Lazy import inside `if self.do_<name>:` block with try/except for graceful degradation
+5. Add metric_keys, enabled list entry, and scoring block in `compute_scores()`
+6. Scoring block must have progress bar (metric-level, optionally batch/sample-level via callbacks)
+   - Include `if self.do_details: ... elif self.do_per_sample: ... else: ...` for output modes
+7. Add tests, update docs/metrics.md, README.md
+8. If private: register in `scripts/publish_public.py` PRIVATE_METRICS list
+
+### Naming rules
+- Flags: `do_<snake_case>` — e.g. `do_f1chexbert`, `do_srrbert`, `do_radfact_ct`
+- Output keys: **snake_case only** — no spaces, no hyphens
+- F1-based classifiers get `f1` prefix: `f1chexbert`, `f1hopprchexbert`, `f1radbert_ct`
+- Compound proper nouns stay as one word: `srrbert`, `bertscore`, `ratescore`
+
+### Progress bars
+- Use `rich.progress` via `self._make_progress()` context manager
+- Metric-level: `progress.update(metric_task, description="Computing X")`
+- Batch-level: `on_batch_done=lambda: progress.advance(batch_task)` callback
+- Sample-level: `on_sample_done=lambda: progress.advance(sample_task)` callback
+
+### Publishing workflow
+```bash
+git push origin main                        # push to hopprai (private)
+python scripts/publish_public.py --push     # publish to jbdel (public)
+# Then for PyPI (always build from PUBLIC repo):
+cd /tmp && git clone --depth 1 https://github.com/jbdel/RadEval.git radeval_pypi
+cd radeval_pypi && python -m build --sdist
+TWINE_USERNAME=__token__ TWINE_PASSWORD="<token from scripts/pypi>" twine upload dist/*
+```
+Bump version in `setup.py` before each PyPI upload.
+
+### Testing
+- `python -m pytest tests/ -v -m "not integration"` — runs all non-API tests
+- Integration tests (require OPENAI_API_KEY): `pytest -m integration`
+- Conda env: `source /nfs/cluster/miniconda3/etc/profile.d/conda.sh && conda activate radeval`
+
+### Key checkpoints (private, NFS)
+- HopprCheXbert CXR: `/fss/pranta_das/CheXbert/expermints_folder/25507/checkpoint_2.pth`
+- HopprF1CheXbertCT: `/nfs/cluster/hoppr_vlm_ressources/radeval_checkpoints/hoppr_f1chexbert_ct/`

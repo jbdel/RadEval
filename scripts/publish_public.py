@@ -2,18 +2,21 @@
 """Publish the public version of RadEval to jbdel/RadEval.
 
 This script:
-  1. Clones the current repo into a temp directory
-  2. Removes private metrics (files, imports, tests, references)
-  3. Force-pushes the result to the public remote
+  1. Clones the PUBLIC repo (jbdel/RadEval)
+  2. Replaces its working tree with the current private repo state
+  3. Strips private metrics (files, imports, tests, references)
+  4. Commits with a real message and pushes normally
+
+Private files never enter any commit in the public repo's history.
 
 Private metrics are defined in PRIVATE_METRICS below. Each entry specifies
 the metric folder to delete, the flag name in RadEval.__init__, the test
 file, and any other files that reference it.
 
 Usage:
-    python scripts/publish_public.py                     # dry-run (default)
-    python scripts/publish_public.py --push              # actually push
-    python scripts/publish_public.py --push --branch main
+    python scripts/publish_public.py -m "v0.1.5: description"       # dry-run
+    python scripts/publish_public.py --push -m "v0.1.5: description" # push
+    python scripts/publish_public.py --push -m "msg" --branch main
 """
 import argparse
 import os
@@ -31,16 +34,23 @@ PRIVATE_METRICS = [
         "name": "hoppr_f1chexbert",
         "metric_dir": "RadEval/metrics/hoppr_f1chexbert",
         "test_file": "tests/test_hopprf1chexbert.py",
-        "flag": "do_hopprchexbert",
-        "display_name": "HopprCheXbert",
+        "flag": "do_f1hopprchexbert",
+        "display_name": "F1HopprCheXbert",
     },
     {
-        "name": "hoppr_f1chexbert_ct",
-        "metric_dir": "RadEval/metrics/hoppr_f1chexbert_ct",
-        "test_file": "tests/test_hoppr_f1chexbert_ct.py",
-        "flag": "do_hoppr_f1chexbert_ct",
-        "display_name": "HopprF1CheXbertCT",
+        "name": "f1hopprchexbert_ct",
+        "metric_dir": "RadEval/metrics/f1hopprchexbert_ct",
+        "test_file": "tests/test_f1hopprchexbert_ct.py",
+        "flag": "do_f1hopprchexbert_ct",
+        "display_name": "F1HopprCheXbertCT",
     },
+]
+
+PRIVATE_DIRS = ["scripts", ".cursor"]
+
+PRIVATE_FILES = [
+    "findings_generation_examples.csv",
+    "pred_ref_epoch37_seed476104_val.jsonl",
 ]
 
 
@@ -54,7 +64,7 @@ def strip_flag_from_init(radeval_py: Path, flag: str, display_name: str):
     """Remove all references to a private metric flag from RadEval.py."""
     text = radeval_py.read_text()
 
-    # Remove constructor parameter line:  do_hopprchexbert=False,
+    # Remove constructor parameter line:  do_<flag>=False,
     text = re.sub(rf'\s*{flag}=False,\n', '\n', text)
 
     # Remove self.do_X = do_X assignment
@@ -104,55 +114,85 @@ def strip_private_metric(repo_dir: Path, metric: dict):
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__,
-                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--push", action="store_true",
                         help="Actually push to the public remote (default: dry-run)")
     parser.add_argument("--branch", default="main",
                         help="Branch to push to (default: main)")
+    parser.add_argument("-m", "--message", required=True,
+                        help="Commit message for the public repo")
     args = parser.parse_args()
 
     src = Path(__file__).resolve().parent.parent
-    print(f"Source repo: {src}")
+    print(f"Source (private) repo: {src}")
 
     with tempfile.TemporaryDirectory(prefix="radeval_public_") as tmp:
         dest = Path(tmp) / "RadEval"
         print(f"Working copy: {dest}\n")
 
-        # Clone the current repo (local copy, preserves commits)
-        run(f"git clone {src} {dest}")
+        # 1. Clone the PUBLIC repo (keeps its own clean history)
+        print("=== Cloning public repo ===")
+        run(f"git clone {PUBLIC_REMOTE} {dest}")
 
-        # Strip private metrics
+        # 2. Clear working tree (keep .git/)
+        print("\n=== Clearing public working tree ===")
+        for item in dest.iterdir():
+            if item.name == ".git":
+                continue
+            if item.is_dir():
+                shutil.rmtree(item)
+            else:
+                item.unlink()
+
+        # 3. Copy private repo state (minus .git and untracked data files)
+        print("\n=== Copying private repo files ===")
+        ignore = shutil.ignore_patterns(
+            ".git", "__pycache__", "*.pyc", ".pytest_cache",
+            "*.egg-info", "dist", "build",
+        )
+        shutil.copytree(src, dest, dirs_exist_ok=True, ignore=ignore)
+
+        # 4. Strip private metrics
+        print("\n=== Stripping private metrics ===")
         for metric in PRIVATE_METRICS:
             strip_private_metric(dest, metric)
 
-        # Remove private/internal directories from the public repo
-        for private_dir in ["scripts", ".cursor"]:
+        # 5. Remove private directories and files
+        print("\n=== Removing private directories/files ===")
+        for private_dir in PRIVATE_DIRS:
             d = dest / private_dir
             if d.exists():
                 shutil.rmtree(d)
                 print(f"  Removed {private_dir}/")
 
-        # Commit the stripping
+        for private_file in PRIVATE_FILES:
+            f = dest / private_file
+            if f.exists():
+                f.unlink()
+                print(f"  Removed {private_file}")
+
+        # 6. Stage and commit
+        print("\n=== Committing ===")
         run("git add -A", cwd=dest)
         result = run("git diff --cached --quiet", cwd=dest, check=False)
         if result.returncode != 0:
-            run('git commit -m "Prepare public release (strip private metrics)"',
-                cwd=dest)
-            print("\nPublic release commit created.")
+            run(f'git commit -m "{args.message}"', cwd=dest)
+            print(f"\nCommit created: {args.message}")
         else:
-            print("\nNo changes to commit (already clean).")
+            print("\nNo changes to commit (public repo already up to date).")
 
+        # 7. Push
         if args.push:
-            run(f"git remote set-url origin {PUBLIC_REMOTE}", cwd=dest)
-            run(f"git push --force origin HEAD:{args.branch}", cwd=dest)
+            run(f"git push origin HEAD:{args.branch}", cwd=dest)
             print(f"\nPushed to {PUBLIC_REMOTE} branch {args.branch}")
         else:
             print(f"\n[DRY RUN] Would push to {PUBLIC_REMOTE} branch {args.branch}")
             print("Run with --push to actually push.")
 
         # Show what the public repo looks like
-        print("\n--- Public repo file listing ---")
+        print("\n--- Public repo metrics listing ---")
         run("find RadEval/metrics -type d | sort", cwd=dest)
 
 

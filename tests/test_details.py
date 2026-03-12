@@ -20,8 +20,8 @@ def test_do_details():
                       do_bleu=True,
                       do_rouge=True,
                       do_bertscore=True,
-                      do_srr_bert=True,
-                      do_chexbert=True,
+                      do_srrbert=True,
+                      do_f1chexbert=True,
                       do_temporal=True,
                       do_ratescore=True,
                       do_radcliq=True,
@@ -32,8 +32,8 @@ def test_do_details():
     results = evaluator(refs=refs, hyps=hyps)
     
     # 1. Check that all expected evaluation metric keys are present
-    expected_keys = {'radgraph', 'bleu', 'bertscore', 'rouge', 'srr_bert', 
-                    'chexbert', 'ratescore', 'radcliq-v1', 'temporal_f1', 'radeval_bertscore'}
+    expected_keys = {'radgraph', 'bleu', 'bertscore', 'rouge', 'srrbert', 
+                    'f1chexbert', 'ratescore', 'radcliq_v1', 'temporal_f1', 'radeval_bertscore'}
     actual_keys = set(results.keys())
     assert expected_keys == actual_keys, f"Key mismatch. Expected: {expected_keys}, Actual: {actual_keys}"
     
@@ -102,10 +102,10 @@ def test_do_details():
         assert 'sample_scores' in rouge_result[rouge_type]
     
     # CheXbert
-    chexbert_result = results['chexbert']
-    assert 'label_scores_f1-score' in chexbert_result
-    assert 'chexbert-5' in chexbert_result['label_scores_f1-score']
-    assert 'chexbert_all' in chexbert_result['label_scores_f1-score']
+    chexbert_result = results['f1chexbert']
+    assert 'label_scores_f1' in chexbert_result
+    assert 'f1chexbert_5' in chexbert_result['label_scores_f1']
+    assert 'f1chexbert_all' in chexbert_result['label_scores_f1']
     
     # RateScore
     ratescore_result = results['ratescore']
@@ -146,6 +146,65 @@ def test_do_details():
     
     return True
 
+def test_do_per_sample():
+    """Verify do_per_sample returns flat keys with per-sample lists."""
+    refs = [
+        "Increased mild pulmonary edema and left basal atelectasis.",
+        "No acute cardiopulmonary process.",
+    ]
+
+    hyps = [
+        "No pleural effusions or pneumothoraces.",
+        "No acute cardiopulmonary process.",
+    ]
+
+    evaluator = RadEval(
+        do_radgraph=True,
+        do_green=False,
+        do_bleu=True,
+        do_rouge=True,
+        do_bertscore=True,
+        do_srrbert=True,
+        do_f1chexbert=True,
+        do_temporal=True,
+        do_ratescore=True,
+        do_radcliq=True,
+        do_radeval_bertscore=True,
+        do_per_sample=True,
+    )
+
+    results = evaluator(refs=refs, hyps=hyps)
+    n = len(refs)
+
+    expected_list_keys = {
+        "radgraph_simple", "radgraph_partial", "radgraph_complete",
+        "bleu",
+        "bertscore",
+        "rouge1", "rouge2", "rougeL",
+        "srrbert_weighted_f1", "srrbert_weighted_precision", "srrbert_weighted_recall",
+        "f1chexbert_sample_acc_5", "f1chexbert_sample_acc_all",
+        "ratescore",
+        "radcliq_v1",
+        "temporal_f1",
+        "radeval_bertscore",
+    }
+
+    for key in expected_list_keys:
+        assert key in results, f"Missing key: {key}"
+        assert isinstance(results[key], list), f"{key} should be a list, got {type(results[key])}"
+        assert len(results[key]) == n, f"{key} length {len(results[key])} != {n}"
+
+    assert set(results.keys()) == expected_list_keys, (
+        f"Unexpected keys: {set(results.keys()) - expected_list_keys}")
+
+    for key in ("radgraph_simple", "bertscore", "ratescore", "radeval_bertscore"):
+        for val in results[key]:
+            assert isinstance(val, (int, float)), f"{key} contains non-numeric: {val}"
+
+    identical_idx = 1
+    assert results["bleu"][identical_idx] > results["bleu"][0]
+
+
 if __name__ == "__main__":
-    # Run the test
     test_do_details()
+    test_do_per_sample()

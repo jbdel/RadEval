@@ -68,26 +68,62 @@ pip install -e '.[api]'
 
 ## Supported Metrics
 
-| Category | Metric | Flag | Best For |
-|----------|--------|------|----------|
-| **Lexical** | BLEU | `do_bleu` | Surface-level n-gram overlap |
-| | ROUGE | `do_rouge` | Content coverage |
-| **Semantic** | BERTScore | `do_bertscore` | Semantic similarity |
-| | RadEval BERTScore | `do_radeval_bertscore` | Domain-adapted radiology semantics |
-| **Clinical** | F1CheXbert | `do_chexbert` | CheXpert finding classification |
-| | F1RadBERT-CT | `do_f1radbert_ct` | CT finding classification |
-| | F1RadGraph | `do_radgraph` | Clinical entity/relation accuracy |
-| | RaTEScore | `do_ratescore` | Entity-level synonym-aware scoring |
-| **Specialized** | RadGraph-RadCliQ | `do_radgraph_radcliq` | Per-pair entity+relation F1 (RadCliQ variant) |
-| | RadCliQ-v1 | `do_radcliq` | Composite clinical relevance |
-| | SRR-BERT | `do_srr_bert` | Structured report evaluation |
-| | Temporal F1 | `do_temporal` | Temporal consistency |
-| | GREEN | `do_green` | LLM-based overall quality (7B model) |
-| | MammoGREEN | `do_mammo_green` | Mammography-specific LLM scoring |
-| | RadFact-CT | `do_radfact_ct` | LLM-based factual precision/recall for CT |
-| | CRIMSON | `do_crimson` | LLM-based clinical significance scoring |
+| Category | Metric | Flag | Modality | Best For | Usage |
+|----------|--------|------|----------|----------|-------|
+| **Lexical** | [BLEU](https://aclanthology.org/P02-1040.pdf) | `do_bleu` | -- | Surface-level n-gram overlap | [docs](docs/metrics.md#bleu-do_bleu) |
+| | [ROUGE](https://aclanthology.org/W04-1013.pdf) | `do_rouge` | -- | Content coverage | [docs](docs/metrics.md#rouge-do_rouge) |
+| **Semantic** | [BERTScore](https://openreview.net/forum?id=SkeHuCVFDr) | `do_bertscore` | -- | Semantic similarity | [docs](docs/metrics.md#bertscore-do_bertscore) |
+| | [RadEval BERTScore](https://aclanthology.org/2025.emnlp-demos.40.pdf) | `do_radeval_bertscore` | -- | Domain-adapted radiology semantics | [docs](docs/metrics.md#radeval-bertscore-do_radeval_bertscore) |
+| **Clinical** | [F1CheXbert](https://aclanthology.org/2020.emnlp-main.117.pdf) | `do_f1chexbert` | CXR | CheXpert finding classification | [docs](docs/metrics.md#f1chexbert-do_f1chexbert) |
+| | [F1RadBERT-CT](https://www.nature.com/articles/s41551-025-01599-y) | `do_f1radbert_ct` | CT | CT finding classification | [docs](docs/metrics.md#f1radbert-ct-do_f1radbert_ct) |
+| | [F1RadGraph](https://aclanthology.org/2022.findings-emnlp.319.pdf) | `do_radgraph` | CXR | Clinical entity/relation accuracy | [docs](docs/metrics.md#f1radgraph-do_radgraph) |
+| | [RaTEScore](https://aclanthology.org/2024.emnlp-main.836.pdf) | `do_ratescore` | CXR | Entity-level synonym-aware scoring | [docs](docs/metrics.md#ratescore-do_ratescore) |
+| **Specialized** | [RadGraph-RadCliQ](https://www.cell.com/patterns/pdfExtended/S2666-3899(23)00157-5) | `do_radgraph_radcliq` | CXR | Per-pair entity+relation F1 (RadCliQ variant) | [docs](docs/metrics.md#radgraph-radcliq-do_radgraph_radcliq) |
+| | [RadCliQ-v1](https://www.cell.com/patterns/pdfExtended/S2666-3899(23)00157-5) | `do_radcliq` | CXR | Composite clinical relevance | [docs](docs/metrics.md#radcliq-v1-do_radcliq) |
+| | [SRRBert](https://aclanthology.org/2025.acl-long.1301.pdf) | `do_srrbert` | CXR | Structured report evaluation | [docs](docs/metrics.md#srrbert-do_srrbert) |
+| | [Temporal F1](https://aclanthology.org/2025.findings-acl.888.pdf) | `do_temporal` | CXR | Temporal consistency | [docs](docs/metrics.md#temporal-f1-do_temporal) |
+| | [GREEN](https://aclanthology.org/2024.findings-emnlp.21.pdf) | `do_green` | CXR | LLM-based overall quality (7B model) | [docs](docs/metrics.md#green-do_green) |
+| | MammoGREEN | `do_mammo_green` | Mammo | Mammography-specific LLM scoring | [docs](docs/metrics.md#mammogreen-do_mammo_green) |
+| | [CRIMSON](https://arxiv.org/pdf/2603.06183) | `do_crimson` | CXR | LLM-based clinical significance scoring | [docs](docs/metrics.md#crimson-do_crimson) |
+| | [RadFact-CT](https://arxiv.org/pdf/2510.15042) | `do_radfact_ct` | CT | LLM-based factual precision/recall | [docs](docs/metrics.md#radfact-ct-do_radfact_ct) |
+
+> **Modality:** CXR = Chest X-Ray, CT = Computed Tomography, Mammo = Mammography, -- = modality-agnostic.
 
 Enable only the metrics you need -- each one is loaded lazily.
+
+## Per-Sample Output
+
+Pass `do_per_sample=True` to get per-sample scores for every enabled metric. The output uses the **same flat keys** as the default mode, but each value is a `list[float]` of length `n_samples` instead of a single aggregate.
+
+```python
+evaluator = RadEval(do_bleu=True, do_bertscore=True, do_per_sample=True)
+results = evaluator(refs=refs, hyps=hyps)
+# results["bleu"]      → [0.85, 0.40, ...]   (one per sample)
+# results["bertscore"] → [0.95, 0.89, ...]
+```
+
+### Per-sample output keys by metric
+
+| Metric | Default keys | `do_per_sample` keys |
+|--------|-------------|---------------------|
+| BLEU | `bleu` | `bleu` |
+| ROUGE | `rouge1`, `rouge2`, `rougeL` | `rouge1`, `rouge2`, `rougeL` |
+| BERTScore | `bertscore` | `bertscore` |
+| RadEval BERTScore | `radeval_bertscore` | `radeval_bertscore` |
+| F1CheXbert | `f1chexbert_5_micro_f1`, `f1chexbert_all_micro_f1`, ... | `f1chexbert_sample_acc_5`, `f1chexbert_sample_acc_all` |
+| F1RadBERT-CT | `f1radbert_ct_accuracy`, `f1radbert_ct_micro_f1`, ... | `f1radbert_ct_sample_acc` |
+| F1RadGraph | `radgraph_simple`, `radgraph_partial`, `radgraph_complete` | `radgraph_simple`, `radgraph_partial`, `radgraph_complete` |
+| RaTEScore | `ratescore` | `ratescore` |
+| RadGraph-RadCliQ | `radgraph_radcliq` | `radgraph_radcliq` |
+| RadCliQ-v1 | `radcliq_v1` | `radcliq_v1` |
+| SRRBert | `srrbert_weighted_f1`, `srrbert_weighted_precision`, `srrbert_weighted_recall` | `srrbert_weighted_f1`, `srrbert_weighted_precision`, `srrbert_weighted_recall` |
+| Temporal F1 | `temporal_f1` | `temporal_f1` |
+| GREEN | `green` | `green` |
+| MammoGREEN | `mammo_green` | `mammo_green` |
+| CRIMSON | `crimson` | `crimson` |
+| RadFact-CT | `radfact_ct_precision`, `radfact_ct_recall`, `radfact_ct_f1` | `radfact_ct_precision`, `radfact_ct_recall`, `radfact_ct_f1` |
+
+> **Note:** F1-classifier metrics (F1CheXbert, F1RadBERT-CT) return per-sample *accuracy* (fraction of labels correct per report) rather than per-sample F1, since micro/macro F1 are corpus-level aggregates.
 
 ## Detailed Output
 
@@ -118,8 +154,7 @@ See [docs/hypothesis_testing.md](docs/hypothesis_testing.md) for a full walkthro
 
 | Page | Contents |
 |------|----------|
-| [docs/metrics.md](docs/metrics.md) | What each metric measures, `do_details` output schemas |
-| [docs/configuration.md](docs/configuration.md) | Full parameter reference, example presets |
+| [docs/metrics.md](docs/metrics.md) | What each metric measures, `do_per_sample` / `do_details` output schemas |
 | [docs/hypothesis_testing.md](docs/hypothesis_testing.md) | Statistical background, full example, performance notes |
 | [docs/file_formats.md](docs/file_formats.md) | Loading data from .tok, .json, and Python lists |
 
