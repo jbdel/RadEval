@@ -351,6 +351,33 @@ class TestCrimsonRadEvalIntegration:
         assert len(results["crimson"]["sample_scores"]) == len(refs)
         assert len(results["crimson"]["error_counts"]) == len(refs)
 
+    def test_radeval_with_crimson_per_sample(self):
+        """Test RadEval with CRIMSON in per-sample mode."""
+        from RadEval import RadEval
+
+        with patch("openai.OpenAI") as mock_class:
+            mock_client = MagicMock()
+            mock_client.chat.completions.create.side_effect = [
+                create_mock_openai_response(json.dumps(mock_evaluations[0])),
+                create_mock_openai_response(json.dumps(mock_evaluations[1])),
+            ]
+            mock_class.return_value = mock_client
+
+            evaluator = RadEval(
+                do_crimson=True,
+                crimson_api="openai",
+                crimson_api_key="test-key",
+                do_per_sample=True,
+                show_progress=False,
+            )
+            results = evaluator(refs=refs, hyps=hyps)
+
+        assert "crimson" in results
+        assert isinstance(results["crimson"], list)
+        assert len(results["crimson"]) == len(refs)
+        for i, (actual, exp) in enumerate(zip(results["crimson"], expected_scores)):
+            assert math.isclose(actual, exp, rel_tol=epsilon)
+
 
 @pytest.mark.integration
 class TestCrimsonIntegration:

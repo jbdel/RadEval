@@ -4,12 +4,12 @@ from RadEval import RadEval
 
 @pytest.fixture(scope="module")
 def evaluator():
-    return RadEval(do_srr_bert=True)
+    return RadEval(do_srrbert=True)
 
 
 @pytest.fixture(scope="module")
 def evaluator_details():
-    return RadEval(do_srr_bert=True, do_details=True)
+    return RadEval(do_srrbert=True, do_details=True)
 
 
 class TestSRRBertPerfectMatch:
@@ -23,9 +23,9 @@ class TestSRRBertPerfectMatch:
 
     def test_weighted_scores_are_perfect(self, evaluator):
         results = evaluator(refs=self.refs, hyps=self.hyps)
-        assert results["srr_bert_weighted_f1"] == 1.0
-        assert results["srr_bert_weighted_precision"] == 1.0
-        assert results["srr_bert_weighted_recall"] == 1.0
+        assert results["srrbert_weighted_f1"] == 1.0
+        assert results["srrbert_weighted_precision"] == 1.0
+        assert results["srrbert_weighted_recall"] == 1.0
 
 
 class TestSRRBertCompletelyDifferent:
@@ -42,9 +42,9 @@ class TestSRRBertCompletelyDifferent:
 
     def test_weighted_scores_are_zero(self, evaluator):
         results = evaluator(refs=self.refs, hyps=self.hyps)
-        assert results["srr_bert_weighted_f1"] == 0.0
-        assert results["srr_bert_weighted_precision"] == 0.0
-        assert results["srr_bert_weighted_recall"] == 0.0
+        assert results["srrbert_weighted_f1"] == 0.0
+        assert results["srrbert_weighted_precision"] == 0.0
+        assert results["srrbert_weighted_recall"] == 0.0
 
 
 class TestSRRBertNumberedLists:
@@ -65,9 +65,9 @@ class TestSRRBertNumberedLists:
 
     def test_weighted_scores(self, evaluator):
         results = evaluator(refs=self.refs, hyps=self.hyps)
-        assert results["srr_bert_weighted_f1"] == pytest.approx(0.6, abs=1e-4)
-        assert results["srr_bert_weighted_precision"] == pytest.approx(0.6, abs=1e-4)
-        assert results["srr_bert_weighted_recall"] == pytest.approx(0.6, abs=1e-4)
+        assert results["srrbert_weighted_f1"] == pytest.approx(0.6, abs=1e-4)
+        assert results["srrbert_weighted_precision"] == pytest.approx(0.6, abs=1e-4)
+        assert results["srrbert_weighted_recall"] == pytest.approx(0.6, abs=1e-4)
 
 
 class TestSRRBertMixedStyles:
@@ -91,14 +91,14 @@ class TestSRRBertMixedStyles:
 
     def test_weighted_scores(self, evaluator):
         results = evaluator(refs=self.refs, hyps=self.hyps)
-        assert results["srr_bert_weighted_f1"] == pytest.approx(0.7333, abs=1e-4)
-        assert results["srr_bert_weighted_precision"] == pytest.approx(0.7, abs=1e-4)
-        assert results["srr_bert_weighted_recall"] == pytest.approx(0.8, abs=1e-4)
+        assert results["srrbert_weighted_f1"] == pytest.approx(0.7333, abs=1e-4)
+        assert results["srrbert_weighted_precision"] == pytest.approx(0.7, abs=1e-4)
+        assert results["srrbert_weighted_recall"] == pytest.approx(0.8, abs=1e-4)
 
     def test_precision_lte_recall(self, evaluator):
         """Hyp adds an extra finding (pair 1), so precision should be <= recall."""
         results = evaluator(refs=self.refs, hyps=self.hyps)
-        assert results["srr_bert_weighted_precision"] <= results["srr_bert_weighted_recall"]
+        assert results["srrbert_weighted_precision"] <= results["srrbert_weighted_recall"]
 
 
 class TestSRRBertDetails:
@@ -117,14 +117,14 @@ class TestSRRBertDetails:
 
     def test_top_level_key(self, evaluator_details):
         results = evaluator_details(refs=self.refs, hyps=self.hyps)
-        assert "srr_bert" in results
-        assert "srr_bert_weighted_f1" not in results
+        assert "srrbert" in results
+        assert "srrbert_weighted_f1" not in results
 
     def test_detail_structure(self, evaluator_details):
         results = evaluator_details(refs=self.refs, hyps=self.hyps)
-        srr = results["srr_bert"]
+        srr = results["srrbert"]
 
-        for key in ("srr_bert_weighted_f1", "srr_bert_weighted_precision", "srr_bert_weighted_recall"):
+        for key in ("srrbert_weighted_f1", "srrbert_weighted_precision", "srrbert_weighted_recall"):
             assert key in srr
             assert "weighted_mean_score" in srr[key]
             assert "sample_scores" in srr[key]
@@ -134,21 +134,21 @@ class TestSRRBertDetails:
 
     def test_detail_weighted_means(self, evaluator_details):
         results = evaluator_details(refs=self.refs, hyps=self.hyps)
-        srr = results["srr_bert"]
+        srr = results["srrbert"]
 
-        assert srr["srr_bert_weighted_f1"]["weighted_mean_score"] == pytest.approx(0.7333, abs=1e-4)
-        assert srr["srr_bert_weighted_precision"]["weighted_mean_score"] == pytest.approx(0.7, abs=1e-4)
-        assert srr["srr_bert_weighted_recall"]["weighted_mean_score"] == pytest.approx(0.8, abs=1e-4)
+        assert srr["srrbert_weighted_f1"]["weighted_mean_score"] == pytest.approx(0.7333, abs=1e-4)
+        assert srr["srrbert_weighted_precision"]["weighted_mean_score"] == pytest.approx(0.7, abs=1e-4)
+        assert srr["srrbert_weighted_recall"]["weighted_mean_score"] == pytest.approx(0.8, abs=1e-4)
 
     def test_per_sample_scores_ordering(self, evaluator_details):
         """Pair 3 (identical) should score highest, pair 1 (extra finding) lowest."""
         results = evaluator_details(refs=self.refs, hyps=self.hyps)
-        sample_f1 = results["srr_bert"]["srr_bert_weighted_f1"]["sample_scores"]
+        sample_f1 = results["srrbert"]["srrbert_weighted_f1"]["sample_scores"]
         assert sample_f1[2] > sample_f1[1] > sample_f1[0]
 
     def test_label_scores_expected_labels(self, evaluator_details):
         results = evaluator_details(refs=self.refs, hyps=self.hyps)
-        label_scores = results["srr_bert"]["label_scores"]
+        label_scores = results["srrbert"]["label_scores"]
 
         for label in ("Edema (Present)", "Cardiomegaly (Present)", "No Finding"):
             assert label in label_scores, f"Expected label '{label}' missing"
@@ -160,7 +160,7 @@ class TestSRRBertDetails:
     def test_matched_labels_have_perfect_f1(self, evaluator_details):
         """Labels present in both ref and hyp for all their samples should have F1 = 1."""
         results = evaluator_details(refs=self.refs, hyps=self.hyps)
-        label_scores = results["srr_bert"]["label_scores"]
+        label_scores = results["srrbert"]["label_scores"]
         assert label_scores["Edema (Present)"]["f1-score"] == 1.0
         assert label_scores["Cardiomegaly (Present)"]["f1-score"] == 1.0
         assert label_scores["No Finding"]["f1-score"] == 1.0
@@ -168,6 +168,53 @@ class TestSRRBertDetails:
     def test_missed_label_has_zero_f1(self, evaluator_details):
         """Atelectasis is in the ref but missing from the hyp → F1 = 0."""
         results = evaluator_details(refs=self.refs, hyps=self.hyps)
-        label_scores = results["srr_bert"]["label_scores"]
+        label_scores = results["srrbert"]["label_scores"]
         assert label_scores["Atelectasis (Present)"]["f1-score"] == 0.0
         assert label_scores["Atelectasis (Present)"]["support"] == 1.0
+
+
+# ── Per-sample mode ──────────────────────────────────────────────────
+
+
+@pytest.fixture(scope="module")
+def evaluator_per_sample():
+    return RadEval(do_srrbert=True, do_per_sample=True)
+
+
+class TestSRRBertPerSample:
+    """Validate do_per_sample=True output structure and values."""
+
+    refs = [
+        "Mild pulmonary edema.",
+        "1. Stable cardiomegaly. 2. Left pleural effusion. 3. Right basilar atelectasis.",
+        "No acute findings.",
+    ]
+    hyps = [
+        "Mild pulmonary edema with bilateral pleural effusions.",
+        "Stable cardiomegaly. Left pleural effusion.",
+        "No acute findings.",
+    ]
+
+    def test_flat_keys(self, evaluator_per_sample):
+        results = evaluator_per_sample(refs=self.refs, hyps=self.hyps)
+        for key in ("srrbert_weighted_f1", "srrbert_weighted_precision", "srrbert_weighted_recall"):
+            assert key in results
+        assert "srrbert" not in results
+
+    def test_values_are_lists(self, evaluator_per_sample):
+        results = evaluator_per_sample(refs=self.refs, hyps=self.hyps)
+        for key in ("srrbert_weighted_f1", "srrbert_weighted_precision", "srrbert_weighted_recall"):
+            assert isinstance(results[key], list)
+            assert len(results[key]) == len(self.refs)
+
+    def test_per_sample_ordering(self, evaluator_per_sample):
+        """Pair 3 (identical) should score highest."""
+        results = evaluator_per_sample(refs=self.refs, hyps=self.hyps)
+        sample_f1 = results["srrbert_weighted_f1"]
+        assert sample_f1[2] > sample_f1[1] > sample_f1[0]
+
+    def test_identical_pair_is_perfect(self, evaluator_per_sample):
+        results = evaluator_per_sample(refs=self.refs, hyps=self.hyps)
+        assert results["srrbert_weighted_f1"][2] == pytest.approx(1.0, abs=1e-6)
+        assert results["srrbert_weighted_precision"][2] == pytest.approx(1.0, abs=1e-6)
+        assert results["srrbert_weighted_recall"][2] == pytest.approx(1.0, abs=1e-6)

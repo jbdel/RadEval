@@ -19,8 +19,8 @@ class RadEval():
                  do_bleu=False,
                  do_rouge=False,
                  do_bertscore=False,
-                 do_srr_bert=False,
-                 do_chexbert=False,
+                 do_srrbert=False,
+                 do_f1chexbert=False,
                  do_f1radbert_ct=False,
                  do_ratescore=False,
                  do_radgraph_radcliq=False,
@@ -32,10 +32,11 @@ class RadEval():
                  radfact_ct_api_key=None,
                  radfact_ct_filter_negatives=False,
                  do_crimson=False,
-                 crimson_api="openai",
+                 crimson_api="hf",
                  crimson_api_key=None,
                  crimson_model=None,
                  crimson_batch_size=1,
+                 do_per_sample=False,
                  do_details=False,
                  show_progress=True,
                  ):
@@ -53,8 +54,8 @@ class RadEval():
         self.do_bleu = do_bleu
         self.do_rouge = do_rouge
         self.do_bertscore = do_bertscore
-        self.do_srr_bert = do_srr_bert
-        self.do_chexbert = do_chexbert
+        self.do_srrbert = do_srrbert
+        self.do_f1chexbert = do_f1chexbert
         self.do_f1radbert_ct = do_f1radbert_ct
         self.do_ratescore = do_ratescore
         self.do_radgraph_radcliq = do_radgraph_radcliq
@@ -70,6 +71,7 @@ class RadEval():
         self.crimson_model = crimson_model
         self.crimson_batch_size = crimson_batch_size
         self.do_radeval_bertscore = do_radeval_bertscore
+        self.do_per_sample = do_per_sample
         self.do_details = do_details
         self.show_progress = show_progress
 
@@ -106,15 +108,15 @@ class RadEval():
             self._rouge_scorer = rouge_scorer.RougeScorer(
                 self._rouge_types, use_stemmer=True)
 
-        if self.do_srr_bert:
+        if self.do_srrbert:
             import nltk
             from .metrics.SRRBert.srr_bert import SRRBert
             nltk.download('punkt_tab', quiet=True)
-            self.srr_bert_scorer = SRRBert(model_type="leaves_with_statuses")
+            self.srrbert_scorer = SRRBert(model_type="leaves_with_statuses")
 
-        if self.do_chexbert:
+        if self.do_f1chexbert:
             from .metrics.f1chexbert import F1CheXbert
-            self.chexbert_scorer = F1CheXbert()
+            self.f1chexbert_scorer = F1CheXbert()
 
         if self.do_f1radbert_ct:
             from .metrics.f1Radbert_ct import F1RadbertCT
@@ -197,21 +199,21 @@ class RadEval():
             self.metric_keys.append("bertscore")
         if self.do_rouge:
             self.metric_keys.extend(["rouge1", "rouge2", "rougeL"])
-        if self.do_srr_bert:
+        if self.do_srrbert:
             self.metric_keys.extend(
                 ["samples_avg_precision", "samples_avg_recall", "samples_avg_f1-score"])
-        if self.do_chexbert:
+        if self.do_f1chexbert:
             self.metric_keys.extend([
-                "chexbert-5_micro avg_f1-score",
-                "chexbert-all_micro avg_f1-score",
-                "chexbert-5_macro avg_f1-score",
-                "chexbert-all_macro avg_f1-score"
+                "f1chexbert_5_micro_f1",
+                "f1chexbert_all_micro_f1",
+                "f1chexbert_5_macro_f1",
+                "f1chexbert_all_macro_f1"
             ])
         if self.do_f1radbert_ct:
             self.metric_keys.extend([
                 "f1radbert_ct_accuracy",
-                "f1radbert_ct_micro avg_f1-score",
-                "f1radbert_ct_macro avg_f1-score",
+                "f1radbert_ct_micro_f1",
+                "f1radbert_ct_macro_f1",
                 "f1radbert_ct_weighted_f1",
             ])
 
@@ -270,24 +272,31 @@ class RadEval():
                     "all_labels": sample_acc_full,
                     "5_labels": sample_acc_5,
                 },
-                f"{prefix}-5_micro avg_f1-score": cr_5["micro avg"]["f1-score"],
-                f"{prefix}-all_micro avg_f1-score": cr_all["micro avg"]["f1-score"],
-                f"{prefix}-5_macro avg_f1-score": cr_5["macro avg"]["f1-score"],
-                f"{prefix}-all_macro avg_f1-score": cr_all["macro avg"]["f1-score"],
-                f"{prefix}-5_weighted_f1": cr_5["weighted avg"]["f1-score"],
-                f"{prefix}-all_weighted_f1": cr_all["weighted avg"]["f1-score"],
-                "label_scores_f1-score": {
-                    f"{prefix}-5": labels_5,
+                f"{prefix}_5_micro_f1": cr_5["micro avg"]["f1-score"],
+                f"{prefix}_all_micro_f1": cr_all["micro avg"]["f1-score"],
+                f"{prefix}_5_macro_f1": cr_5["macro avg"]["f1-score"],
+                f"{prefix}_all_macro_f1": cr_all["macro avg"]["f1-score"],
+                f"{prefix}_5_weighted_f1": cr_5["weighted avg"]["f1-score"],
+                f"{prefix}_all_weighted_f1": cr_all["weighted avg"]["f1-score"],
+                "label_scores_f1": {
+                    f"{prefix}_5": labels_5,
                     f"{prefix}_all": labels_all,
                 },
             }
+        elif self.do_per_sample:
+            scores[f"{prefix}_sample_acc_5"] = (
+                sample_acc_5.tolist() if hasattr(sample_acc_5, 'tolist')
+                else list(sample_acc_5))
+            scores[f"{prefix}_sample_acc_all"] = (
+                sample_acc_full.tolist() if hasattr(sample_acc_full, 'tolist')
+                else list(sample_acc_full))
         else:
-            scores[f"{prefix}-5_micro avg_f1-score"] = round(cr_5["micro avg"]["f1-score"], 4)
-            scores[f"{prefix}-all_micro avg_f1-score"] = round(cr_all["micro avg"]["f1-score"], 4)
-            scores[f"{prefix}-5_macro avg_f1-score"] = round(cr_5["macro avg"]["f1-score"], 4)
-            scores[f"{prefix}-all_macro avg_f1-score"] = round(cr_all["macro avg"]["f1-score"], 4)
-            scores[f"{prefix}-5_weighted_f1"] = round(cr_5["weighted avg"]["f1-score"], 4)
-            scores[f"{prefix}-all_weighted_f1"] = round(cr_all["weighted avg"]["f1-score"], 4)
+            scores[f"{prefix}_5_micro_f1"] = round(cr_5["micro avg"]["f1-score"], 4)
+            scores[f"{prefix}_all_micro_f1"] = round(cr_all["micro avg"]["f1-score"], 4)
+            scores[f"{prefix}_5_macro_f1"] = round(cr_5["macro avg"]["f1-score"], 4)
+            scores[f"{prefix}_all_macro_f1"] = round(cr_all["macro avg"]["f1-score"], 4)
+            scores[f"{prefix}_5_weighted_f1"] = round(cr_5["weighted avg"]["f1-score"], 4)
+            scores[f"{prefix}_all_weighted_f1"] = round(cr_all["weighted avg"]["f1-score"], 4)
         progress.advance(metric_task)
 
     def compute_scores(self, refs, hyps):
@@ -301,8 +310,8 @@ class RadEval():
         if self.do_green:           enabled.append("GREEN")
         if self.do_mammo_green:     enabled.append("MammoGREEN")
         if self.do_rouge:           enabled.append("ROUGE")
-        if self.do_srr_bert:        enabled.append("SRR-BERT")
-        if self.do_chexbert:        enabled.append("CheXbert")
+        if self.do_srrbert:        enabled.append("SRRBert")
+        if self.do_f1chexbert:        enabled.append("F1CheXbert")
         if self.do_f1radbert_ct:    enabled.append("F1RadBERT-CT")
 
 
@@ -337,6 +346,11 @@ class RadEval():
                         "hypothesis_annotation_lists": hyps_entities,
                         "reference_annotation_lists": refs_entities
                     }
+                elif self.do_per_sample:
+                    per_level = radgraph_scores[1]
+                    scores["radgraph_simple"] = list(per_level[0])
+                    scores["radgraph_partial"] = list(per_level[1])
+                    scores["radgraph_complete"] = list(per_level[2])
                 else:
                     radgraph_scores = radgraph_scores[0]
                     scores["radgraph_simple"] = round(radgraph_scores[0], 4)
@@ -359,6 +373,9 @@ class RadEval():
                         "bleu_3": {"mean_score": bleu_3_score, "sample_scores": bleu_3_samples},
                         "bleu_4": {"mean_score": bleu_4_score, "sample_scores": bleu_4_samples}
                     }
+                elif self.do_per_sample:
+                    _, bleu_samples = self.bleu_scorer(refs, hyps)
+                    scores["bleu"] = bleu_samples
                 else:
                     scores["bleu"] = round(self.bleu_scorer(refs, hyps)[0], 4)
                 progress.advance(metric_task)
@@ -376,6 +393,10 @@ class RadEval():
                         "mean_score": bertscore_scores,
                         "sample_scores": sample_scores
                     }
+                elif self.do_per_sample:
+                    _, sample_scores = self.bertscore_scorer(
+                        refs, hyps, on_batch_done=cb)
+                    scores["bertscore"] = sample_scores
                 else:
                     scores["bertscore"] = round(
                         self.bertscore_scorer(refs, hyps, on_batch_done=cb)[0], 4)
@@ -392,6 +413,8 @@ class RadEval():
                         "std": std,
                         "sample_scores": sample_scores,
                     }
+                elif self.do_per_sample:
+                    scores["green"] = sample_scores
                 else:
                     scores["green"] = round(mean, 4)
                 progress.advance(metric_task)
@@ -412,6 +435,8 @@ class RadEval():
                             "incorrect_birads", "insignificant_errors"
                         ]].to_dict(orient="records"),
                     }
+                elif self.do_per_sample:
+                    scores["mammo_green"] = sample_scores
                 else:
                     scores["mammo_green"] = round(mean, 4)
                 progress.advance(metric_task)
@@ -432,6 +457,9 @@ class RadEval():
                             "sample_scores": f1s,
                         }
                     scores["rouge"] = rouge_results
+                elif self.do_per_sample:
+                    for rt in self._rouge_types:
+                        scores[rt] = [s[rt].fmeasure for s in raw_scores]
                 else:
                     for rt in self._rouge_types:
                         f1s = [s[rt].fmeasure for s in raw_scores]
@@ -439,13 +467,13 @@ class RadEval():
                 progress.advance(metric_task)
 
             # ----------------------------------------------------------
-            if self.do_srr_bert:
+            if self.do_srrbert:
                 progress.update(metric_task, description="Computing SRR-BERT")
                 sample_task = progress.add_task(
                     "  [dim]Samples", total=n_samples)
 
                 classification_dict, sample_precision, sample_recall, sample_f1 = \
-                    self.srr_bert_scorer.evaluate(
+                    self.srrbert_scorer.evaluate(
                         refs, hyps,
                         on_sample_done=lambda: progress.advance(sample_task),
                     )
@@ -454,7 +482,7 @@ class RadEval():
                 if self.do_details:
                     label_names = [
                         label for label, idx in sorted(
-                            self.srr_bert_scorer.mapping.items(),
+                            self.srrbert_scorer.mapping.items(),
                             key=lambda x: x[1])
                     ]
                     label_scores = {}
@@ -470,34 +498,38 @@ class RadEval():
                                     "support": support
                                 }
 
-                    scores["srr_bert"] = {
-                        "srr_bert_weighted_f1": {
+                    scores["srrbert"] = {
+                        "srrbert_weighted_f1": {
                             "weighted_mean_score": classification_dict["weighted avg"]["f1-score"],
                             "sample_scores": sample_f1.tolist(),
                         },
-                        "srr_bert_weighted_precision": {
+                        "srrbert_weighted_precision": {
                             "weighted_mean_score": classification_dict["weighted avg"]["precision"],
                             "sample_scores": sample_precision.tolist(),
                         },
-                        "srr_bert_weighted_recall": {
+                        "srrbert_weighted_recall": {
                             "weighted_mean_score": classification_dict["weighted avg"]["recall"],
                             "sample_scores": sample_recall.tolist(),
                         },
                         "label_scores": label_scores
                     }
+                elif self.do_per_sample:
+                    scores["srrbert_weighted_f1"] = sample_f1.tolist()
+                    scores["srrbert_weighted_precision"] = sample_precision.tolist()
+                    scores["srrbert_weighted_recall"] = sample_recall.tolist()
                 else:
-                    scores["srr_bert_weighted_f1"] = round(
+                    scores["srrbert_weighted_f1"] = round(
                         classification_dict["weighted avg"]["f1-score"], 4)
-                    scores["srr_bert_weighted_precision"] = round(
+                    scores["srrbert_weighted_precision"] = round(
                         classification_dict["weighted avg"]["precision"], 4)
-                    scores["srr_bert_weighted_recall"] = round(
+                    scores["srrbert_weighted_recall"] = round(
                         classification_dict["weighted avg"]["recall"], 4)
                 progress.advance(metric_task)
 
             # ----------------------------------------------------------
-            if self.do_chexbert:
+            if self.do_f1chexbert:
                 self._score_chexbert(
-                    scores, "chexbert", self.chexbert_scorer,
+                    scores, "f1chexbert", self.f1chexbert_scorer,
                     hyps, refs, n_samples, progress, metric_task)
 
             # ----------------------------------------------------------
@@ -515,20 +547,25 @@ class RadEval():
                     }
                     scores["f1radbert_ct"] = {
                         "f1radbert_ct_accuracy": f1radbert_ct_accuracy,
-                        "f1radbert_ct_micro avg_f1-score": f1radbert_ct_report["micro avg"]["f1-score"],
-                        "f1radbert_ct_macro avg_f1-score": f1radbert_ct_report["macro avg"]["f1-score"],
+                        "f1radbert_ct_micro_f1": f1radbert_ct_report["micro avg"]["f1-score"],
+                        "f1radbert_ct_macro_f1": f1radbert_ct_report["macro avg"]["f1-score"],
                         "f1radbert_ct_weighted_f1": f1radbert_ct_report["weighted avg"]["f1-score"],
                         "sample_scores": {
                             "all_labels": f1radbert_ct_sample_acc,
                         },
-                        "label_scores_f1-score": f1radbert_ct_labels,
+                        "label_scores_f1": f1radbert_ct_labels,
                     }
+                elif self.do_per_sample:
+                    scores["f1radbert_ct_sample_acc"] = (
+                        f1radbert_ct_sample_acc.tolist()
+                        if hasattr(f1radbert_ct_sample_acc, 'tolist')
+                        else list(f1radbert_ct_sample_acc))
                 else:
                     scores["f1radbert_ct_accuracy"] = round(
                         f1radbert_ct_accuracy, 4)
-                    scores["f1radbert_ct_micro avg_f1-score"] = round(
+                    scores["f1radbert_ct_micro_f1"] = round(
                         f1radbert_ct_report["micro avg"]["f1-score"], 4)
-                    scores["f1radbert_ct_macro avg_f1-score"] = round(
+                    scores["f1radbert_ct_macro_f1"] = round(
                         f1radbert_ct_report["macro avg"]["f1-score"], 4)
                     scores["f1radbert_ct_weighted_f1"] = round(
                         f1radbert_ct_report["weighted avg"]["f1-score"], 4)
@@ -562,6 +599,8 @@ class RadEval():
                         "hyps_pairs": pred_pairs,
                         "refs_pairs": gt_pairs
                     }
+                elif self.do_per_sample:
+                    scores["ratescore"] = rate_score
                 else:
                     scores["ratescore"] = round(f1_ratescore, 4)
                 progress.advance(metric_task)
@@ -580,6 +619,8 @@ class RadEval():
                         "mean_score": mean_rg,
                         "sample_scores": sample_rg,
                     }
+                elif self.do_per_sample:
+                    scores["radgraph_radcliq"] = sample_rg
                 else:
                     scores["radgraph_radcliq"] = round(mean_rg, 4)
                 progress.advance(metric_task)
@@ -590,12 +631,14 @@ class RadEval():
                 mean_scores, detail_scores = self.radcliq_scorer.predict(
                     refs, hyps)
                 if self.do_details:
-                    scores["radcliq-v1"] = {
+                    scores["radcliq_v1"] = {
                         "mean_score": mean_scores,
                         "sample_scores": detail_scores.tolist()
                     }
+                elif self.do_per_sample:
+                    scores["radcliq_v1"] = detail_scores.tolist()
                 else:
-                    scores["radcliq-v1"] = round(mean_scores, 4)
+                    scores["radcliq_v1"] = round(mean_scores, 4)
                 progress.advance(metric_task)
 
             # ----------------------------------------------------------
@@ -625,6 +668,8 @@ class RadEval():
                         "hyps_entities": hyp_entities,
                         "refs_entities": ref_entities
                     }
+                elif self.do_per_sample:
+                    scores["temporal_f1"] = temporal_scores["sample_scores"]
                 else:
                     scores["temporal_f1"] = round(temporal_scores["f1"], 4)
                 progress.advance(metric_task)
@@ -645,6 +690,13 @@ class RadEval():
                         "logical_f1": radfact_agg["logical_f1"],
                         "per_sample": radfact_per_sample,
                     }
+                elif self.do_per_sample:
+                    scores["radfact_ct_precision"] = [
+                        s["logical_precision"] for s in radfact_per_sample]
+                    scores["radfact_ct_recall"] = [
+                        s["logical_recall"] for s in radfact_per_sample]
+                    scores["radfact_ct_f1"] = [
+                        s["logical_f1"] for s in radfact_per_sample]
                 else:
                     scores["radfact_ct_precision"] = radfact_agg["logical_precision"]
                     scores["radfact_ct_recall"] = radfact_agg["logical_recall"]
@@ -674,6 +726,8 @@ class RadEval():
                             "temporal_errors",
                         ]].to_dict(orient="records"),
                     }
+                elif self.do_per_sample:
+                    scores["crimson"] = sample_scores
                 else:
                     scores["crimson"] = round(mean, 4)
                 progress.advance(metric_task)
@@ -692,6 +746,8 @@ class RadEval():
                         "mean_score": radeval_bertscores[0],
                         "sample_scores": radeval_bertscores[1].tolist()
                     }
+                elif self.do_per_sample:
+                    scores["radeval_bertscore"] = radeval_bertscores[1].tolist()
                 else:
                     scores["radeval_bertscore"] = round(radeval_bertscores[0], 4)
                 progress.advance(metric_task)
@@ -723,8 +779,8 @@ def main():
                         do_bleu=True,
                         do_rouge=True,
                         do_bertscore=True,
-                        do_srr_bert=True,
-                        do_chexbert=True,
+                        do_srrbert=True,
+                        do_f1chexbert=True,
                         do_temporal=True,
                         do_ratescore=True,
                         do_radcliq=True,
