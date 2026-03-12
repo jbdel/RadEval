@@ -186,7 +186,7 @@ class RadEval():
         if self.do_radeval_bertscore:
             self.metric_keys.append("radeval_bertscore")
 
-    def __call__(self, refs, hyps):
+    def __call__(self, refs, hyps, crimson_patient_contexts=None):
         if not (isinstance(hyps, list) and isinstance(refs, list)):
             raise TypeError("hyps and refs must be of type list")
         if len(hyps) != len(refs):
@@ -194,7 +194,7 @@ class RadEval():
         if len(refs) == 0:
             return {}
 
-        scores = self.compute_scores(refs=refs, hyps=hyps)
+        scores = self.compute_scores(refs=refs, hyps=hyps, crimson_patient_contexts=crimson_patient_contexts)
         return scores
 
     def _make_progress(self):
@@ -244,7 +244,7 @@ class RadEval():
             scores[f"{prefix}-all_weighted_f1"] = round(cr_all["weighted avg"]["f1-score"], 4)
         progress.advance(metric_task)
 
-    def compute_scores(self, refs, hyps):
+    def compute_scores(self, refs, hyps, crimson_patient_contexts=None):
         scores = {}
         n_samples = len(refs)
 
@@ -350,7 +350,7 @@ class RadEval():
             # ----------------------------------------------------------
             if self.do_crimson:
                 progress.update(metric_task, description="Computing CRIMSON")
-                mean, std, sample_scores, results_df = self.crimson_scorer(refs, hyps)
+                mean, std, sample_scores, results_df = self.crimson_scorer(refs, hyps, patient_contexts=crimson_patient_contexts)
                 if self.do_details:
                     error_columns = [
                         "false_findings",
