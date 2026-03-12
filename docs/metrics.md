@@ -96,6 +96,22 @@ Entity-aware metric that extracts medical entities via NER, computes synonym-awa
 
 ## Specialized Metrics
 
+### RadGraph-RadCliQ (`do_radgraph_radcliq`)
+
+The RadGraph sub-score as computed in the RadCliQ-v1 pipeline. Unlike the official `F1RadGraph` metric (`do_radgraph`), which uses `radgraph-xl` and entity-matching at three reward levels, this metric:
+
+- Uses the original `radgraph` model (the one RadCliQ-v1 was trained with)
+- Extracts entity **and relation** sets from each report
+- Computes per-pair `(entity_f1 + relation_f1) / 2`
+- Returns per-sample scores
+
+Use `do_radgraph` for the standard metric. Use `do_radgraph_radcliq` when you need per-pair entity+relation F1 scores or exact alignment with the RadCliQ-v1 composite.
+
+| Mode | Output key | Value |
+|------|-----------|-------|
+| Default | `radgraph_radcliq` | float (mean score) |
+| Details | `radgraph_radcliq` | `{mean_score, sample_scores}` |
+
 ### RadCliQ-v1 (`do_radcliq`)
 
 Composite metric that combines BERTScore, RadGraph, semantic embeddings, and BLEU via a learned linear model. Lower values indicate better reports.

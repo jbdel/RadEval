@@ -23,6 +23,7 @@ class RadEval():
                  do_chexbert=False,
                  do_f1radbert_ct=False,
                  do_ratescore=False,
+                 do_radgraph_radcliq=False,
                  do_radcliq=False,
                  do_radeval_bertscore=False,
                  do_temporal=False,
@@ -55,6 +56,7 @@ class RadEval():
         self.do_chexbert = do_chexbert
         self.do_f1radbert_ct = do_f1radbert_ct
         self.do_ratescore = do_ratescore
+        self.do_radgraph_radcliq = do_radgraph_radcliq
         self.do_radcliq = do_radcliq
         self.do_temporal = do_temporal
         self.do_radeval_bertscore = do_radeval_bertscore
@@ -120,9 +122,14 @@ class RadEval():
                 batch_size=16,
             )
 
+
         if self.do_ratescore:
             from .metrics.RaTEScore import RaTEScore
             self.ratescore_scorer = RaTEScore()
+
+        if self.do_radgraph_radcliq:
+            from .metrics.radgraph_radcliq import RadGraphRadCliQ
+            self.radgraph_radcliq_scorer = RadGraphRadCliQ()
 
         if self.do_radcliq:
             from .metrics.RadCliQv1.radcliq import CompositeMetric
@@ -177,8 +184,11 @@ class RadEval():
                 "f1radbert_ct_weighted_f1",
             ])
 
+
         if self.do_ratescore:
             self.metric_keys.append("ratescore")
+        if self.do_radgraph_radcliq:
+            self.metric_keys.append("radgraph_radcliq")
         if self.do_radcliq:
             self.metric_keys.append("radcliqv1")
         if self.do_temporal:
@@ -260,7 +270,9 @@ class RadEval():
         if self.do_chexbert:        enabled.append("CheXbert")
         if self.do_f1radbert_ct:    enabled.append("F1RadBERT-CT")
 
+
         if self.do_ratescore:       enabled.append("RaTEScore")
+        if self.do_radgraph_radcliq: enabled.append("RadGraph-RadCliQ")
         if self.do_radcliq:         enabled.append("RadCliQ-v1")
         if self.do_temporal:        enabled.append("Temporal F1")
         if self.do_radeval_bertscore: enabled.append("RadEval-BERTScore")
@@ -547,6 +559,24 @@ class RadEval():
                     }
                 else:
                     scores["ratescore"] = round(f1_ratescore, 4)
+                progress.advance(metric_task)
+
+            # ----------------------------------------------------------
+            if self.do_radgraph_radcliq:
+                progress.update(metric_task, description="Computing RadGraph-RadCliQ")
+                sample_task = progress.add_task(
+                    "  [dim]Samples", total=n_samples)
+                mean_rg, sample_rg = self.radgraph_radcliq_scorer(
+                    hyps, refs,
+                    on_sample_done=lambda: progress.advance(sample_task))
+                progress.remove_task(sample_task)
+                if self.do_details:
+                    scores["radgraph_radcliq"] = {
+                        "mean_score": mean_rg,
+                        "sample_scores": sample_rg,
+                    }
+                else:
+                    scores["radgraph_radcliq"] = round(mean_rg, 4)
                 progress.advance(metric_task)
 
             # ----------------------------------------------------------

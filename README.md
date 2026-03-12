@@ -78,7 +78,8 @@ pip install -e '.[api]'
 | | F1RadBERT-CT | `do_f1radbert_ct` | CT finding classification |
 | | F1RadGraph | `do_radgraph` | Clinical entity/relation accuracy |
 | | RaTEScore | `do_ratescore` | Entity-level synonym-aware scoring |
-| **Specialized** | RadCliQ-v1 | `do_radcliq` | Composite clinical relevance |
+| **Specialized** | RadGraph-RadCliQ | `do_radgraph_radcliq` | Per-pair entity+relation F1 (RadCliQ variant) |
+| | RadCliQ-v1 | `do_radcliq` | Composite clinical relevance |
 | | SRR-BERT | `do_srr_bert` | Structured report evaluation |
 | | Temporal F1 | `do_temporal` | Temporal consistency |
 | | GREEN | `do_green` | LLM-based overall quality (7B model) |

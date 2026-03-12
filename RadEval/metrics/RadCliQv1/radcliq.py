@@ -1,6 +1,5 @@
 import numpy as np
 import torch
-from RadEval.metrics.bertscore.bertscore import BertScore
 from radgraph import RadGraph
 from RadEval.metrics.f1chexbert import F1CheXbert
 from sklearn.preprocessing import StandardScaler
@@ -58,19 +57,35 @@ class CompositeMetric:
         self.cols = ["radgraph", "bertscore", "semb_score", "bleu_score"]
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self._bert_scorer = BertScore(
-            model_type='distilroberta-base',
-            rescale_with_baseline=True,
-            idf=False,
-            num_layers=None,
-        )
         self._radgraph = RadGraph(model_type='radgraph')
         self._chexbert = F1CheXbert(device=device)
-        self._bleu = Bleu()
+        self._bleu = Bleu(n=2)
+        self._bertscore_cache_key = None
+        self._bert_scorer = None
+
+    def _get_bert_scorer(self, refs):
+        """Return a BERTScorer with IDF computed from *refs*."""
+        cache_key = id(refs)
+        if self._bert_scorer is None or self._bertscore_cache_key != cache_key:
+            from bert_score import BERTScorer
+            self._bert_scorer = BERTScorer(
+                model_type='distilroberta-base',
+                rescale_with_baseline=True,
+                idf=True,
+                idf_sents=refs,
+                batch_size=64,
+                nthreads=4,
+                all_layers=False,
+                lang='en',
+                device=None,
+            )
+            self._bertscore_cache_key = cache_key
+        return self._bert_scorer
 
     def _compute_sub_metrics(self, refs, hyps):
-        _, bert_f1_list = self._bert_scorer(refs, hyps)
-        bert_scores = np.array([float(s) for s in bert_f1_list])
+        scorer = self._get_bert_scorer(refs)
+        _, _, f1 = scorer.score(cands=hyps, refs=refs, verbose=False, batch_size=64)
+        bert_scores = f1.numpy()
 
         gt_outputs = self._radgraph(refs)
         pred_outputs = self._radgraph(hyps)
