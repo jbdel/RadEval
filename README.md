@@ -102,32 +102,21 @@ results = evaluator(refs=refs, hyps=hyps)
 # results["bertscore"] → [0.95, 0.89, ...]
 ```
 
-### Per-sample output keys by metric
-
-| Metric | Default keys | `do_per_sample` keys |
-|--------|-------------|---------------------|
-| BLEU | `bleu` | `bleu` |
-| ROUGE | `rouge1`, `rouge2`, `rougeL` | `rouge1`, `rouge2`, `rougeL` |
-| BERTScore | `bertscore` | `bertscore` |
-| RadEval BERTScore | `radeval_bertscore` | `radeval_bertscore` |
-| F1CheXbert | `f1chexbert_5_micro_f1`, `f1chexbert_all_micro_f1`, ... | `f1chexbert_sample_acc_5`, `f1chexbert_sample_acc_all` |
-| F1RadBERT-CT | `f1radbert_ct_accuracy`, `f1radbert_ct_micro_f1`, ... | `f1radbert_ct_sample_acc` |
-| F1RadGraph | `radgraph_simple`, `radgraph_partial`, `radgraph_complete` | `radgraph_simple`, `radgraph_partial`, `radgraph_complete` |
-| RaTEScore | `ratescore` | `ratescore` |
-| RadGraph-RadCliQ | `radgraph_radcliq` | `radgraph_radcliq` |
-| RadCliQ-v1 | `radcliq_v1` | `radcliq_v1` |
-| SRRBert | `srrbert_weighted_f1`, `srrbert_weighted_precision`, `srrbert_weighted_recall` | `srrbert_weighted_f1`, `srrbert_weighted_precision`, `srrbert_weighted_recall` |
-| Temporal F1 | `temporal_f1` | `temporal_f1` |
-| GREEN | `green` | `green` |
-| MammoGREEN | `mammo_green` | `mammo_green` |
-| CRIMSON | `crimson` | `crimson` |
-| RadFact-CT | `radfact_ct_precision`, `radfact_ct_recall`, `radfact_ct_f1` | `radfact_ct_precision`, `radfact_ct_recall`, `radfact_ct_f1` |
-
-> **Note:** F1-classifier metrics (F1CheXbert, F1RadBERT-CT) return per-sample *accuracy* (fraction of labels correct per report) rather than per-sample F1, since micro/macro F1 are corpus-level aggregates.
+See [docs/metrics.md](docs/metrics.md) for the full list of per-sample output keys for each metric.
 
 ## Detailed Output
 
-Pass `do_details=True` to get per-sample scores, label breakdowns, and entity annotations for every enabled metric. See [docs/metrics.md](docs/metrics.md) for the full output schema of each metric.
+Pass `do_details=True` to get per-sample scores, label breakdowns, and entity annotations for every enabled metric.
+
+```python
+evaluator = RadEval(do_radgraph=True, do_bleu=True, do_details=True)
+results = evaluator(refs=refs, hyps=hyps)
+# results["radgraph"]["sample_scores"]              → per-pair scores
+# results["radgraph"]["hypothesis_annotation_lists"] → extracted entities
+# results["bleu"]["bleu_1"]["sample_scores"]         → per-sample BLEU-1
+```
+
+See [docs/metrics.md](docs/metrics.md) for the full output schema of each metric.
 
 ## Comparing Systems
 
