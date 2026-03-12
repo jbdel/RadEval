@@ -70,14 +70,16 @@ tests/
 
 ### Publishing workflow
 ```bash
-git push origin main                        # push to hopprai (private)
-python scripts/publish_public.py --push     # publish to jbdel (public)
+git push origin main                                              # push to hopprai (private)
+python scripts/publish_public.py --push -m "v0.X.Y: description" # publish to jbdel (public)
 # Then for PyPI (always build from PUBLIC repo):
 cd /tmp && git clone --depth 1 https://github.com/jbdel/RadEval.git radeval_pypi
 cd radeval_pypi && python -m build --sdist
 TWINE_USERNAME=__token__ TWINE_PASSWORD="<token from scripts/pypi>" twine upload dist/*
 ```
 Bump version in `setup.py` before each PyPI upload.
+The publish script clones the public repo, copies private files in, strips private metrics,
+and pushes normally. Private code never enters public history.
 
 ### Testing
 - `python -m pytest tests/ -v -m "not integration"` — runs all non-API tests

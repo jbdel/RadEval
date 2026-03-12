@@ -19,13 +19,29 @@ All development happens on hopprai/RadEval. To release publicly:
 git add -A && git commit -m "..." && git push origin main
 
 # 2. Dry-run first (see what will be stripped, no push)
-python scripts/publish_public.py
+python scripts/publish_public.py -m "v0.X.Y: description"
 
 # 3. Push to public repo
-python scripts/publish_public.py --push
+python scripts/publish_public.py --push -m "v0.X.Y: description"
 ```
 
-The script clones the repo to a temp dir, strips private metrics, removes `scripts/` itself, and force-pushes to `https://github.com/jbdel/RadEval.git`.
+The script clones the **public** repo, replaces its working tree with the current
+private repo state (minus private metrics/dirs/files), commits with the provided
+message, and pushes normally. Private files never enter the public repo's history.
+
+## PyPI workflow
+
+Always build from the PUBLIC repo, never from hopprai/RadEval.
+
+```bash
+# After publish_public.py --push:
+cd /tmp && git clone --depth 1 https://github.com/jbdel/RadEval.git radeval_pypi
+cd radeval_pypi && python -m build --sdist
+TWINE_USERNAME=__token__ TWINE_PASSWORD="<token from scripts/pypi>" twine upload dist/*
+rm -rf /tmp/radeval_pypi
+```
+
+Bump `version` in `setup.py` before each PyPI upload.
 
 ## Adding a new private metric
 
