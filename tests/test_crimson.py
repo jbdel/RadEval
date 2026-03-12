@@ -344,12 +344,10 @@ class TestCrimsonRadEvalIntegration:
             results = evaluator(refs=refs, hyps=hyps)
 
         assert "crimson" in results
-        assert "mean" in results["crimson"]
-        assert "std" in results["crimson"]
-        assert "sample_scores" in results["crimson"]
-        assert "error_counts" in results["crimson"]
-        assert len(results["crimson"]["sample_scores"]) == len(refs)
-        assert len(results["crimson"]["error_counts"]) == len(refs)
+        assert isinstance(results["crimson"], float)
+        assert "crimson_std" in results
+        assert isinstance(results["crimson_std"], float)
+        assert math.isclose(results["crimson"], expected_mean, rel_tol=epsilon)
 
     def test_radeval_with_crimson_per_sample(self):
         """Test RadEval with CRIMSON in per-sample mode."""

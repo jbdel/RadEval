@@ -38,10 +38,10 @@ def evaluator_details():
     return RadEval(do_radcliq=True, do_details=True, show_progress=False)
 
 
-def test_radcliq_per_pair_scores(evaluator_details):
+def test_radcliq_per_pair_scores(evaluator_per_sample):
     """Per-pair RadCliQ-v1 scores match the reference implementation."""
-    results = evaluator_details(refs=REFS, hyps=HYPS)
-    sample_scores = results["radcliq_v1"]["sample_scores"]
+    results = evaluator_per_sample(refs=REFS, hyps=HYPS)
+    sample_scores = results["radcliq_v1"]
     for i, (actual, expected) in enumerate(zip(sample_scores, EXPECTED_RADCLIQ_PER_PAIR)):
         assert actual == pytest.approx(expected, abs=0.01), (
             f"Pair {i}: {actual:.4f} != {expected:.4f}")
@@ -55,11 +55,9 @@ def test_radcliq_mean(evaluator):
 
 
 def test_radcliq_details_structure(evaluator_details):
+    """do_details returns same scalar as default for radcliq."""
     results = evaluator_details(refs=REFS, hyps=HYPS)
-    detail = results["radcliq_v1"]
-    assert "mean_score" in detail
-    assert "sample_scores" in detail
-    assert len(detail["sample_scores"]) == len(REFS)
+    assert isinstance(results["radcliq_v1"], float)
 
 
 def test_radcliq_default_mode(evaluator):

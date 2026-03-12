@@ -2,10 +2,7 @@ from RadEval import RadEval
 import pytest
 
 def test_do_details():
-    """
-    This function is used to run the test for RadEval with do_details=True.
-    It is useful for debugging and ensuring that the test runs correctly.
-    """
+    """do_details returns flat keys with extra aggregate scores (no per-sample, no annotations)."""
     refs = [
         "Increased mild pulmonary edema and left basal atelectasis.",
     ]
@@ -14,7 +11,6 @@ def test_do_details():
         "No pleural effusions or pneumothoraces.",
     ]
 
-    # Instantiate RadEval with desired configurations
     evaluator = RadEval(do_radgraph=True,
                       do_green=False,
                       do_bleu=True,
@@ -27,124 +23,60 @@ def test_do_details():
                       do_radcliq=True,
                       do_radeval_bertscore=True,
                       do_details=True)
-    
-    # Run the evaluation
-    results = evaluator(refs=refs, hyps=hyps)
-    
-    # 1. Check that all expected evaluation metric keys are present
-    expected_keys = {'radgraph', 'bleu', 'bertscore', 'rouge', 'srrbert', 
-                    'f1chexbert', 'ratescore', 'radcliq_v1', 'temporal_f1', 'radeval_bertscore'}
-    actual_keys = set(results.keys())
-    assert expected_keys == actual_keys, f"Key mismatch. Expected: {expected_keys}, Actual: {actual_keys}"
-    
-    # 2. Check radgraph detailed information structure (key functionality of do_details=True)
-    radgraph_result = results['radgraph']
-    
-    # Check basic score fields
-    assert 'radgraph_simple' in radgraph_result
-    assert 'radgraph_partial' in radgraph_result
-    assert 'radgraph_complete' in radgraph_result
-    assert 'sample_scores' in radgraph_result
-    
-    # Check detailed annotation fields (core functionality of do_details=True)
-    assert 'hypothesis_annotation_lists' in radgraph_result, "Missing hypothesis_annotation_lists"
-    assert 'reference_annotation_lists' in radgraph_result, "Missing reference_annotation_lists"
-    
-    # Check annotation list structure
-    hyp_annotations = radgraph_result['hypothesis_annotation_lists']
-    ref_annotations = radgraph_result['reference_annotation_lists']
-    
-    assert len(hyp_annotations) == len(hyps), f"Hypothesis annotation count mismatch: {len(hyp_annotations)} vs {len(hyps)}"
-    assert len(ref_annotations) == len(refs), f"Reference annotation count mismatch: {len(ref_annotations)} vs {len(refs)}"
-    
-    # Check detailed annotation structure
-    for i, annotation in enumerate(hyp_annotations):
-        assert 'text' in annotation, f"Hypothesis annotation {i} missing text field"
-        assert 'entities' in annotation, f"Hypothesis annotation {i} missing entities field"
-        assert 'data_source' in annotation, f"Hypothesis annotation {i} missing data_source field"
-        assert 'data_split' in annotation, f"Hypothesis annotation {i} missing data_split field"
-        assert isinstance(annotation['entities'], dict), f"Hypothesis annotation {i} entities is not a dictionary"
-    
-    for i, annotation in enumerate(ref_annotations):
-        assert 'text' in annotation, f"Reference annotation {i} missing text field"
-        assert 'entities' in annotation, f"Reference annotation {i} missing entities field"
-        assert 'data_source' in annotation, f"Reference annotation {i} missing data_source field"
-        assert 'data_split' in annotation, f"Reference annotation {i} missing data_split field"
-        assert isinstance(annotation['entities'], dict), f"Reference annotation {i} entities is not a dictionary"
-    
-    # 3. Check basic structure and data types for each metric
-    
-    # BLEU scores
-    bleu_result = results['bleu']
-    for key in ['bleu_1', 'bleu_2', 'bleu_3', 'bleu_4']:
-        assert key in bleu_result, f"BLEU missing {key}"
-        val = bleu_result[key]
-        assert isinstance(val, dict), f"BLEU {key} should be a dict"
-        assert "mean_score" in val, f"BLEU {key} missing mean_score"
-        assert "sample_scores" in val, f"BLEU {key} missing sample_scores"
 
-        assert isinstance(val["mean_score"], (int, float)), f"BLEU {key}.mean_score is not numeric"
-        assert isinstance(val["sample_scores"], list), f"BLEU {key}.sample_scores is not a list"
-        assert all(isinstance(x, (int, float)) for x in val["sample_scores"]), f"BLEU {key}.sample_scores contains non-numeric"
-    
-    # BERTScore
-    bertscore_result = results['bertscore']
-    assert 'mean_score' in bertscore_result
-    assert 'sample_scores' in bertscore_result
-    assert isinstance(bertscore_result['sample_scores'], list)
-    assert len(bertscore_result['sample_scores']) == len(hyps)
-    
-    # ROUGE
-    rouge_result = results['rouge']
-    for rouge_type in ['rouge1', 'rouge2', 'rougeL']:
-        assert rouge_type in rouge_result
-        assert 'mean_score' in rouge_result[rouge_type]
-        assert 'sample_scores' in rouge_result[rouge_type]
-    
-    # CheXbert
-    chexbert_result = results['f1chexbert']
-    assert 'label_scores_f1' in chexbert_result
-    assert 'f1chexbert_5' in chexbert_result['label_scores_f1']
-    assert 'f1chexbert_all' in chexbert_result['label_scores_f1']
-    
-    # RateScore
-    ratescore_result = results['ratescore']
-    assert 'f1-score' in ratescore_result
-    assert 'hyps_pairs' in ratescore_result
-    assert 'refs_pairs' in ratescore_result
-    assert isinstance(ratescore_result['hyps_pairs'], list)
-    assert isinstance(ratescore_result['refs_pairs'], list)
-    
-    # Temporal F1
-    temporal_result = results['temporal_f1']
-    assert 'f1-score' in temporal_result
-    assert 'hyps_entities' in temporal_result
-    assert 'refs_entities' in temporal_result
-    
-    # 4. Functional validation: ensure do_details=True actually generates detailed information
-    # Check that entity annotations contain expected medical terms
-    hyp_text = hyp_annotations[0]['text']
-    ref_text = ref_annotations[0]['text']
-    
-    assert "pleural" in hyp_text.lower() or "pneumothoraces" in hyp_text.lower(), "Hypothesis text should contain relevant medical terms"
-    assert "edema" in ref_text.lower() or "atelectasis" in ref_text.lower(), "Reference text should contain relevant medical terms"
-    
-    # Check that entity dictionaries contain medical entities
-    hyp_entities = hyp_annotations[0]['entities']
-    ref_entities = ref_annotations[0]['entities']
-    
-    assert len(hyp_entities) > 0, "Hypothesis annotation should contain entities"
-    assert len(ref_entities) > 0, "Reference annotation should contain entities"
-    
-    # Check entity structure
-    for entity_id, entity in hyp_entities.items():
-        assert 'tokens' in entity, f"Entity {entity_id} missing tokens"
-        assert 'label' in entity, f"Entity {entity_id} missing label"
-        assert 'start_ix' in entity, f"Entity {entity_id} missing start_ix"
-        assert 'end_ix' in entity, f"Entity {entity_id} missing end_ix"
-        assert 'relations' in entity, f"Entity {entity_id} missing relations"
-    
-    return True
+    results = evaluator(refs=refs, hyps=hyps)
+
+    expected_scalar_keys = {
+        "radgraph_simple", "radgraph_partial", "radgraph_complete",
+        "bleu", "bleu_1", "bleu_2", "bleu_3",
+        "bertscore",
+        "rouge1", "rouge2", "rougeL",
+        "srrbert_weighted_f1", "srrbert_weighted_precision", "srrbert_weighted_recall",
+        "f1chexbert_5_micro_f1", "f1chexbert_all_micro_f1",
+        "f1chexbert_5_macro_f1", "f1chexbert_all_macro_f1",
+        "f1chexbert_5_weighted_f1", "f1chexbert_all_weighted_f1",
+        "ratescore",
+        "radcliq_v1",
+        "temporal_f1",
+        "radeval_bertscore",
+    }
+    expected_dict_keys = {
+        "f1chexbert_label_scores_f1",
+        "srrbert_label_scores",
+    }
+
+    actual_keys = set(results.keys())
+    assert actual_keys == expected_scalar_keys | expected_dict_keys, (
+        f"Key mismatch.\n  Missing: {(expected_scalar_keys | expected_dict_keys) - actual_keys}\n"
+        f"  Extra: {actual_keys - expected_scalar_keys - expected_dict_keys}")
+
+    for key in expected_scalar_keys:
+        assert isinstance(results[key], (int, float)), (
+            f"{key} should be a scalar, got {type(results[key])}")
+
+    for key in expected_dict_keys:
+        assert isinstance(results[key], dict), (
+            f"{key} should be a dict, got {type(results[key])}")
+
+    for value in results.values():
+        assert not isinstance(value, list), (
+            "do_details should not contain any list values (per-sample data)")
+
+    assert results["bleu_1"] >= results["bleu_2"] >= results["bleu_3"] >= results["bleu"]
+
+    label_f1 = results["f1chexbert_label_scores_f1"]
+    assert "f1chexbert_5" in label_f1
+    assert "f1chexbert_all" in label_f1
+    assert isinstance(label_f1["f1chexbert_5"], dict)
+    for label, score in label_f1["f1chexbert_5"].items():
+        assert isinstance(score, (int, float))
+
+    srr_labels = results["srrbert_label_scores"]
+    assert isinstance(srr_labels, dict)
+    for label, info in srr_labels.items():
+        for field in ("f1-score", "precision", "recall", "support"):
+            assert field in info, f"Missing '{field}' in srrbert label '{label}'"
+
 
 def test_do_per_sample():
     """Verify do_per_sample returns flat keys with per-sample lists."""

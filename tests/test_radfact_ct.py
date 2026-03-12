@@ -141,7 +141,7 @@ class TestRadFactCTIntegration:
         assert results["radfact_ct_f1"] >= 80
 
     def test_via_radeval_details(self):
-        """Test do_details mode."""
+        """do_details returns same flat keys as default for radfact_ct."""
         if not _HAS_API_KEY:
             pytest.skip("No OPENAI_API_KEY")
         from RadEval import RadEval
@@ -151,8 +151,7 @@ class TestRadFactCTIntegration:
             refs=["Mild cardiomegaly."],
             hyps=["Heart is mildly enlarged."],
         )
-        assert "radfact_ct" in results
-        detail = results["radfact_ct"]
-        assert "logical_precision" in detail
-        assert "logical_recall" in detail
-        assert "per_sample" in detail
+        assert "radfact_ct_precision" in results
+        assert "radfact_ct_recall" in results
+        assert "radfact_ct_f1" in results
+        assert isinstance(results["radfact_ct_precision"], (int, float))

@@ -2,7 +2,13 @@
 
 # Metrics Reference
 
-All metrics are enabled via `do_<name>=True` in the `RadEval` constructor. Each metric returns a scalar score by default; pass `do_per_sample=True` for per-sample lists (same flat keys), or `do_details=True` for full breakdowns with label scores and entity annotations.
+All metrics are enabled via `do_<name>=True` in the `RadEval` constructor. Three output modes:
+
+| Mode | Flag | Output |
+|------|------|--------|
+| Default | -- | Flat dict of scalar scores |
+| Per-Sample | `do_per_sample=True` | Same flat keys, values are `list[float]` (one per report) |
+| Details | `do_details=True` | Default keys + extra aggregate scores (label breakdowns, std, bleu_1/2/3) |
 
 ---
 
@@ -12,11 +18,11 @@ All metrics are enabled via `do_<name>=True` in the `RadEval` constructor. Each 
 
 N-gram overlap between hypothesis and reference. Returns BLEU-4 (4-gram) by default.
 
-| Mode | Output key | Value |
-|------|-----------|-------|
+| Mode | Output keys | Value |
+|------|------------|-------|
 | Default | `bleu` | float (BLEU-4) |
 | Per-Sample | `bleu` | list[float] (BLEU-4 per sample) |
-| Details | `bleu.bleu_1` ... `bleu.bleu_4` | `{mean_score, sample_scores}` |
+| Details | `bleu`, `bleu_1`, `bleu_2`, `bleu_3` | float each (adds BLEU-1/2/3) |
 
 ```python
 from RadEval import RadEval
@@ -34,7 +40,7 @@ Recall-oriented n-gram evaluation. Computes ROUGE-1, ROUGE-2, and ROUGE-L in a s
 |------|------------|-------|
 | Default | `rouge1`, `rouge2`, `rougeL` | float each |
 | Per-Sample | `rouge1`, `rouge2`, `rougeL` | list[float] each |
-| Details | `rouge.rouge1`, `rouge.rouge2`, `rouge.rougeL` | `{mean_score, sample_scores}` |
+| Details | `rouge1`, `rouge2`, `rougeL` | same as default |
 
 ```python
 evaluator = RadEval(do_rouge=True)
@@ -54,7 +60,7 @@ Contextual embedding similarity using `distilbert-base-uncased` (layer 5).
 |------|-----------|-------|
 | Default | `bertscore` | float (mean F1) |
 | Per-Sample | `bertscore` | list[float] |
-| Details | `bertscore` | `{mean_score, sample_scores}` |
+| Details | `bertscore` | same as default |
 
 ```python
 evaluator = RadEval(do_bertscore=True)
@@ -70,7 +76,7 @@ Same architecture as BERTScore but using [IAMJB/RadEvalModernBERT](https://huggi
 |------|-----------|-------|
 | Default | `radeval_bertscore` | float (mean F1) |
 | Per-Sample | `radeval_bertscore` | list[float] |
-| Details | `radeval_bertscore` | `{mean_score, sample_scores}` |
+| Details | `radeval_bertscore` | same as default |
 
 ```python
 evaluator = RadEval(do_radeval_bertscore=True)
@@ -88,9 +94,9 @@ Classifies reports into 14 CheXpert conditions using a BERT-based labeler, then 
 
 | Mode | Output keys | Value |
 |------|------------|-------|
-| Default | `f1chexbert_5_micro_f1`, `f1chexbert_all_micro_f1`, etc. | float |
+| Default | `f1chexbert_5_micro_f1`, `f1chexbert_all_micro_f1`, etc. (6 keys) | float |
 | Per-Sample | `f1chexbert_sample_acc_5`, `f1chexbert_sample_acc_all` | list[float] |
-| Details | `f1chexbert` | `{sample_scores, label_scores_f1, ...}` |
+| Details | default keys + `f1chexbert_label_scores_f1` | adds per-label F1 dict |
 
 ```python
 evaluator = RadEval(do_f1chexbert=True)
@@ -105,9 +111,9 @@ Multi-label classification of 18 CT-specific findings using [IAMJB/RadBERT-CT](h
 
 | Mode | Output keys | Value |
 |------|------------|-------|
-| Default | `f1radbert_ct_accuracy`, `f1radbert_ct_micro_f1`, etc. | float |
+| Default | `f1radbert_ct_accuracy`, `f1radbert_ct_micro_f1`, etc. (4 keys) | float |
 | Per-Sample | `f1radbert_ct_sample_acc` | list[float] |
-| Details | `f1radbert_ct` | `{sample_scores, label_scores_f1, ...}` |
+| Details | default keys + `f1radbert_ct_label_scores_f1` | adds per-label F1 dict |
 
 ```python
 evaluator = RadEval(do_f1radbert_ct=True)
@@ -124,7 +130,7 @@ Extracts clinical entities and relations as a knowledge graph using [RadGraph-XL
 |------|------------|-------|
 | Default | `radgraph_simple`, `radgraph_partial`, `radgraph_complete` | float |
 | Per-Sample | `radgraph_simple`, `radgraph_partial`, `radgraph_complete` | list[float] each |
-| Details | `radgraph` | `{sample_scores, hypothesis_annotation_lists, reference_annotation_lists}` |
+| Details | `radgraph_simple`, `radgraph_partial`, `radgraph_complete` | same as default |
 
 ```python
 evaluator = RadEval(do_radgraph=True)
@@ -142,7 +148,7 @@ Entity-aware metric that extracts medical entities via NER, computes synonym-awa
 |------|-----------|-------|
 | Default | `ratescore` | float (mean F1) |
 | Per-Sample | `ratescore` | list[float] |
-| Details | `ratescore` | `{f1-score, sample_scores, hyps_pairs, refs_pairs}` |
+| Details | `ratescore` | same as default |
 
 ```python
 evaluator = RadEval(do_ratescore=True)
@@ -169,7 +175,7 @@ Use `do_radgraph` for the standard metric. Use `do_radgraph_radcliq` when you ne
 |------|-----------|-------|
 | Default | `radgraph_radcliq` | float (mean score) |
 | Per-Sample | `radgraph_radcliq` | list[float] |
-| Details | `radgraph_radcliq` | `{mean_score, sample_scores}` |
+| Details | `radgraph_radcliq` | same as default |
 
 ```python
 evaluator = RadEval(do_radgraph_radcliq=True)
@@ -185,7 +191,7 @@ Composite metric that combines BERTScore (with IDF), RadGraph, semantic embeddin
 |------|-----------|-------|
 | Default | `radcliq_v1` | float |
 | Per-Sample | `radcliq_v1` | list[float] |
-| Details | `radcliq_v1` | `{mean_score, sample_scores}` |
+| Details | `radcliq_v1` | same as default |
 
 ```python
 evaluator = RadEval(do_radcliq=True)
@@ -201,7 +207,7 @@ Structured Radiology Report evaluation. Parses each report into sentences, class
 |------|------------|-------|
 | Default | `srrbert_weighted_f1`, `srrbert_weighted_precision`, `srrbert_weighted_recall` | float |
 | Per-Sample | `srrbert_weighted_f1`, `srrbert_weighted_precision`, `srrbert_weighted_recall` | list[float] each |
-| Details | `srrbert` | `{srrbert_weighted_f1: {weighted_mean_score, sample_scores}, ..., label_scores}` |
+| Details | default keys + `srrbert_label_scores` | adds per-label P/R/F1 dict |
 
 ```python
 evaluator = RadEval(do_srrbert=True)
@@ -219,7 +225,7 @@ Extracts temporal entities (e.g. "stable", "worsening", "new") via Stanza NER an
 |------|-----------|-------|
 | Default | `temporal_f1` | float |
 | Per-Sample | `temporal_f1` | list[float] |
-| Details | `temporal_f1` | `{f1-score, sample_scores, hyps_entities, refs_entities}` |
+| Details | `temporal_f1` | same as default |
 
 ```python
 evaluator = RadEval(do_temporal=True)
@@ -231,11 +237,11 @@ print(results["temporal_f1"])  # 0.5
 
 LLM-based evaluation using [GREEN-radllama2-7B](https://huggingface.co/StanfordAIMI/GREEN-radllama2-7b). The model generates a natural language comparison, from which a score is extracted. Supports multi-GPU inference.
 
-| Mode | Output key | Value |
-|------|-----------|-------|
+| Mode | Output keys | Value |
+|------|------------|-------|
 | Default | `green` | float (mean score) |
 | Per-Sample | `green` | list[float] |
-| Details | `green` | `{mean, std, sample_scores}` |
+| Details | `green`, `green_std` | adds standard deviation |
 
 ```python
 # Set CUDA_VISIBLE_DEVICES for multi-GPU inference
@@ -250,11 +256,11 @@ Mammography-specific LLM-as-judge metric. Calls an OpenAI or Gemini model to cou
 
 Requires `pip install RadEval[api]` and an API key (`mammo_green_api_key` or `OPENAI_API_KEY` / `GOOGLE_API_KEY` env var).
 
-| Mode | Output key | Value |
-|------|-----------|-------|
+| Mode | Output keys | Value |
+|------|------------|-------|
 | Default | `mammo_green` | float (mean score) |
 | Per-Sample | `mammo_green` | list[float] |
-| Details | `mammo_green` | `{mean, std, sample_scores, error_counts}` |
+| Details | `mammo_green`, `mammo_green_std` | adds standard deviation |
 
 ```python
 # OpenAI (default: gpt-4o-mini)
@@ -281,11 +287,11 @@ Supports two backends:
 
 Requires `torch` + `transformers` for HuggingFace, or `pip install RadEval[api]` for OpenAI.
 
-| Mode | Output key | Value |
-|------|-----------|-------|
+| Mode | Output keys | Value |
+|------|------------|-------|
 | Default | `crimson` | float (mean CRIMSON score, range [-1, 1]) |
 | Per-Sample | `crimson` | list[float] |
-| Details | `crimson` | `{mean, std, sample_scores, error_counts}` |
+| Details | `crimson`, `crimson_std` | adds standard deviation |
 
 ```python
 # HuggingFace MedGemma (default, as in the original paper, runs locally on GPU)
@@ -316,7 +322,7 @@ Requires `pip install RadEval[api]` and `OPENAI_API_KEY`. Uses `gpt-4o-mini` by 
 |------|------------|-------|
 | Default | `radfact_ct_precision`, `radfact_ct_recall`, `radfact_ct_f1` | float (percentages) |
 | Per-Sample | `radfact_ct_precision`, `radfact_ct_recall`, `radfact_ct_f1` | list[float] each |
-| Details | `radfact_ct` | `{logical_precision, logical_recall, logical_f1, per_sample}` |
+| Details | `radfact_ct_precision`, `radfact_ct_recall`, `radfact_ct_f1` | same as default |
 
 ```python
 # RadFact +/- (default)
