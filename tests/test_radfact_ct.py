@@ -64,7 +64,7 @@ class TestRadFactCTIntegration:
 
     def test_cynthia_csv_radfact_plus_minus(self, scorer):
         """Validate against expected values from RadFact authors (3-sample CSV)."""
-        rows = _load_csv("tests/fixtures/radfact_ct_cynthia.csv")
+        rows = _load_csv("tests/fixtures/radfact_ct_microsoft_original.csv")
         hyps = [r["prediction"] for r in rows]
         refs = [r["target"] for r in rows]
         agg, _ = scorer(hyps, refs)
@@ -74,7 +74,7 @@ class TestRadFactCTIntegration:
 
     def test_cynthia_csv_radfact_plus(self, scorer_filter):
         """Validate RadFact+ against expected values."""
-        rows = _load_csv("tests/fixtures/radfact_ct_cynthia.csv")
+        rows = _load_csv("tests/fixtures/radfact_ct_microsoft_original.csv")
         hyps = [r["prediction"] for r in rows]
         refs = [r["target"] for r in rows]
         agg, _ = scorer_filter(hyps, refs)

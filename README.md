@@ -84,6 +84,7 @@ pip install -e '.[api]'
 | | Temporal F1 | `do_temporal` | Temporal consistency |
 | | GREEN | `do_green` | LLM-based overall quality (7B model) |
 | | MammoGREEN | `do_mammo_green` | Mammography-specific LLM scoring |
+| | RadFact-CT | `do_radfact_ct` | LLM-based factual precision/recall for CT |
 
 Enable only the metrics you need -- each one is loaded lazily.
 

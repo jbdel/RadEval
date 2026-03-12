@@ -100,8 +100,8 @@ Entity-aware metric that extracts medical entities via NER, computes synonym-awa
 
 The RadGraph sub-score as computed in the RadCliQ-v1 pipeline. Unlike the official `F1RadGraph` metric (`do_radgraph`), which uses `radgraph-xl` and entity-matching at three reward levels, this metric:
 
-- Uses the original `radgraph` model (the one RadCliQ-v1 was trained with)
-- Extracts entity **and relation** sets from each report
+- Uses the original `radgraph` model
+- Extracts entity and relation sets from each report
 - Computes per-pair `(entity_f1 + relation_f1) / 2`
 - Returns per-sample scores
 
@@ -158,3 +158,18 @@ Requires `pip install RadEval[api]` and an API key (`mammo_green_api_key` or `OP
 |------|-----------|-------|
 | Default | `mammo_green` | float (mean score) |
 | Details | `mammo_green` | `{mean, std, sample_scores, error_counts}` |
+
+### RadFact-CT (`do_radfact_ct`)
+
+LLM-based factual evaluation for CT reports, ported from [microsoft/RadFact](https://github.com/microsoft/RadFact). Splits reports into atomic phrases, then runs bidirectional entailment verification (is each candidate phrase supported by the reference, and vice versa).
+
+Two modes:
+- **RadFact +/-** (default): evaluates all phrases including negatives ("no pneumothorax")
+- **RadFact +** (`radfact_ct_filter_negatives=True`): filters out negative/normal findings first
+
+Requires `pip install RadEval[api]` and `OPENAI_API_KEY`. Uses `gpt-4o-mini` by default.
+
+| Mode | Output keys | Value |
+|------|------------|-------|
+| Default | `radfact_ct_precision`, `radfact_ct_recall`, `radfact_ct_f1` | float (percentages) |
+| Details | `radfact_ct` | `{logical_precision, logical_recall, logical_f1, per_sample}` |

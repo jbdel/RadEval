@@ -22,6 +22,10 @@
 | `do_radcliq` | bool | `False` | RadCliQ-v1 composite metric |
 | `do_radeval_bertscore` | bool | `False` | RadEval BERTScore (domain-adapted ModernBERT) |
 | `do_temporal` | bool | `False` | Temporal entity F1 |
+| `do_radfact_ct` | bool | `False` | RadFact-CT LLM-based factual evaluation (requires API key) |
+| `radfact_ct_model` | str | `"gpt-4o-mini"` | LLM model for RadFact-CT |
+| `radfact_ct_api_key` | str / None | `None` | API key for RadFact-CT (falls back to `OPENAI_API_KEY`) |
+| `radfact_ct_filter_negatives` | bool | `False` | RadFact+ mode: filter negative findings before scoring |
 | `do_details` | bool | `False` | Return per-sample scores, label breakdowns, entity annotations |
 | `show_progress` | bool | `True` | Display rich progress bars during scoring |
 

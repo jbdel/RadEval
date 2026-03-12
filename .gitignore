@@ -30,4 +30,4 @@ pypi
 run_main.py
 inspect_eval_json.py
 pred_ref_*.json
-pred_ref_*.jsonl
+pred_ref_*.jsonlfindings_generation_examples.csv

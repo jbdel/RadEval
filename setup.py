@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='RadEval',
-    version='0.1.1',
+    version='0.1.2',
     author='Jean-Benoit Delbrouck, Justin Xu, Xi Zhang',
     maintainer='Xi Zhang, JB Delbrouck',
     url='https://github.com/jbdel/RadEval',
@@ -53,6 +53,7 @@ setup(
         'accelerate>=0.30',
         'pandas',
         'rich',
+        'pyyaml',
         'appdirs',
         'huggingface_hub',
     ],
