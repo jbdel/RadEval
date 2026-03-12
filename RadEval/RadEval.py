@@ -33,6 +33,11 @@ class RadEval():
                  radfact_ct_model="gpt-4o-mini",
                  radfact_ct_api_key=None,
                  radfact_ct_filter_negatives=False,
+                 do_crimson=False,
+                 crimson_api="openai",
+                 crimson_api_key=None,
+                 crimson_model=None,
+                 crimson_batch_size=1,
                  do_details=False,
                  show_progress=True,
                  ):
@@ -63,6 +68,11 @@ class RadEval():
         self.radfact_ct_model = radfact_ct_model
         self.radfact_ct_api_key = radfact_ct_api_key
         self.radfact_ct_filter_negatives = radfact_ct_filter_negatives
+        self.do_crimson = do_crimson
+        self.crimson_api = crimson_api
+        self.crimson_api_key = crimson_api_key
+        self.crimson_model = crimson_model
+        self.crimson_batch_size = crimson_batch_size
         self.do_radeval_bertscore = do_radeval_bertscore
         self.do_details = do_details
         self.show_progress = show_progress
@@ -173,6 +183,22 @@ class RadEval():
                     f"RadFactCT unavailable ({e}); disabling do_radfact_ct.")
                 self.do_radfact_ct = False
 
+        if self.do_crimson:
+            try:
+                from .metrics.crimson import CRIMSON
+                if CRIMSON is None:
+                    raise ImportError("CRIMSON is not available")
+                self.crimson_scorer = CRIMSON(
+                    api=self.crimson_api,
+                    model_name=self.crimson_model,
+                    api_key=self.crimson_api_key,
+                    batch_size=self.crimson_batch_size,
+                )
+            except (ImportError, EnvironmentError, OSError) as e:
+                warnings.warn(
+                    f"CRIMSON unavailable ({e}); disabling do_crimson.")
+                self.do_crimson = False
+
         if self.do_radeval_bertscore:
             from .metrics.radevalbertscore import RadEvalBERTScorer
             self.radeval_bertscore = RadEvalBERTScorer(
@@ -237,6 +263,8 @@ class RadEval():
         if self.do_radfact_ct:
             self.metric_keys.extend([
                 "radfact_ct_precision", "radfact_ct_recall", "radfact_ct_f1"])
+        if self.do_crimson:
+            self.metric_keys.append("crimson")
         if self.do_radeval_bertscore:
             self.metric_keys.append("radeval_bertscore")
 
@@ -319,6 +347,7 @@ class RadEval():
         if self.do_radcliq:         enabled.append("RadCliQ-v1")
         if self.do_temporal:        enabled.append("Temporal F1")
         if self.do_radfact_ct:      enabled.append("RadFact-CT")
+        if self.do_crimson:         enabled.append("CRIMSON")
         if self.do_radeval_bertscore: enabled.append("RadEval-BERTScore")
 
         with self._make_progress() as progress:
@@ -693,6 +722,33 @@ class RadEval():
                     scores["radfact_ct_precision"] = radfact_agg["logical_precision"]
                     scores["radfact_ct_recall"] = radfact_agg["logical_recall"]
                     scores["radfact_ct_f1"] = radfact_agg["logical_f1"]
+                progress.advance(metric_task)
+
+            # ----------------------------------------------------------
+            if self.do_crimson:
+                progress.update(metric_task, description="Computing CRIMSON")
+                sample_task = progress.add_task(
+                    "  [dim]Samples", total=n_samples)
+                mean, std, sample_scores, results_df = self.crimson_scorer(
+                    refs, hyps,
+                    on_sample_done=lambda: progress.advance(sample_task))
+                progress.remove_task(sample_task)
+                if self.do_details:
+                    scores["crimson"] = {
+                        "mean": mean,
+                        "std": std,
+                        "sample_scores": sample_scores,
+                        "error_counts": results_df[[
+                            "false_findings", "missing_findings",
+                            "attribute_errors", "location_errors",
+                            "severity_errors", "descriptor_errors",
+                            "measurement_errors", "certainty_errors",
+                            "unspecific_errors", "overinterpretation_errors",
+                            "temporal_errors",
+                        ]].to_dict(orient="records"),
+                    }
+                else:
+                    scores["crimson"] = round(mean, 4)
                 progress.advance(metric_task)
 
             # ----------------------------------------------------------

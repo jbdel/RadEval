@@ -159,6 +159,21 @@ Requires `pip install RadEval[api]` and an API key (`mammo_green_api_key` or `OP
 | Default | `mammo_green` | float (mean score) |
 | Details | `mammo_green` | `{mean, std, sample_scores, error_counts}` |
 
+### CRIMSON (`do_crimson`)
+
+LLM-based clinical radiology report scoring from the [Rajpurkar Lab](https://github.com/rajpurkarlab/CRIMSON). Evaluates report quality by comparing predicted findings against reference findings, identifying errors (false findings, missing findings, attribute errors) and weighting them by clinical significance.
+
+Supports two backends:
+- **OpenAI** (`crimson_api="openai"`): uses `gpt-5.2` by default
+- **HuggingFace** (`crimson_api="hf"`): uses [MedGemma-CRIMSON](https://huggingface.co/CRIMSONScore/medgemma-4b-it-crimson) locally
+
+Requires `pip install RadEval[api]` for OpenAI, or `torch` + `transformers` for HuggingFace.
+
+| Mode | Output key | Value |
+|------|-----------|-------|
+| Default | `crimson` | float (mean CRIMSON score, range [-1, 1]) |
+| Details | `crimson` | `{mean, std, sample_scores, error_counts}` |
+
 ### RadFact-CT (`do_radfact_ct`)
 
 LLM-based factual evaluation for CT reports, ported from [microsoft/RadFact](https://github.com/microsoft/RadFact). Splits reports into atomic phrases, then runs bidirectional entailment verification (is each candidate phrase supported by the reference, and vice versa).

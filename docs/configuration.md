@@ -23,6 +23,11 @@
 | `do_radeval_bertscore` | bool | `False` | RadEval BERTScore (domain-adapted ModernBERT) |
 | `do_temporal` | bool | `False` | Temporal entity F1 |
 | `do_radfact_ct` | bool | `False` | RadFact-CT LLM-based factual evaluation (requires API key) |
+| `do_crimson` | bool | `False` | CRIMSON clinical significance scoring |
+| `crimson_api` | str | `"openai"` | Backend: `"openai"` or `"hf"` (HuggingFace MedGemma) |
+| `crimson_api_key` | str / None | `None` | API key for OpenAI backend (falls back to `OPENAI_API_KEY`) |
+| `crimson_model` | str / None | `None` | Override model name (defaults per backend) |
+| `crimson_batch_size` | int | `1` | Batch size for HuggingFace inference |
 | `radfact_ct_model` | str | `"gpt-4o-mini"` | LLM model for RadFact-CT |
 | `radfact_ct_api_key` | str / None | `None` | API key for RadFact-CT (falls back to `OPENAI_API_KEY`) |
 | `radfact_ct_filter_negatives` | bool | `False` | RadFact+ mode: filter negative findings before scoring |

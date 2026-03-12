@@ -85,6 +85,7 @@ pip install -e '.[api]'
 | | GREEN | `do_green` | LLM-based overall quality (7B model) |
 | | MammoGREEN | `do_mammo_green` | Mammography-specific LLM scoring |
 | | RadFact-CT | `do_radfact_ct` | LLM-based factual precision/recall for CT |
+| | CRIMSON | `do_crimson` | LLM-based clinical significance scoring |
 
 Enable only the metrics you need -- each one is loaded lazily.
 
