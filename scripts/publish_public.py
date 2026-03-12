@@ -126,11 +126,12 @@ def main():
         for metric in PRIVATE_METRICS:
             strip_private_metric(dest, metric)
 
-        # Also remove this script itself from the public repo
-        scripts_dir = dest / "scripts"
-        if scripts_dir.exists():
-            shutil.rmtree(scripts_dir)
-            print("  Removed scripts/")
+        # Remove private/internal directories from the public repo
+        for private_dir in ["scripts", ".cursor"]:
+            d = dest / private_dir
+            if d.exists():
+                shutil.rmtree(d)
+                print(f"  Removed {private_dir}/")
 
         # Commit the stripping
         run("git add -A", cwd=dest)
