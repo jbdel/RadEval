@@ -1,0 +1,4 @@
+example_id,prediction,target
+0,The heart is normal in size. A few millimetric nonspecific nodules are observed in the upper lobe of the right lung., Cardiac size is within normal limits. A few millimetric nonspecific lung nodules are observed in the right upper lobe.
+1,There is a 5 mm nodule in the right upper lobe. No pleural effusion is present., There is a 2mm nodule in the left lower lobe. No pleural effusion is present.
+2,There is a focal area of consolidation in the right lower lobe. No pleural effusion is present.,A focal right lower lobe consolidation is present.

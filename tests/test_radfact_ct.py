@@ -15,6 +15,12 @@ if RadFactCT is None:
     pytest.skip("RadFactCT not available", allow_module_level=True)
 
 
+def _load_csv(path):
+    import csv
+    with open(path) as f:
+        return list(csv.DictReader(f))
+
+
 class TestRadFactCTUnit:
     """Unit tests that don't require an API key."""
 
@@ -55,6 +61,26 @@ class TestRadFactCTIntegration:
         if not _HAS_API_KEY:
             pytest.skip("No OPENAI_API_KEY")
         return RadFactCT(model_name="gpt-4o-mini", filter_negatives=True)
+
+    def test_cynthia_csv_radfact_plus_minus(self, scorer):
+        """Validate against expected values from RadFact authors (3-sample CSV)."""
+        rows = _load_csv("tests/fixtures/radfact_ct_cynthia.csv")
+        hyps = [r["prediction"] for r in rows]
+        refs = [r["target"] for r in rows]
+        agg, _ = scorer(hyps, refs)
+        assert agg["logical_precision"] == pytest.approx(66.67, abs=5)
+        assert agg["logical_recall"] == pytest.approx(83.33, abs=5)
+        assert agg["logical_f1"] == pytest.approx(74.07, abs=5)
+
+    def test_cynthia_csv_radfact_plus(self, scorer_filter):
+        """Validate RadFact+ against expected values."""
+        rows = _load_csv("tests/fixtures/radfact_ct_cynthia.csv")
+        hyps = [r["prediction"] for r in rows]
+        refs = [r["target"] for r in rows]
+        agg, _ = scorer_filter(hyps, refs)
+        assert agg["logical_precision"] == pytest.approx(66.67, abs=5)
+        assert agg["logical_recall"] == pytest.approx(66.67, abs=5)
+        assert agg["logical_f1"] == pytest.approx(66.67, abs=5)
 
     def test_identical_reports(self, scorer):
         """Identical ref/hyp should yield perfect scores."""
