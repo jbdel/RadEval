@@ -34,7 +34,7 @@ class RadEval():
                  radfact_ct_api_key=None,
                  radfact_ct_filter_negatives=False,
                  do_crimson=False,
-                 crimson_api="openai",
+                 crimson_api="hf",
                  crimson_api_key=None,
                  crimson_model=None,
                  crimson_batch_size=1,
