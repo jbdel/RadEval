@@ -45,6 +45,35 @@ class TestRadFactCTUnit:
         with pytest.raises(ValueError):
             scorer(["hyp1", "hyp2"], ["ref"])
 
+    def test_cost_tracker(self):
+        from RadEval.metrics.radfact_ct.radfact_ct import CostTracker
+        ct = CostTracker("gpt-4o-mini")
+        assert ct.cost == 0.0
+        ct.add(1_000_000, 0)
+        assert ct.cost == pytest.approx(0.15)
+        ct.add(0, 1_000_000)
+        assert ct.cost == pytest.approx(0.75)
+        ct.reset()
+        assert ct.cost == 0.0
+
+    def test_cost_tracker_unknown_model(self):
+        from RadEval.metrics.radfact_ct.radfact_ct import CostTracker
+        ct = CostTracker("unknown-model")
+        ct.add(1_000_000, 1_000_000)
+        assert ct.cost == pytest.approx(0.75)
+
+    def test_max_concurrent_default(self):
+        if not _HAS_API_KEY:
+            pytest.skip("No API key")
+        scorer = RadFactCT()
+        assert scorer.max_concurrent == 50
+
+    def test_max_concurrent_custom(self):
+        if not _HAS_API_KEY:
+            pytest.skip("No API key")
+        scorer = RadFactCT(max_concurrent=5)
+        assert scorer.max_concurrent == 5
+
 
 @pytest.mark.integration
 class TestRadFactCTIntegration:

@@ -33,6 +33,7 @@ class RadEval():
                  radfact_ct_model="gpt-4o-mini",
                  radfact_ct_api_key=None,
                  radfact_ct_filter_negatives=False,
+                 radfact_ct_max_concurrent=50,
                  do_crimson=False,
                  crimson_api="hf",
                  crimson_api_key=None,
@@ -69,6 +70,7 @@ class RadEval():
         self.radfact_ct_model = radfact_ct_model
         self.radfact_ct_api_key = radfact_ct_api_key
         self.radfact_ct_filter_negatives = radfact_ct_filter_negatives
+        self.radfact_ct_max_concurrent = radfact_ct_max_concurrent
         self.do_crimson = do_crimson
         self.crimson_api = crimson_api
         self.crimson_api_key = crimson_api_key
@@ -179,6 +181,7 @@ class RadEval():
                     model_name=self.radfact_ct_model,
                     api_key=self.radfact_ct_api_key,
                     filter_negatives=self.radfact_ct_filter_negatives,
+                    max_concurrent=self.radfact_ct_max_concurrent,
                 )
             except (ImportError, EnvironmentError) as e:
                 warnings.warn(
@@ -673,9 +676,17 @@ class RadEval():
                 progress.update(metric_task, description="Computing RadFact-CT")
                 sample_task = progress.add_task(
                     "  [dim]Samples", total=n_samples)
+                cost = self.radfact_ct_scorer.cost_tracker
+
+                def _radfact_sample_done():
+                    progress.advance(sample_task)
+                    progress.update(sample_task,
+                                    description=f"  [dim]Samples (${cost.cost:.2f})")
+
                 radfact_agg, radfact_per_sample = self.radfact_ct_scorer(
-                    hyps, refs,
-                    on_sample_done=lambda: progress.advance(sample_task))
+                    hyps, refs, on_sample_done=_radfact_sample_done)
+                progress.update(sample_task,
+                                description=f"  [dim]Samples (${cost.cost:.2f})")
                 progress.remove_task(sample_task)
                 if self.do_details:
                     scores["radfact_ct_precision"] = radfact_agg["logical_precision"]
