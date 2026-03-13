@@ -9,7 +9,7 @@ import json
 
 def main():
 
-    path = ""
+    path = "/fss/jb/vlm/ckpt/ctc_rrg_ctc_internal_v1_22_qformer_tuned_overfit_guard_true_290/predictions/pred_ref_epoch46_seed518596_val.jsonl"
     prediction_filename = path.split("/")[-1].split(".")[0] + ".json"
     print(prediction_filename)
 
@@ -25,12 +25,12 @@ def main():
     print(len(preds), len(gts))
 
     evaluator = RadEval(
-        do_rouge=True,
-        do_bleu=True,
-        do_bertscore=True,
-        do_f1radbert_ct=True,
-        do_f1hopprchexbert_ct=True,
-        do_radeval_bertscore=True,
+        # do_rouge=True,
+        # do_bleu=True,
+        # do_bertscore=True,
+        # do_f1radbert_ct=True,
+        # do_f1hopprchexbert_ct=True,
+        # do_radeval_bertscore=True,
         do_radfact_ct=True,
         do_details=True,
     )

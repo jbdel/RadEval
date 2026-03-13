@@ -6,26 +6,72 @@ Ported from microsoft/RadFact (MIT License). Implements the core pipeline:
   3. Bidirectional NLI — for each phrase, check entailment against the other report
   4. Scoring — logical precision/recall/F1
 
+Supports async concurrent evaluation with cost tracking.
 Requires an OpenAI-compatible API key.
 """
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os
+import random
+import threading
 import warnings
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import yaml
-from openai import OpenAI
+from openai import AsyncOpenAI, OpenAI
+
+MAX_RETRIES = 6
+RETRY_BASE_DELAY = 1.0
+RETRY_MAX_DELAY = 60.0
 
 logger = logging.getLogger(__name__)
 
 _PROMPTS_DIR = Path(__file__).parent / "prompts" / "ct"
 
 # ---------------------------------------------------------------------------
-# LLM helpers
+# Cost tracking
+# ---------------------------------------------------------------------------
+
+PRICING_PER_1M = {
+    "gpt-4o-mini":  (0.15, 0.60),
+    "gpt-4.1-mini": (0.40, 1.60),
+    "gpt-4.1-nano": (0.10, 0.40),
+}
+
+
+class CostTracker:
+    """Thread-safe accumulator for OpenAI API token usage and cost."""
+
+    def __init__(self, model: str):
+        self._lock = threading.Lock()
+        self.input_tokens = 0
+        self.output_tokens = 0
+        per_m = PRICING_PER_1M.get(model, (0.15, 0.60))
+        self._input_rate = per_m[0] / 1_000_000
+        self._output_rate = per_m[1] / 1_000_000
+
+    def add(self, input_tok: int, output_tok: int):
+        with self._lock:
+            self.input_tokens += input_tok
+            self.output_tokens += output_tok
+
+    @property
+    def cost(self) -> float:
+        return (self.input_tokens * self._input_rate
+                + self.output_tokens * self._output_rate)
+
+    def reset(self):
+        with self._lock:
+            self.input_tokens = 0
+            self.output_tokens = 0
+
+
+# ---------------------------------------------------------------------------
+# LLM helpers (sync + async)
 # ---------------------------------------------------------------------------
 
 def _build_messages(
@@ -43,11 +89,45 @@ def _build_messages(
 
 def _call_llm(
     client: OpenAI, model: str, messages: list[dict], temperature: float = 0.0,
+    cost_tracker: Optional[CostTracker] = None,
 ) -> str:
     resp = client.chat.completions.create(
         model=model, messages=messages, temperature=temperature,
     )
+    if cost_tracker and resp.usage:
+        cost_tracker.add(resp.usage.prompt_tokens, resp.usage.completion_tokens)
     return resp.choices[0].message.content or ""
+
+
+async def _call_llm_async(
+    client: AsyncOpenAI, model: str, messages: list[dict],
+    temperature: float = 0.0,
+    cost_tracker: Optional[CostTracker] = None,
+) -> str:
+    """Async LLM call with exponential backoff + jitter on rate-limit errors."""
+    for attempt in range(MAX_RETRIES):
+        try:
+            resp = await client.chat.completions.create(
+                model=model, messages=messages, temperature=temperature,
+            )
+            if cost_tracker and resp.usage:
+                cost_tracker.add(resp.usage.prompt_tokens,
+                                 resp.usage.completion_tokens)
+            return resp.choices[0].message.content or ""
+        except Exception as e:
+            err_str = str(e).lower()
+            is_retryable = ("rate" in err_str or "429" in err_str
+                            or "timeout" in err_str or "overloaded" in err_str
+                            or "server" in err_str or "500" in err_str
+                            or "502" in err_str or "503" in err_str)
+            if not is_retryable or attempt == MAX_RETRIES - 1:
+                raise
+            delay = min(RETRY_BASE_DELAY * (2 ** attempt), RETRY_MAX_DELAY)
+            delay *= 0.5 + random.random()
+            logger.warning(
+                f"LLM call failed (attempt {attempt + 1}/{MAX_RETRIES}), "
+                f"retrying in {delay:.1f}s: {e}")
+            await asyncio.sleep(delay)
 
 
 # ---------------------------------------------------------------------------
@@ -95,10 +175,21 @@ def _parse_phrases_from_response(text: str) -> list[str]:
 
 def report_to_phrases(
     client: OpenAI, model: str, text: str, temperature: float,
+    cost_tracker: Optional[CostTracker] = None,
 ) -> list[str]:
     system, pairs = _load_report_to_phrases_prompts()
     msgs = _build_messages(system, pairs, text)
-    raw = _call_llm(client, model, msgs, temperature)
+    raw = _call_llm(client, model, msgs, temperature, cost_tracker)
+    return _parse_phrases_from_response(raw)
+
+
+async def report_to_phrases_async(
+    client: AsyncOpenAI, model: str, text: str, temperature: float,
+    cost_tracker: Optional[CostTracker] = None,
+) -> list[str]:
+    system, pairs = _load_report_to_phrases_prompts()
+    msgs = _build_messages(system, pairs, text)
+    raw = await _call_llm_async(client, model, msgs, temperature, cost_tracker)
     return _parse_phrases_from_response(raw)
 
 
@@ -123,14 +214,7 @@ def _load_negative_filtering_prompts() -> tuple[str, list[tuple[str, str]]]:
     return system, pairs
 
 
-def filter_negatives(
-    client: OpenAI, model: str, phrases: list[str], temperature: float,
-) -> list[str]:
-    if not phrases:
-        return []
-    system, pairs = _load_negative_filtering_prompts()
-    msgs = _build_messages(system, pairs, json.dumps(phrases))
-    raw = _call_llm(client, model, msgs, temperature)
+def _parse_negatives_response(raw: str, original_phrases: list[str]) -> list[str]:
     try:
         data = json.loads(raw)
     except json.JSONDecodeError:
@@ -140,8 +224,32 @@ def filter_negatives(
             data = json.loads(raw[start:end])
         else:
             logger.warning("Failed to parse negative filtering response")
-            return phrases
-    return data.get("phrases", phrases)
+            return original_phrases
+    return data.get("phrases", original_phrases)
+
+
+def filter_negatives(
+    client: OpenAI, model: str, phrases: list[str], temperature: float,
+    cost_tracker: Optional[CostTracker] = None,
+) -> list[str]:
+    if not phrases:
+        return []
+    system, pairs = _load_negative_filtering_prompts()
+    msgs = _build_messages(system, pairs, json.dumps(phrases))
+    raw = _call_llm(client, model, msgs, temperature, cost_tracker)
+    return _parse_negatives_response(raw, phrases)
+
+
+async def filter_negatives_async(
+    client: AsyncOpenAI, model: str, phrases: list[str], temperature: float,
+    cost_tracker: Optional[CostTracker] = None,
+) -> list[str]:
+    if not phrases:
+        return []
+    system, pairs = _load_negative_filtering_prompts()
+    msgs = _build_messages(system, pairs, json.dumps(phrases))
+    raw = await _call_llm_async(client, model, msgs, temperature, cost_tracker)
+    return _parse_negatives_response(raw, phrases)
 
 
 # ---------------------------------------------------------------------------
@@ -190,20 +298,7 @@ def _load_nli_prompts() -> tuple[str, list[tuple[str, str]]]:
     return system, pairs
 
 
-def _classify_single_phrase(
-    client: OpenAI, model: str,
-    reference_phrases: list[str], hypothesis: str,
-    system: str, pairs: list[tuple[str, str]],
-    temperature: float,
-) -> dict:
-    """Classify one hypothesis phrase against reference phrases."""
-    query = yaml.dump(
-        {"reference": reference_phrases, "hypothesis": hypothesis},
-        sort_keys=False,
-    )
-    msgs = _build_messages(system, pairs, query)
-    raw = _call_llm(client, model, msgs, temperature)
-
+def _parse_nli_response(raw: str, hypothesis: str) -> dict:
     try:
         result = yaml.safe_load(raw)
         if not isinstance(result, dict):
@@ -223,12 +318,46 @@ def _classify_single_phrase(
     }
 
 
+def _classify_single_phrase(
+    client: OpenAI, model: str,
+    reference_phrases: list[str], hypothesis: str,
+    system: str, pairs: list[tuple[str, str]],
+    temperature: float,
+    cost_tracker: Optional[CostTracker] = None,
+) -> dict:
+    """Classify one hypothesis phrase against reference phrases."""
+    query = yaml.dump(
+        {"reference": reference_phrases, "hypothesis": hypothesis},
+        sort_keys=False,
+    )
+    msgs = _build_messages(system, pairs, query)
+    raw = _call_llm(client, model, msgs, temperature, cost_tracker)
+    return _parse_nli_response(raw, hypothesis)
+
+
+async def _classify_single_phrase_async(
+    client: AsyncOpenAI, model: str,
+    reference_phrases: list[str], hypothesis: str,
+    system: str, pairs: list[tuple[str, str]],
+    temperature: float,
+    cost_tracker: Optional[CostTracker] = None,
+) -> dict:
+    query = yaml.dump(
+        {"reference": reference_phrases, "hypothesis": hypothesis},
+        sort_keys=False,
+    )
+    msgs = _build_messages(system, pairs, query)
+    raw = await _call_llm_async(client, model, msgs, temperature, cost_tracker)
+    return _parse_nli_response(raw, hypothesis)
+
+
 def bidirectional_nli(
     client: OpenAI, model: str,
     candidate_phrases: list[str],
     reference_phrases: list[str],
     temperature: float,
     on_phrase_done=None,
+    cost_tracker: Optional[CostTracker] = None,
 ) -> tuple[list[dict], list[dict]]:
     """Run entailment verification in both directions."""
     system, pairs = _load_nli_prompts()
@@ -236,7 +365,8 @@ def bidirectional_nli(
     candidate_evidenced = []
     for phrase in candidate_phrases:
         result = _classify_single_phrase(
-            client, model, reference_phrases, phrase, system, pairs, temperature)
+            client, model, reference_phrases, phrase, system, pairs,
+            temperature, cost_tracker)
         candidate_evidenced.append(result)
         if on_phrase_done:
             on_phrase_done()
@@ -244,11 +374,42 @@ def bidirectional_nli(
     reference_evidenced = []
     for phrase in reference_phrases:
         result = _classify_single_phrase(
-            client, model, candidate_phrases, phrase, system, pairs, temperature)
+            client, model, candidate_phrases, phrase, system, pairs,
+            temperature, cost_tracker)
         reference_evidenced.append(result)
         if on_phrase_done:
             on_phrase_done()
 
+    return candidate_evidenced, reference_evidenced
+
+
+async def bidirectional_nli_async(
+    client: AsyncOpenAI, model: str,
+    candidate_phrases: list[str],
+    reference_phrases: list[str],
+    temperature: float,
+    cost_tracker: Optional[CostTracker] = None,
+) -> tuple[list[dict], list[dict]]:
+    """Run entailment verification in both directions, all phrases concurrently."""
+    system, pairs = _load_nli_prompts()
+
+    cand_tasks = [
+        _classify_single_phrase_async(
+            client, model, reference_phrases, phrase, system, pairs,
+            temperature, cost_tracker)
+        for phrase in candidate_phrases
+    ]
+    ref_tasks = [
+        _classify_single_phrase_async(
+            client, model, candidate_phrases, phrase, system, pairs,
+            temperature, cost_tracker)
+        for phrase in reference_phrases
+    ]
+
+    all_results = await asyncio.gather(*cand_tasks, *ref_tasks)
+    n_cand = len(candidate_phrases)
+    candidate_evidenced = list(all_results[:n_cand])
+    reference_evidenced = list(all_results[n_cand:])
     return candidate_evidenced, reference_evidenced
 
 
@@ -288,6 +449,7 @@ class RadFactCT:
     """RadFact-CT: LLM-based factual evaluation for CT radiology reports.
 
     Implements both RadFact +/- (default) and RadFact + (filter_negatives=True).
+    Supports async concurrent evaluation via max_concurrent parameter.
     """
 
     def __init__(
@@ -296,6 +458,7 @@ class RadFactCT:
         api_key: Optional[str] = None,
         temperature: float = 0.0,
         filter_negatives: bool = False,
+        max_concurrent: int = 50,
     ):
         key = api_key or os.environ.get("OPENAI_API_KEY")
         if not key:
@@ -303,23 +466,38 @@ class RadFactCT:
                 "No API key provided. Set OPENAI_API_KEY or pass api_key=."
             )
         self.client = OpenAI(api_key=key)
+        self._api_key = key
         self.model_name = model_name
         self.temperature = temperature
         self.filter_negatives = filter_negatives
+        self.max_concurrent = max_concurrent
+        self.cost_tracker = CostTracker(model_name)
 
     def _process_report(self, text: str) -> list[str]:
-        """Convert narrative text → atomic phrases, optionally filtering negatives."""
+        """Convert narrative text -> atomic phrases, optionally filtering negatives."""
         phrases = report_to_phrases(
-            self.client, self.model_name, text, self.temperature)
+            self.client, self.model_name, text, self.temperature,
+            self.cost_tracker)
         if self.filter_negatives and phrases:
             phrases = filter_negatives(
-                self.client, self.model_name, phrases, self.temperature)
+                self.client, self.model_name, phrases, self.temperature,
+                self.cost_tracker)
+        return phrases
+
+    async def _process_report_async(self, aclient: AsyncOpenAI, text: str) -> list[str]:
+        phrases = await report_to_phrases_async(
+            aclient, self.model_name, text, self.temperature,
+            self.cost_tracker)
+        if self.filter_negatives and phrases:
+            phrases = await filter_negatives_async(
+                aclient, self.model_name, phrases, self.temperature,
+                self.cost_tracker)
         return phrases
 
     def score_pair(
         self, hyp: str, ref: str, on_phrase_done=None,
     ) -> dict[str, Any]:
-        """Score a single hypothesis/reference pair. Returns per-pair scores + details."""
+        """Score a single hypothesis/reference pair (sync). Returns per-pair scores."""
         hyp_phrases = self._process_report(hyp)
         ref_phrases = self._process_report(ref)
 
@@ -337,6 +515,39 @@ class RadFactCT:
             hyp_phrases, ref_phrases,
             self.temperature,
             on_phrase_done=on_phrase_done,
+            cost_tracker=self.cost_tracker,
+        )
+
+        scores = compute_radfact_scores(hyp_evidenced, ref_evidenced)
+        scores["hyp_phrases"] = hyp_phrases
+        scores["ref_phrases"] = ref_phrases
+        scores["hyp_evidenced"] = hyp_evidenced
+        scores["ref_evidenced"] = ref_evidenced
+        return scores
+
+    async def score_pair_async(
+        self, aclient: AsyncOpenAI, hyp: str, ref: str,
+    ) -> dict[str, Any]:
+        """Score a single pair (async). Phrases extracted concurrently."""
+        hyp_phrases, ref_phrases = await asyncio.gather(
+            self._process_report_async(aclient, hyp),
+            self._process_report_async(aclient, ref),
+        )
+
+        if not hyp_phrases and not ref_phrases:
+            return {
+                "logical_precision": float("nan"),
+                "logical_recall": float("nan"),
+                "logical_f1": float("nan"),
+                "hyp_phrases": [], "ref_phrases": [],
+                "hyp_evidenced": [], "ref_evidenced": [],
+            }
+
+        hyp_evidenced, ref_evidenced = await bidirectional_nli_async(
+            aclient, self.model_name,
+            hyp_phrases, ref_phrases,
+            self.temperature,
+            cost_tracker=self.cost_tracker,
         )
 
         scores = compute_radfact_scores(hyp_evidenced, ref_evidenced)
@@ -351,15 +562,31 @@ class RadFactCT:
     ) -> Tuple[dict, list]:
         return self.forward(hyps=hyps, refs=refs, on_sample_done=on_sample_done)
 
+    async def forward_async(
+        self, hyps: List[str], refs: List[str], on_sample_done=None,
+    ) -> Tuple[dict, list]:
+        """Evaluate all pairs concurrently with semaphore-based rate limiting."""
+        sem = asyncio.Semaphore(self.max_concurrent)
+        aclient = AsyncOpenAI(api_key=self._api_key)
+
+        async def score_one(hyp, ref):
+            async with sem:
+                result = await self.score_pair_async(aclient, hyp, ref)
+                if on_sample_done:
+                    on_sample_done()
+                return result
+
+        try:
+            tasks = [score_one(h, r) for h, r in zip(hyps, refs)]
+            per_sample = list(await asyncio.gather(*tasks))
+        finally:
+            await aclient.close()
+        return self._aggregate(per_sample)
+
     def forward(
         self, hyps: List[str], refs: List[str], on_sample_done=None,
     ) -> Tuple[dict, list]:
-        """Evaluate all pairs and return aggregate + per-sample results.
-
-        Returns:
-            (aggregate_dict, per_sample_list) where aggregate_dict has
-            logical_precision, logical_recall, logical_f1 (as percentages).
-        """
+        """Evaluate all pairs. Uses async concurrency when max_concurrent > 1."""
         if not isinstance(hyps, list) or not isinstance(refs, list):
             raise TypeError("hyps and refs must be lists")
         if len(hyps) != len(refs):
@@ -367,7 +594,11 @@ class RadFactCT:
         if len(hyps) == 0:
             return {"logical_precision": 0, "logical_recall": 0, "logical_f1": 0}, []
 
-        import numpy as np
+        self.cost_tracker.reset()
+
+        if self.max_concurrent > 1:
+            return asyncio.run(
+                self.forward_async(hyps, refs, on_sample_done=on_sample_done))
 
         per_sample = []
         for hyp, ref in zip(hyps, refs):
@@ -375,6 +606,11 @@ class RadFactCT:
             per_sample.append(result)
             if on_sample_done:
                 on_sample_done()
+        return self._aggregate(per_sample)
+
+    @staticmethod
+    def _aggregate(per_sample: list[dict]) -> Tuple[dict, list]:
+        import numpy as np
 
         precisions = [r["logical_precision"] for r in per_sample]
         recalls = [r["logical_recall"] for r in per_sample]

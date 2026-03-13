@@ -318,6 +318,8 @@ Two modes:
 
 Requires `pip install RadEval[api]` and `OPENAI_API_KEY`. Uses `gpt-4o-mini` by default.
 
+Evaluates samples concurrently (default 10) with live cost tracking in the progress bar. Control via `radfact_ct_max_concurrent`.
+
 | Mode | Output keys | Value |
 |------|------------|-------|
 | Default | `radfact_ct_precision`, `radfact_ct_recall`, `radfact_ct_f1` | float (percentages) |
@@ -325,11 +327,14 @@ Requires `pip install RadEval[api]` and `OPENAI_API_KEY`. Uses `gpt-4o-mini` by 
 | Details | `radfact_ct_precision`, `radfact_ct_recall`, `radfact_ct_f1` | same as default |
 
 ```python
-# RadFact +/- (default)
+# RadFact +/- (default, 10 concurrent samples)
 evaluator = RadEval(do_radfact_ct=True)
 
 # RadFact + (filter negatives)
 evaluator = RadEval(do_radfact_ct=True, radfact_ct_filter_negatives=True)
+
+# Custom concurrency (higher for Tier 2+ accounts)
+evaluator = RadEval(do_radfact_ct=True, radfact_ct_max_concurrent=20)
 
 results = evaluator(refs=refs, hyps=hyps)
 print(results["radfact_ct_precision"])  # 66.67
