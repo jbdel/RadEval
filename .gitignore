@@ -28,6 +28,8 @@ rrg_systems/
 cmd
 pypi
 run_main.py
+run_main_*.py
 inspect_eval_json.py
 pred_ref_*.json
-pred_ref_*.jsonlfindings_generation_examples.csv
+pred_ref_*.jsonl
+findings_generation_examples.csv

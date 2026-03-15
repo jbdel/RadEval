@@ -51,6 +51,10 @@ PRIVATE_DIRS = ["scripts", ".cursor"]
 PRIVATE_FILES = [
     "findings_generation_examples.csv",
     "pred_ref_epoch37_seed476104_val.jsonl",
+    "run_main_ct.py",
+    "run_main_cxr.py",
+    "run_main.py",
+    "cmd",
 ]
 
 
