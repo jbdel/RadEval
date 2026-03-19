@@ -46,7 +46,7 @@ class TestRadFactCTUnit:
             scorer(["hyp1", "hyp2"], ["ref"])
 
     def test_cost_tracker(self):
-        from RadEval.metrics.radfact_ct.radfact_ct import CostTracker
+        from RadEval.metrics._llm import CostTracker
         ct = CostTracker("gpt-4o-mini")
         assert ct.cost == 0.0
         ct.add(1_000_000, 0)
@@ -57,7 +57,7 @@ class TestRadFactCTUnit:
         assert ct.cost == 0.0
 
     def test_cost_tracker_unknown_model(self):
-        from RadEval.metrics.radfact_ct.radfact_ct import CostTracker
+        from RadEval.metrics._llm import CostTracker
         ct = CostTracker("unknown-model")
         ct.add(1_000_000, 1_000_000)
         assert ct.cost == pytest.approx(0.75)

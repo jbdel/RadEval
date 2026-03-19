@@ -392,50 +392,33 @@ class GeminiJudgeConfig:
 # OpenAI Judge Implementation
 # -----------------------------
 
-@retry(
-    reraise=True,
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=1, max=8),
-    retry=retry_if_exception_type(JudgeError),
-)
 def _judge_one_openai(
     client: OpenAI,
     cfg: OpenAIJudgeConfig,
     reference: str,
     hypothesis: str,
+    cost_tracker=None,
 ) -> Dict[str, Any]:
     """Judge a single reference/hypothesis pair using OpenAI API."""
+    from .._llm import call_openai
     user_msg = f"REFERENCE_REPORT:\n{reference}\n\nGENERATED_REPORT:\n{hypothesis}"
 
     try:
-        resp = client.chat.completions.create(
-            model=cfg.model_name,
-            messages=[
+        raw = call_openai(
+            client, cfg.model_name,
+            [
                 {"role": "system", "content": MAMMO_GREEN_SYSTEM_PROMPT},
                 {"role": "user", "content": user_msg},
             ],
             temperature=cfg.temperature,
+            cost_tracker=cost_tracker,
             max_completion_tokens=cfg.max_output_tokens,
         )
     except Exception as e:
         raise JudgeError(f"OpenAI call failed: {e}") from e
 
-    if not resp.choices:
-        raise JudgeError("OpenAI returned no choices")
-
-    choice = resp.choices[0]
-    raw = choice.message.content
-
     if raw is None:
         raise JudgeError("Could not read response content from OpenAI")
-
-    # Check for truncation
-    if choice.finish_reason == "length":
-        raw_preview = raw[:200] if raw else "(empty)"
-        raise JudgeError(
-            f"Response truncated due to max_tokens limit. "
-            f"Increase max_output_tokens. Raw head: {raw_preview}"
-        )
 
     return _parse_judge_response(raw)
 
@@ -444,19 +427,15 @@ def _judge_one_openai(
 # Gemini Judge Implementation
 # -----------------------------
 
-@retry(
-    reraise=True,
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=1, max=8),
-    retry=retry_if_exception_type(JudgeError),
-)
 def _judge_one_gemini(
     client,  # genai.Client
     cfg: GeminiJudgeConfig,
     reference: str,
     hypothesis: str,
+    cost_tracker=None,
 ) -> Dict[str, Any]:
     """Judge a single reference/hypothesis pair using Google Gemini API."""
+    from .._llm import call_gemini
     user_msg = f"REFERENCE_REPORT:\n{reference}\n\nGENERATED_REPORT:\n{hypothesis}"
 
     try:
@@ -468,10 +447,9 @@ def _judge_one_gemini(
             systemInstruction=MAMMO_GREEN_SYSTEM_PROMPT,
         )
 
-        response = client.models.generate_content(
-            model=cfg.model_name,
-            contents=user_msg,
-            config=config,
+        response = call_gemini(
+            client, cfg.model_name, user_msg,
+            config=config, cost_tracker=cost_tracker,
         )
     except Exception as e:
         raise JudgeError(f"Gemini call failed: {e}") from e
