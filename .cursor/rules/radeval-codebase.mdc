@@ -17,6 +17,7 @@ RadEval/
   __init__.py             # Exports RadEval, compare_systems
   utils.py                # PairedTest (hypothesis testing), multilabel_prf_per_sample, clean_numbered_list
   metrics/
+    _llm.py               # Shared LLM factory: CostTracker, call_openai/async, call_gemini/async
     _chexbert_base.py     # Shared base for F1CheXbert / F1HopprCheXbert
     bertscore/            # BERTScore (also base class BertScoreBase used by RadEvalBERTScorer)
     bleu/
@@ -28,6 +29,7 @@ RadEval/
     f1hopprchexbert_ct/   # PRIVATE — CT multi-output ModernBERT-large (16 conditions)
     green_score/          # GREEN + MammoGREEN
     crimson/              # CRIMSON (LLM-based, OpenAI or HuggingFace MedGemma)
+    hoppr_crimson_ct/     # PRIVATE — CT-adapted CRIMSON with CT-specific prompts
     radfact_ct/           # RadFact-CT (LLM-based, ported from microsoft/RadFact)
     RaTEScore/
     RadCliQv1/            # RadCliQ-v1 composite (BERTScore+IDF, RadGraph, SemEmb, BLEU-2)
@@ -37,6 +39,7 @@ RadEval/
 docs/                     # metrics.md, hypothesis_testing.md, file_formats.md
 scripts/
   publish_public.py       # Strips private metrics, pushes to jbdel/RadEval
+  update_pricing.py       # Audit/update LLM pricing in _llm.py
   pypi                    # Contains PyPI API token (NOT a script to execute)
 tests/
   conftest.py             # Shared fixtures

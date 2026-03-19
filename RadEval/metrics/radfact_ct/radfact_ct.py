@@ -15,8 +15,6 @@ import asyncio
 import json
 import logging
 import os
-import random
-import threading
 import warnings
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -24,54 +22,17 @@ from typing import Any, Dict, List, Optional, Tuple
 import yaml
 from openai import AsyncOpenAI, OpenAI
 
-MAX_RETRIES = 6
-RETRY_BASE_DELAY = 1.0
-RETRY_MAX_DELAY = 60.0
+from .._llm import (
+    CostTracker, call_openai, call_openai_async,
+)
 
 logger = logging.getLogger(__name__)
 
 _PROMPTS_DIR = Path(__file__).parent / "prompts" / "ct"
 
-# ---------------------------------------------------------------------------
-# Cost tracking
-# ---------------------------------------------------------------------------
-
-PRICING_PER_1M = {
-    "gpt-4o-mini":  (0.15, 0.60),
-    "gpt-4.1-mini": (0.40, 1.60),
-    "gpt-4.1-nano": (0.10, 0.40),
-}
-
-
-class CostTracker:
-    """Thread-safe accumulator for OpenAI API token usage and cost."""
-
-    def __init__(self, model: str):
-        self._lock = threading.Lock()
-        self.input_tokens = 0
-        self.output_tokens = 0
-        per_m = PRICING_PER_1M.get(model, (0.15, 0.60))
-        self._input_rate = per_m[0] / 1_000_000
-        self._output_rate = per_m[1] / 1_000_000
-
-    def add(self, input_tok: int, output_tok: int):
-        with self._lock:
-            self.input_tokens += input_tok
-            self.output_tokens += output_tok
-
-    @property
-    def cost(self) -> float:
-        return (self.input_tokens * self._input_rate
-                + self.output_tokens * self._output_rate)
-
-    def reset(self):
-        with self._lock:
-            self.input_tokens = 0
-            self.output_tokens = 0
-
 
 # ---------------------------------------------------------------------------
-# LLM helpers (sync + async)
+# Message builder
 # ---------------------------------------------------------------------------
 
 def _build_messages(
@@ -85,49 +46,6 @@ def _build_messages(
         msgs.append({"role": "assistant", "content": ai})
     msgs.append({"role": "user", "content": query})
     return msgs
-
-
-def _call_llm(
-    client: OpenAI, model: str, messages: list[dict], temperature: float = 0.0,
-    cost_tracker: Optional[CostTracker] = None,
-) -> str:
-    resp = client.chat.completions.create(
-        model=model, messages=messages, temperature=temperature,
-    )
-    if cost_tracker and resp.usage:
-        cost_tracker.add(resp.usage.prompt_tokens, resp.usage.completion_tokens)
-    return resp.choices[0].message.content or ""
-
-
-async def _call_llm_async(
-    client: AsyncOpenAI, model: str, messages: list[dict],
-    temperature: float = 0.0,
-    cost_tracker: Optional[CostTracker] = None,
-) -> str:
-    """Async LLM call with exponential backoff + jitter on rate-limit errors."""
-    for attempt in range(MAX_RETRIES):
-        try:
-            resp = await client.chat.completions.create(
-                model=model, messages=messages, temperature=temperature,
-            )
-            if cost_tracker and resp.usage:
-                cost_tracker.add(resp.usage.prompt_tokens,
-                                 resp.usage.completion_tokens)
-            return resp.choices[0].message.content or ""
-        except Exception as e:
-            err_str = str(e).lower()
-            is_retryable = ("rate" in err_str or "429" in err_str
-                            or "timeout" in err_str or "overloaded" in err_str
-                            or "server" in err_str or "500" in err_str
-                            or "502" in err_str or "503" in err_str)
-            if not is_retryable or attempt == MAX_RETRIES - 1:
-                raise
-            delay = min(RETRY_BASE_DELAY * (2 ** attempt), RETRY_MAX_DELAY)
-            delay *= 0.5 + random.random()
-            logger.warning(
-                f"LLM call failed (attempt {attempt + 1}/{MAX_RETRIES}), "
-                f"retrying in {delay:.1f}s: {e}")
-            await asyncio.sleep(delay)
 
 
 # ---------------------------------------------------------------------------
@@ -174,22 +92,22 @@ def _parse_phrases_from_response(text: str) -> list[str]:
 
 
 def report_to_phrases(
-    client: OpenAI, model: str, text: str, temperature: float,
+    client, model: str, text: str, temperature: float,
     cost_tracker: Optional[CostTracker] = None,
 ) -> list[str]:
     system, pairs = _load_report_to_phrases_prompts()
     msgs = _build_messages(system, pairs, text)
-    raw = _call_llm(client, model, msgs, temperature, cost_tracker)
+    raw = call_openai(client, model, msgs, temperature, cost_tracker)
     return _parse_phrases_from_response(raw)
 
 
 async def report_to_phrases_async(
-    client: AsyncOpenAI, model: str, text: str, temperature: float,
+    client, model: str, text: str, temperature: float,
     cost_tracker: Optional[CostTracker] = None,
 ) -> list[str]:
     system, pairs = _load_report_to_phrases_prompts()
     msgs = _build_messages(system, pairs, text)
-    raw = await _call_llm_async(client, model, msgs, temperature, cost_tracker)
+    raw = await call_openai_async(client, model, msgs, temperature, cost_tracker)
     return _parse_phrases_from_response(raw)
 
 
@@ -229,26 +147,26 @@ def _parse_negatives_response(raw: str, original_phrases: list[str]) -> list[str
 
 
 def filter_negatives(
-    client: OpenAI, model: str, phrases: list[str], temperature: float,
+    client, model: str, phrases: list[str], temperature: float,
     cost_tracker: Optional[CostTracker] = None,
 ) -> list[str]:
     if not phrases:
         return []
     system, pairs = _load_negative_filtering_prompts()
     msgs = _build_messages(system, pairs, json.dumps(phrases))
-    raw = _call_llm(client, model, msgs, temperature, cost_tracker)
+    raw = call_openai(client, model, msgs, temperature, cost_tracker)
     return _parse_negatives_response(raw, phrases)
 
 
 async def filter_negatives_async(
-    client: AsyncOpenAI, model: str, phrases: list[str], temperature: float,
+    client, model: str, phrases: list[str], temperature: float,
     cost_tracker: Optional[CostTracker] = None,
 ) -> list[str]:
     if not phrases:
         return []
     system, pairs = _load_negative_filtering_prompts()
     msgs = _build_messages(system, pairs, json.dumps(phrases))
-    raw = await _call_llm_async(client, model, msgs, temperature, cost_tracker)
+    raw = await call_openai_async(client, model, msgs, temperature, cost_tracker)
     return _parse_negatives_response(raw, phrases)
 
 
@@ -319,24 +237,23 @@ def _parse_nli_response(raw: str, hypothesis: str) -> dict:
 
 
 def _classify_single_phrase(
-    client: OpenAI, model: str,
+    client, model: str,
     reference_phrases: list[str], hypothesis: str,
     system: str, pairs: list[tuple[str, str]],
     temperature: float,
     cost_tracker: Optional[CostTracker] = None,
 ) -> dict:
-    """Classify one hypothesis phrase against reference phrases."""
     query = yaml.dump(
         {"reference": reference_phrases, "hypothesis": hypothesis},
         sort_keys=False,
     )
     msgs = _build_messages(system, pairs, query)
-    raw = _call_llm(client, model, msgs, temperature, cost_tracker)
+    raw = call_openai(client, model, msgs, temperature, cost_tracker)
     return _parse_nli_response(raw, hypothesis)
 
 
 async def _classify_single_phrase_async(
-    client: AsyncOpenAI, model: str,
+    client, model: str,
     reference_phrases: list[str], hypothesis: str,
     system: str, pairs: list[tuple[str, str]],
     temperature: float,
@@ -347,12 +264,12 @@ async def _classify_single_phrase_async(
         sort_keys=False,
     )
     msgs = _build_messages(system, pairs, query)
-    raw = await _call_llm_async(client, model, msgs, temperature, cost_tracker)
+    raw = await call_openai_async(client, model, msgs, temperature, cost_tracker)
     return _parse_nli_response(raw, hypothesis)
 
 
 def bidirectional_nli(
-    client: OpenAI, model: str,
+    client, model: str,
     candidate_phrases: list[str],
     reference_phrases: list[str],
     temperature: float,
@@ -384,7 +301,7 @@ def bidirectional_nli(
 
 
 async def bidirectional_nli_async(
-    client: AsyncOpenAI, model: str,
+    client, model: str,
     candidate_phrases: list[str],
     reference_phrases: list[str],
     temperature: float,
@@ -474,7 +391,6 @@ class RadFactCT:
         self.cost_tracker = CostTracker(model_name)
 
     def _process_report(self, text: str) -> list[str]:
-        """Convert narrative text -> atomic phrases, optionally filtering negatives."""
         phrases = report_to_phrases(
             self.client, self.model_name, text, self.temperature,
             self.cost_tracker)
@@ -484,7 +400,7 @@ class RadFactCT:
                 self.cost_tracker)
         return phrases
 
-    async def _process_report_async(self, aclient: AsyncOpenAI, text: str) -> list[str]:
+    async def _process_report_async(self, aclient, text: str) -> list[str]:
         phrases = await report_to_phrases_async(
             aclient, self.model_name, text, self.temperature,
             self.cost_tracker)
@@ -497,7 +413,6 @@ class RadFactCT:
     def score_pair(
         self, hyp: str, ref: str, on_phrase_done=None,
     ) -> dict[str, Any]:
-        """Score a single hypothesis/reference pair (sync). Returns per-pair scores."""
         hyp_phrases = self._process_report(hyp)
         ref_phrases = self._process_report(ref)
 
@@ -526,9 +441,8 @@ class RadFactCT:
         return scores
 
     async def score_pair_async(
-        self, aclient: AsyncOpenAI, hyp: str, ref: str,
+        self, aclient, hyp: str, ref: str,
     ) -> dict[str, Any]:
-        """Score a single pair (async). Phrases extracted concurrently."""
         hyp_phrases, ref_phrases = await asyncio.gather(
             self._process_report_async(aclient, hyp),
             self._process_report_async(aclient, ref),
@@ -565,7 +479,6 @@ class RadFactCT:
     async def forward_async(
         self, hyps: List[str], refs: List[str], on_sample_done=None,
     ) -> Tuple[dict, list]:
-        """Evaluate all pairs concurrently with semaphore-based rate limiting."""
         sem = asyncio.Semaphore(self.max_concurrent)
         aclient = AsyncOpenAI(api_key=self._api_key)
 
@@ -586,7 +499,6 @@ class RadFactCT:
     def forward(
         self, hyps: List[str], refs: List[str], on_sample_done=None,
     ) -> Tuple[dict, list]:
-        """Evaluate all pairs. Uses async concurrency when max_concurrent > 1."""
         if not isinstance(hyps, list) or not isinstance(refs, list):
             raise TypeError("hyps and refs must be lists")
         if len(hyps) != len(refs):

@@ -44,6 +44,13 @@ PRIVATE_METRICS = [
         "flag": "do_f1hopprchexbert_ct",
         "display_name": "F1HopprCheXbertCT",
     },
+    {
+        "name": "hoppr_crimson_ct",
+        "metric_dir": "RadEval/metrics/hoppr_crimson_ct",
+        "test_file": "tests/test_hoppr_crimson_ct.py",
+        "flag": "do_hoppr_crimson_ct",
+        "display_name": "HopprCrimsonCT",
+    },
 ]
 
 PRIVATE_DIRS = ["scripts", ".cursor"]

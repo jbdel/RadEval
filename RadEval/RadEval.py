@@ -39,6 +39,10 @@ class RadEval():
                  crimson_api_key=None,
                  crimson_model=None,
                  crimson_batch_size=1,
+                 do_hoppr_crimson_ct=False,
+                 hoppr_crimson_ct_api="openai",
+                 hoppr_crimson_ct_api_key=None,
+                 hoppr_crimson_ct_model=None,
                  do_per_sample=False,
                  do_details=False,
                  show_progress=True,
@@ -76,6 +80,10 @@ class RadEval():
         self.crimson_api_key = crimson_api_key
         self.crimson_model = crimson_model
         self.crimson_batch_size = crimson_batch_size
+        self.do_hoppr_crimson_ct = do_hoppr_crimson_ct
+        self.hoppr_crimson_ct_api = hoppr_crimson_ct_api
+        self.hoppr_crimson_ct_api_key = hoppr_crimson_ct_api_key
+        self.hoppr_crimson_ct_model = hoppr_crimson_ct_model
         self.do_radeval_bertscore = do_radeval_bertscore
         self.do_per_sample = do_per_sample
         self.do_details = do_details
@@ -204,6 +212,21 @@ class RadEval():
                     f"CRIMSON unavailable ({e}); disabling do_crimson.")
                 self.do_crimson = False
 
+        if self.do_hoppr_crimson_ct:
+            try:
+                from .metrics.hoppr_crimson_ct import CRIMSON_CT
+                if CRIMSON_CT is None:
+                    raise ImportError("CRIMSON_CT is not available")
+                self.hoppr_crimson_ct_scorer = CRIMSON_CT(
+                    api=self.hoppr_crimson_ct_api,
+                    model_name=self.hoppr_crimson_ct_model,
+                    api_key=self.hoppr_crimson_ct_api_key,
+                )
+            except (ImportError, EnvironmentError, OSError) as e:
+                warnings.warn(
+                    f"HopprCrimsonCT unavailable ({e}); disabling do_hoppr_crimson_ct.")
+                self.do_hoppr_crimson_ct = False
+
         if self.do_radeval_bertscore:
             from .metrics.radevalbertscore import RadEvalBERTScorer
             self.radeval_bertscore = RadEvalBERTScorer(
@@ -270,6 +293,8 @@ class RadEval():
                 "radfact_ct_precision", "radfact_ct_recall", "radfact_ct_f1"])
         if self.do_crimson:
             self.metric_keys.append("crimson")
+        if self.do_hoppr_crimson_ct:
+            self.metric_keys.append("hoppr_crimson_ct")
         if self.do_radeval_bertscore:
             self.metric_keys.append("radeval_bertscore")
 
@@ -354,6 +379,7 @@ class RadEval():
         if self.do_temporal:        enabled.append("Temporal F1")
         if self.do_radfact_ct:      enabled.append("RadFact-CT")
         if self.do_crimson:         enabled.append("CRIMSON")
+        if self.do_hoppr_crimson_ct: enabled.append("HopprCrimsonCT")
         if self.do_radeval_bertscore: enabled.append("RadEval-BERTScore")
 
         with self._make_progress() as progress:
@@ -721,6 +747,34 @@ class RadEval():
                     scores["crimson"] = sample_scores
                 else:
                     scores["crimson"] = round(mean, 4)
+                progress.advance(metric_task)
+
+            # ----------------------------------------------------------
+            if self.do_hoppr_crimson_ct:
+                progress.update(metric_task, description="Computing HopprCrimsonCT")
+                sample_task = progress.add_task(
+                    "  [dim]Samples", total=n_samples)
+                hcct_cost = getattr(self.hoppr_crimson_ct_scorer, 'cost_tracker', None)
+
+                def _hcct_sample_done():
+                    progress.advance(sample_task)
+                    if hcct_cost:
+                        progress.update(sample_task,
+                                        description=f"  [dim]Samples (${hcct_cost.cost:.2f})")
+
+                mean, std, sample_scores, results_df = self.hoppr_crimson_ct_scorer(
+                    refs, hyps, on_sample_done=_hcct_sample_done)
+                if hcct_cost:
+                    progress.update(sample_task,
+                                    description=f"  [dim]Samples (${hcct_cost.cost:.2f})")
+                progress.remove_task(sample_task)
+                if self.do_details:
+                    scores["hoppr_crimson_ct"] = round(mean, 4)
+                    scores["hoppr_crimson_ct_std"] = round(std, 4)
+                elif self.do_per_sample:
+                    scores["hoppr_crimson_ct"] = sample_scores
+                else:
+                    scores["hoppr_crimson_ct"] = round(mean, 4)
                 progress.advance(metric_task)
 
             # ----------------------------------------------------------

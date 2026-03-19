@@ -82,6 +82,8 @@ class CRIMSONScore:
                 raise EnvironmentError(
                     "OPENAI_API_KEY not found. Pass api_key or set OPENAI_API_KEY.")
             self.client = OpenAI(api_key=resolved_key)
+            from .._llm import CostTracker
+            self.cost_tracker = CostTracker(self.model_name)
 
         elif api in ("huggingface", "hf"):
             import torch
@@ -102,23 +104,18 @@ class CRIMSONScore:
 
     def _chat_completion(self, prompt: str) -> str:
         if self.api == "openai":
-            from tenacity import retry, stop_after_attempt, wait_exponential
-            @retry(stop=stop_after_attempt(3),
-                   wait=wait_exponential(multiplier=1, min=1, max=8),
-                   reraise=True)
-            def _call():
-                resp = self.client.chat.completions.create(
-                    model=self.model_name,
-                    messages=[
-                        {"role": "system", "content": _SYSTEM_MSG},
-                        {"role": "user", "content": prompt},
-                    ],
-                    seed=42,
-                    temperature=0,
-                    response_format={"type": "json_object"},
-                )
-                return resp.choices[0].message.content
-            return _call()
+            from .._llm import call_openai
+            return call_openai(
+                self.client, self.model_name,
+                [
+                    {"role": "system", "content": _SYSTEM_MSG},
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0,
+                cost_tracker=self.cost_tracker,
+                seed=42,
+                response_format={"type": "json_object"},
+            )
 
         elif self.api in ("huggingface", "hf"):
             messages = [
