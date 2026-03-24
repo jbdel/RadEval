@@ -46,36 +46,31 @@ Usage:
 from __future__ import annotations
 
 import json
-import os
+import logging
 import re
-import time
 import statistics
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, ClassVar, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
 from pydantic import BaseModel, Field, ValidationError
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
-from openai import OpenAI
+from .._llm_base import LLMMetricBase
 
-# Optional Gemini support (new SDK)
+logger = logging.getLogger(__name__)
+
+# Optional Gemini types (needed for config objects)
 try:
-    from google import genai
     from google.genai import types
-    GEMINI_AVAILABLE = True
+    GEMINI_TYPES_AVAILABLE = True
 except ImportError:
-    genai = None
     types = None
-    GEMINI_AVAILABLE = False
+    GEMINI_TYPES_AVAILABLE = False
 
 
 # -----------------------------
 # Constants
 # -----------------------------
-
-SUPPORTED_PROVIDERS = ("openai", "gemini")
 
 SIGNIFICANT_ERROR_KEYS = (
     "false_finding",
@@ -92,8 +87,7 @@ SIGNIFICANT_ERROR_KEYS = (
 # -----------------------------
 
 def _detect_provider(model_name: str) -> str:
-    """
-    Detect the provider based on model name.
+    """Detect the provider based on model name.
 
     Returns "gemini" for models starting with "gemini", otherwise "openai".
     """
@@ -310,11 +304,9 @@ All counts must be non-negative integers.
 # -----------------------------
 
 def mammo_green_score(matched_findings: int, significant_errors: Dict[str, int]) -> float:
-    """
-    Compute the MammoGREEN score.
+    """Compute the MammoGREEN score.
 
     Score = matched_findings / (matched_findings + sum(significant_errors))
-
     Returns 0.0 if denominator is zero.
     """
     sig_sum = sum(int(v) for v in significant_errors.values())
@@ -323,288 +315,78 @@ def mammo_green_score(matched_findings: int, significant_errors: Dict[str, int])
 
 
 # -----------------------------
-# Error Handling
-# -----------------------------
-
-class JudgeError(RuntimeError):
-    """Exception raised when judge call fails or returns invalid response."""
-    pass
-
-
-# -----------------------------
 # JSON Extraction Utilities
 # -----------------------------
 
 def _extract_json_str(text: str) -> str:
-    """
-    Best-effort extraction of JSON from model response.
-
-    Handles markdown code blocks and surrounding prose.
-    """
+    """Best-effort extraction of JSON from model response."""
     t = (text or "").strip()
 
-    # Handle markdown code blocks (```json ... ``` or ``` ... ```)
     code_block_pattern = r'```(?:json)?\s*([\s\S]*?)\s*```'
     match = re.search(code_block_pattern, t)
     if match:
         t = match.group(1).strip()
     else:
-        # Handle incomplete code blocks (no closing ```)
         incomplete_pattern = r'```(?:json)?\s*([\s\S]*)'
         match = re.search(incomplete_pattern, t)
         if match:
             t = match.group(1).strip()
 
-    # Extract JSON object
     if not (t.startswith("{") and t.endswith("}")):
         start = t.find("{")
         end = t.rfind("}")
         if start != -1 and end != -1 and end > start:
             t = t[start : end + 1]
 
-    # Fix trailing commas before closing braces/brackets (common LLM JSON error)
     t = re.sub(r',(\s*[}\]])', r'\1', t)
-
     return t
-
-
-# -----------------------------
-# Judge Configurations
-# -----------------------------
-
-@dataclass
-class OpenAIJudgeConfig:
-    """Configuration for OpenAI judge."""
-    model_name: str = "gpt-4o"
-    temperature: float = 0.0
-    max_output_tokens: int = 8192
-
-
-@dataclass
-class GeminiJudgeConfig:
-    """Configuration for Gemini judge."""
-    model_name: str = "gemini-2.5-flash"
-    temperature: float = 0.0
-    max_output_tokens: int = 8192*2
-
-
-# -----------------------------
-# OpenAI Judge Implementation
-# -----------------------------
-
-def _judge_one_openai(
-    client: OpenAI,
-    cfg: OpenAIJudgeConfig,
-    reference: str,
-    hypothesis: str,
-    cost_tracker=None,
-) -> Dict[str, Any]:
-    """Judge a single reference/hypothesis pair using OpenAI API."""
-    from .._llm import call_openai
-    user_msg = f"REFERENCE_REPORT:\n{reference}\n\nGENERATED_REPORT:\n{hypothesis}"
-
-    try:
-        raw = call_openai(
-            client, cfg.model_name,
-            [
-                {"role": "system", "content": MAMMO_GREEN_SYSTEM_PROMPT},
-                {"role": "user", "content": user_msg},
-            ],
-            temperature=cfg.temperature,
-            cost_tracker=cost_tracker,
-            max_completion_tokens=cfg.max_output_tokens,
-        )
-    except Exception as e:
-        raise JudgeError(f"OpenAI call failed: {e}") from e
-
-    if raw is None:
-        raise JudgeError("Could not read response content from OpenAI")
-
-    return _parse_judge_response(raw)
-
-
-# -----------------------------
-# Gemini Judge Implementation
-# -----------------------------
-
-def _judge_one_gemini(
-    client,  # genai.Client
-    cfg: GeminiJudgeConfig,
-    reference: str,
-    hypothesis: str,
-    cost_tracker=None,
-) -> Dict[str, Any]:
-    """Judge a single reference/hypothesis pair using Google Gemini API."""
-    from .._llm import call_gemini
-    user_msg = f"REFERENCE_REPORT:\n{reference}\n\nGENERATED_REPORT:\n{hypothesis}"
-
-    try:
-        config = types.GenerateContentConfig(
-            temperature=cfg.temperature,
-            topP=0.95,
-            topK=40,
-            maxOutputTokens=cfg.max_output_tokens,
-            systemInstruction=MAMMO_GREEN_SYSTEM_PROMPT,
-        )
-
-        response = call_gemini(
-            client, cfg.model_name, user_msg,
-            config=config, cost_tracker=cost_tracker,
-        )
-    except Exception as e:
-        raise JudgeError(f"Gemini call failed: {e}") from e
-
-    # Extract response text - handle different response formats
-    raw = None
-    try:
-        raw = response.text
-    except Exception:
-        pass
-
-    # Fallback: access candidates directly
-    if not raw:
-        try:
-            if response.candidates and len(response.candidates) > 0:
-                candidate = response.candidates[0]
-                if candidate.content and candidate.content.parts:
-                    raw = candidate.content.parts[0].text
-        except Exception:
-            pass
-
-    if not raw:
-        debug_info = ""
-        try:
-            if response.candidates:
-                candidate = response.candidates[0]
-                if hasattr(candidate, 'finish_reason'):
-                    debug_info = f" finish_reason={candidate.finish_reason}"
-                if hasattr(candidate, 'safety_ratings'):
-                    debug_info += f" safety_ratings={candidate.safety_ratings}"
-        except Exception:
-            pass
-        raise JudgeError(f"Model returned empty response.{debug_info}")
-
-    # Check for truncation (Gemini uses MAX_TOKENS or MAXTOKEN as finish reason)
-    try:
-        if response.candidates:
-            candidate = response.candidates[0]
-            finish_reason = getattr(candidate, 'finish_reason', None)
-            if finish_reason and str(finish_reason).upper() in ("MAX_TOKENS", "MAXTOKEN", "LENGTH"):
-                raw_preview = raw[:200] if raw else "(empty)"
-                raise JudgeError(
-                    f"Response truncated due to max_tokens limit. "
-                    f"Increase max_output_tokens. Raw head: {raw_preview}"
-                )
-    except JudgeError:
-        raise
-    except Exception:
-        pass  # Ignore errors in truncation check
-
-    return _parse_judge_response(raw)
-
-
-# -----------------------------
-# Response Parsing
-# -----------------------------
-
-def _parse_judge_response(raw: str) -> Dict[str, Any]:
-    """Parse and validate judge response JSON."""
-    raw_json = _extract_json_str(raw)
-
-    try:
-        data = json.loads(raw_json)
-    except json.JSONDecodeError as e:
-        raw_preview = raw[:500] if raw else "(empty)"
-        raise JudgeError(f"Model did not return valid JSON. Raw: {raw_preview}") from e
-
-    # Validate schema
-    try:
-        parsed = MammoGreenOutput(**data)
-        parsed.validate_keys()
-    except (ValidationError, ValueError) as e:
-        raw_preview = raw[:200] if raw else "(empty)"
-        raise JudgeError(f"JSON schema invalid: {e}. Raw head: {raw_preview}") from e
-
-    return data
 
 
 # -----------------------------
 # Main Class
 # -----------------------------
 
-class MammoGREEN:
-    """
-    Mammography-GREEN metric using LLM judge.
+class MammoGREEN(LLMMetricBase):
+    """Mammography-GREEN metric using LLM judge.
 
-    Supports both OpenAI (gpt-4o, gpt-5.x) and Google Gemini (gemini-2.5-*) models.
-
-    Compatible with RadEval interface.
+    Supports both OpenAI (gpt-4o, gpt-5.x) and Google Gemini (gemini-2.5-*)
+    models.  Inherits async concurrency and cost tracking from LLMMetricBase.
 
     __call__(refs, hyps) returns:
       (mean, std, green_scores, results_df)
-
-    Where results_df contains:
-      - reference: original reference text
-      - prediction: original hypothesis text
-      - green_score: per-sample GREEN score
-      - matched_findings: count of matched findings
-      - false_finding, missing_finding, mischaracterization,
-        wrong_location_laterality, incorrect_birads, incorrect_breast_density: error counts
-      - insignificant_errors: count of insignificant errors
     """
+
+    SUPPORTED_PROVIDERS: ClassVar[set[str]] = {"openai", "gemini"}
 
     def __init__(
         self,
         model_name: str = "gpt-4o",
         provider: Optional[str] = None,
+        openai_api_key: Optional[str] = None,
+        gemini_api_key: Optional[str] = None,
         output_dir: str = ".",
         batch_size: int = 8,
         max_output_tokens: int = 8192,
         temperature: float = 0.0,
-        sleep_s: float = 0.0,
+        max_concurrent: int = 50,
         compute_summary_stats: bool = True,
-        api_key: Optional[str] = None,
     ):
-        """
-        Initialize MammoGREEN scorer.
+        resolved_provider = provider or _detect_provider(model_name)
 
-        Args:
-            model_name: Model identifier. Supported models:
-                - OpenAI: gpt-4o, gpt-4o-mini, gpt-5.2-2025-12-11, gpt-5-mini-2025-08-07
-                - Gemini: gemini-2.5-flash, gemini-2.5-pro
-            provider: Explicit provider ("openai" or "gemini"). Auto-detected if None.
-            output_dir: Directory for output files.
-            batch_size: Batch size for processing.
-            max_output_tokens: Maximum tokens in judge response.
-            temperature: Sampling temperature (0.0 for deterministic).
-            sleep_s: Sleep duration between API calls.
-            compute_summary_stats: Whether to compute summary statistics.
-            api_key: API key. Falls back to environment variables if not provided.
-        """
+        super().__init__(
+            provider=resolved_provider,
+            model_name=model_name,
+            openai_api_key=openai_api_key,
+            gemini_api_key=gemini_api_key,
+            max_concurrent=max_concurrent,
+        )
+
         self.output_dir = output_dir
         self.batch_size = int(batch_size)
-        self.sleep_s = float(sleep_s)
         self.compute_summary_stats = bool(compute_summary_stats)
-        self.model_name = model_name
+        self.temperature = temperature
+        self.max_output_tokens = max_output_tokens
 
-        # Determine provider
-        if provider is not None:
-            if provider.lower() not in SUPPORTED_PROVIDERS:
-                raise ValueError(
-                    f"Unsupported provider: '{provider}'. "
-                    f"Supported providers are: {SUPPORTED_PROVIDERS}"
-                )
-            self.provider = provider.lower()
-        else:
-            self.provider = _detect_provider(model_name)
-
-        # Initialize provider-specific client
-        if self.provider == "gemini":
-            self._init_gemini_client(api_key, model_name, temperature, max_output_tokens)
-        else:
-            self._init_openai_client(api_key, model_name, temperature, max_output_tokens)
-
-        # Metadata for introspection
         self.categories = [
             "Clinically Significant Errors",
             "Clinically Insignificant Errors",
@@ -619,107 +401,76 @@ class MammoGREEN:
             "(f) Incorrect breast density assessment",
         ]
 
-        # Outputs
-        self.prompts: Optional[List[str]] = None
-        self.completions: Optional[List[str]] = None
         self.green_scores: Optional[List[float]] = None
         self.error_counts: Optional[List[Dict[str, Any]]] = None
 
-    def _init_gemini_client(
-        self,
-        api_key: Optional[str],
-        model_name: str,
-        temperature: float,
-        max_output_tokens: int,
-    ) -> None:
-        """Initialize Gemini client and configuration."""
-        if not GEMINI_AVAILABLE:
-            raise ImportError(
-                "google-genai is not installed. "
-                "Install it with: pip install google-genai"
-            )
+    # ------------------------------------------------------------------
+    # LLMMetricBase interface
+    # ------------------------------------------------------------------
 
-        key = api_key or os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-        if not key:
-            raise EnvironmentError(
-                "GEMINI_API_KEY or GOOGLE_API_KEY is not set (or pass api_key=...). "
-                "For Gemini models, set GOOGLE_API_KEY environment variable."
-            )
+    def _build_request(self, ref: str, hyp: str, **kwargs) -> dict[str, Any]:
+        user_msg = f"REFERENCE_REPORT:\n{ref}\n\nGENERATED_REPORT:\n{hyp}"
 
-        self.gemini_client = genai.Client(api_key=key)
-        self.cfg = GeminiJudgeConfig(
-            model_name=model_name,
-            temperature=temperature,
-            max_output_tokens=max_output_tokens,
-        )
-        self.openai_client = None
+        if self.provider == "openai":
+            return {
+                "messages": [
+                    {"role": "system", "content": MAMMO_GREEN_SYSTEM_PROMPT},
+                    {"role": "user", "content": user_msg},
+                ],
+                "temperature": self.temperature,
+                "max_completion_tokens": self.max_output_tokens,
+            }
+        else:  # gemini
+            if not GEMINI_TYPES_AVAILABLE:
+                raise ImportError(
+                    "google-genai is not installed. "
+                    "Install it with: pip install google-genai"
+                )
+            return {
+                "contents": user_msg,
+                "config": types.GenerateContentConfig(
+                    temperature=self.temperature,
+                    topP=0.95,
+                    topK=40,
+                    maxOutputTokens=self.max_output_tokens,
+                    systemInstruction=MAMMO_GREEN_SYSTEM_PROMPT,
+                ),
+            }
 
-    def _init_openai_client(
-        self,
-        api_key: Optional[str],
-        model_name: str,
-        temperature: float,
-        max_output_tokens: int,
-    ) -> None:
-        """Initialize OpenAI client and configuration."""
-        key = api_key or os.environ.get("OPENAI_API_KEY")
-        if not key:
-            raise EnvironmentError("OPENAI_API_KEY is not set (or pass api_key=...).")
+    def _parse_response(self, raw: str) -> dict:
+        raw_json = _extract_json_str(raw)
+        try:
+            data = json.loads(raw_json)
+        except json.JSONDecodeError as e:
+            raw_preview = raw[:500] if raw else "(empty)"
+            raise ValueError(
+                f"Model did not return valid JSON. Raw: {raw_preview}") from e
 
-        self.openai_client = OpenAI(api_key=key)
-        self.cfg = OpenAIJudgeConfig(
-            model_name=model_name,
-            temperature=temperature,
-            max_output_tokens=max_output_tokens,
-        )
-        self.gemini_client = None
+        parsed = MammoGreenOutput(**data)
+        parsed.validate_keys()
+        return data
 
-    def __call__(self, refs: List[str], hyps: List[str]):
-        """
-        Compute MammoGREEN scores for reference/hypothesis pairs.
-
-        Args:
-            refs: List of reference mammography reports
-            hyps: List of generated/candidate mammography reports
-
-        Returns:
-            Tuple of (mean, std, green_scores, results_df)
-            - mean: Mean GREEN score across all samples
-            - std: Standard deviation of GREEN scores
-            - green_scores: List of per-sample GREEN scores
-            - results_df: DataFrame with detailed results
-        """
-        if len(refs) != len(hyps):
-            raise ValueError(f"refs and hyps must have same length. Got {len(refs)} vs {len(hyps)}")
-
-        error_counts: List[Dict[str, Any]] = []
-        green_scores: List[float] = []
-
-        for r, h in zip(refs, hyps):
-            if self.provider == "gemini":
-                data = _judge_one_gemini(self.gemini_client, self.cfg, r, h)
-            else:
-                data = _judge_one_openai(self.openai_client, self.cfg, r, h)
-
+    def _aggregate(
+        self, results: list[dict], refs: list[str], hyps: list[str],
+    ) -> tuple:
+        green_scores: list[float] = []
+        for data in results:
             mg = MammoGreenOutput(**data)
-            mg.validate_keys()
-
             score = mammo_green_score(mg.matched_findings, mg.significant_errors)
-            error_counts.append(data)
             green_scores.append(score)
 
-            if self.sleep_s > 0:
-                time.sleep(self.sleep_s)
-
-        self.error_counts = error_counts
+        self.error_counts = results
         self.green_scores = green_scores
 
         mean = float(np.mean(green_scores)) if green_scores else 0.0
         std = float(np.std(green_scores)) if len(green_scores) > 1 else 0.0
 
-        results_df = self._build_results_df(refs, hyps, green_scores, error_counts)
-
+        results_df = self._build_results_df(refs, hyps, green_scores, results)
         return mean, std, green_scores, results_df
+
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
 
     def _build_results_df(
         self,
@@ -728,7 +479,6 @@ class MammoGREEN:
         green_scores: List[float],
         error_counts: List[Dict[str, Any]],
     ) -> pd.DataFrame:
-        """Build a pandas DataFrame with detailed results."""
         rows = []
         for ref, hyp, score, errors in zip(refs, hyps, green_scores, error_counts):
             row = {
@@ -745,11 +495,9 @@ class MammoGREEN:
                 "insignificant_errors": errors["insignificant_errors"],
             }
             rows.append(row)
-
         return pd.DataFrame(rows)
 
     def _summary(self, scores: List[float], errors: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """Compute summary statistics across all samples."""
         sig_sums = {k: 0 for k in SIGNIFICANT_ERROR_KEYS}
         matched_sum = 0
         insig_sum = 0
@@ -773,22 +521,14 @@ class MammoGREEN:
         }
 
     def score(self, refs: List[str], hyps: List[str]) -> Dict[str, Any]:
-        """
-        Alternative interface returning a dictionary.
-
-        Returns:
-            Dict with keys: green_scores, error_counts, summary (optional)
-        """
+        """Alternative interface returning a dictionary."""
         mean, std, green_scores, results_df = self(refs, hyps)
-
         out: Dict[str, Any] = {
             "green_scores": green_scores,
             "error_counts": self.error_counts,
         }
-
         if self.compute_summary_stats:
             out["summary"] = self._summary(green_scores, self.error_counts)
-
         return out
 
 
@@ -813,7 +553,6 @@ if __name__ == "__main__":
         ),
     ]
 
-    # Example usage (requires OPENAI_API_KEY or GOOGLE_API_KEY)
     scorer = MammoGREEN(
         model_name="gpt-4o",
         temperature=0.0,

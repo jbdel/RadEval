@@ -56,7 +56,7 @@ print(json.dumps(results, indent=2))
 
 ```bash
 pip install RadEval              # from PyPI
-pip install RadEval[api]         # include OpenAI/Gemini for MammoGREEN
+pip install RadEval[api]         # include OpenAI/Gemini for LLM-based metrics
 ```
 
 Or install from source:
@@ -68,28 +68,44 @@ pip install -e '.[api]'
 
 ## Supported Metrics
 
-| Category | Metric | Flag | Modality | Best For | Usage |
-|----------|--------|------|----------|----------|-------|
-| **Lexical** | [BLEU](https://aclanthology.org/P02-1040.pdf) | `do_bleu` | -- | Surface-level n-gram overlap | [docs](docs/metrics.md#bleu-do_bleu) |
-| | [ROUGE](https://aclanthology.org/W04-1013.pdf) | `do_rouge` | -- | Content coverage | [docs](docs/metrics.md#rouge-do_rouge) |
-| **Semantic** | [BERTScore](https://openreview.net/forum?id=SkeHuCVFDr) | `do_bertscore` | -- | Semantic similarity | [docs](docs/metrics.md#bertscore-do_bertscore) |
-| | [RadEval BERTScore](https://aclanthology.org/2025.emnlp-demos.40.pdf) | `do_radeval_bertscore` | -- | Domain-adapted radiology semantics | [docs](docs/metrics.md#radeval-bertscore-do_radeval_bertscore) |
-| **Clinical** | [F1CheXbert](https://aclanthology.org/2020.emnlp-main.117.pdf) | `do_f1chexbert` | CXR | CheXpert finding classification | [docs](docs/metrics.md#f1chexbert-do_f1chexbert) |
-| | [F1RadBERT-CT](https://www.nature.com/articles/s41551-025-01599-y) | `do_f1radbert_ct` | CT | CT finding classification | [docs](docs/metrics.md#f1radbert-ct-do_f1radbert_ct) |
-| | [F1RadGraph](https://aclanthology.org/2022.findings-emnlp.319.pdf) | `do_radgraph` | CXR | Clinical entity/relation accuracy | [docs](docs/metrics.md#f1radgraph-do_radgraph) |
-| | [RaTEScore](https://aclanthology.org/2024.emnlp-main.836.pdf) | `do_ratescore` | CXR | Entity-level synonym-aware scoring | [docs](docs/metrics.md#ratescore-do_ratescore) |
-| **Specialized** | [RadGraph-RadCliQ](https://www.cell.com/patterns/pdfExtended/S2666-3899(23)00157-5) | `do_radgraph_radcliq` | CXR | Per-pair entity+relation F1 (RadCliQ variant) | [docs](docs/metrics.md#radgraph-radcliq-do_radgraph_radcliq) |
-| | [RadCliQ-v1](https://www.cell.com/patterns/pdfExtended/S2666-3899(23)00157-5) | `do_radcliq` | CXR | Composite clinical relevance | [docs](docs/metrics.md#radcliq-v1-do_radcliq) |
-| | [SRRBert](https://aclanthology.org/2025.acl-long.1301.pdf) | `do_srrbert` | CXR | Structured report evaluation | [docs](docs/metrics.md#srrbert-do_srrbert) |
-| | [Temporal F1](https://aclanthology.org/2025.findings-acl.888.pdf) | `do_temporal` | CXR | Temporal consistency | [docs](docs/metrics.md#temporal-f1-do_temporal) |
-| | [GREEN](https://aclanthology.org/2024.findings-emnlp.21.pdf) | `do_green` | CXR | LLM-based overall quality (7B model) | [docs](docs/metrics.md#green-do_green) |
-| | MammoGREEN | `do_mammo_green` | Mammo | Mammography-specific LLM scoring | [docs](docs/metrics.md#mammogreen-do_mammo_green) |
-| | [CRIMSON](https://arxiv.org/pdf/2603.06183) | `do_crimson` | CXR | LLM-based clinical significance scoring | [docs](docs/metrics.md#crimson-do_crimson) |
-| | [RadFact-CT](https://arxiv.org/pdf/2510.15042) | `do_radfact_ct` | CT | LLM-based factual precision/recall | [docs](docs/metrics.md#radfact-ct-do_radfact_ct) |
+| Category | Metric | Flag | Modality | Provider | Best For | Usage |
+|----------|--------|------|----------|----------|----------|-------|
+| **Lexical** | [BLEU](https://aclanthology.org/P02-1040.pdf) | `do_bleu` | -- | -- | Surface-level n-gram overlap | [docs](docs/metrics.md#bleu-do_bleu) |
+| | [ROUGE](https://aclanthology.org/W04-1013.pdf) | `do_rouge` | -- | -- | Content coverage | [docs](docs/metrics.md#rouge-do_rouge) |
+| **Semantic** | [BERTScore](https://openreview.net/forum?id=SkeHuCVFDr) | `do_bertscore` | -- | -- | Semantic similarity | [docs](docs/metrics.md#bertscore-do_bertscore) |
+| | [RadEval BERTScore](https://aclanthology.org/2025.emnlp-demos.40.pdf) | `do_radeval_bertscore` | -- | -- | Domain-adapted radiology semantics | [docs](docs/metrics.md#radeval-bertscore-do_radeval_bertscore) |
+| **Clinical** | [F1CheXbert](https://aclanthology.org/2020.emnlp-main.117.pdf) | `do_f1chexbert` | CXR | -- | CheXpert finding classification | [docs](docs/metrics.md#f1chexbert-do_f1chexbert) |
+| | [F1RadBERT-CT](https://www.nature.com/articles/s41551-025-01599-y) | `do_f1radbert_ct` | CT | -- | CT finding classification | [docs](docs/metrics.md#f1radbert-ct-do_f1radbert_ct) |
+| | [F1RadGraph](https://aclanthology.org/2022.findings-emnlp.319.pdf) | `do_radgraph` | CXR | -- | Clinical entity/relation accuracy | [docs](docs/metrics.md#f1radgraph-do_radgraph) |
+| | [RaTEScore](https://aclanthology.org/2024.emnlp-main.836.pdf) | `do_ratescore` | CXR | -- | Entity-level synonym-aware scoring | [docs](docs/metrics.md#ratescore-do_ratescore) |
+| **Specialized** | [RadGraph-RadCliQ](https://www.cell.com/patterns/pdfExtended/S2666-3899(23)00157-5) | `do_radgraph_radcliq` | CXR | -- | Per-pair entity+relation F1 (RadCliQ variant) | [docs](docs/metrics.md#radgraph-radcliq-do_radgraph_radcliq) |
+| | [RadCliQ-v1](https://www.cell.com/patterns/pdfExtended/S2666-3899(23)00157-5) | `do_radcliq` | CXR | -- | Composite clinical relevance | [docs](docs/metrics.md#radcliq-v1-do_radcliq) |
+| | [SRRBert](https://aclanthology.org/2025.acl-long.1301.pdf) | `do_srrbert` | CXR | -- | Structured report evaluation | [docs](docs/metrics.md#srrbert-do_srrbert) |
+| | [Temporal F1](https://aclanthology.org/2025.findings-acl.888.pdf) | `do_temporal` | CXR | -- | Temporal consistency | [docs](docs/metrics.md#temporal-f1-do_temporal) |
+| | [GREEN](https://aclanthology.org/2024.findings-emnlp.21.pdf) | `do_green` | CXR | Local HF | LLM-based overall quality (7B model) | [docs](docs/metrics.md#green-do_green) |
+| | MammoGREEN | `do_mammo_green` | Mammo | OpenAI / Gemini | Mammography-specific LLM scoring | [docs](docs/metrics.md#mammogreen-do_mammo_green) |
+| | [CRIMSON](https://arxiv.org/pdf/2603.06183) | `do_crimson` | CXR | OpenAI / HF | LLM-based clinical significance scoring | [docs](docs/metrics.md#crimson-do_crimson) |
+| | [RadFact-CT](https://arxiv.org/pdf/2510.15042) | `do_radfact_ct` | CT | OpenAI | LLM-based factual precision/recall | [docs](docs/metrics.md#radfact-ct-do_radfact_ct) |
 
 > **Modality:** CXR = Chest X-Ray, CT = Computed Tomography, Mammo = Mammography, -- = modality-agnostic.
 
 Enable only the metrics you need -- each one is loaded lazily.
+
+## API Keys for LLM Metrics
+
+LLM-based metrics (CRIMSON, MammoGREEN, RadFact-CT) share two **global** API key arguments:
+
+```python
+evaluator = RadEval(
+    openai_api_key="sk-...",   # used by CRIMSON (openai), MammoGREEN (openai), RadFact-CT
+    gemini_api_key="AIza...",  # used by MammoGREEN (gemini)
+    do_crimson=True,
+    do_mammo_green=True,
+    do_radfact_ct=True,
+)
+```
+
+If not passed explicitly, keys fall back to the environment variables `OPENAI_API_KEY`, `GEMINI_API_KEY`, or `GOOGLE_API_KEY`. An error is raised if the chosen provider requires a key that is neither passed nor in the environment.
 
 ## Per-Sample Output
 

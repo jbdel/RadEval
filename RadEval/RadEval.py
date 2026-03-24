@@ -11,11 +11,13 @@ from rich.progress import (
 
 class RadEval():
     def __init__(self,
+                 openai_api_key=None,
+                 gemini_api_key=None,
                  do_radgraph=False,
                  do_green=False,
                  do_mammo_green=False,
                  mammo_green_model="gpt-4o-mini",
-                 mammo_green_api_key=None,
+                 mammo_green_max_concurrent=50,
                  do_bleu=False,
                  do_rouge=False,
                  do_bertscore=False,
@@ -31,17 +33,15 @@ class RadEval():
                  do_temporal=False,
                  do_radfact_ct=False,
                  radfact_ct_model="gpt-4o-mini",
-                 radfact_ct_api_key=None,
                  radfact_ct_filter_negatives=False,
                  radfact_ct_max_concurrent=50,
                  do_crimson=False,
                  crimson_api="hf",
-                 crimson_api_key=None,
                  crimson_model=None,
                  crimson_batch_size=1,
+                 crimson_max_concurrent=50,
                  do_hoppr_crimson_ct=False,
                  hoppr_crimson_ct_api="openai",
-                 hoppr_crimson_ct_api_key=None,
                  hoppr_crimson_ct_model=None,
                  do_per_sample=False,
                  do_details=False,
@@ -57,7 +57,9 @@ class RadEval():
         self.do_green = do_green
         self.do_mammo_green = do_mammo_green
         self.mammo_green_model = mammo_green_model
-        self.mammo_green_api_key = mammo_green_api_key
+        self.mammo_green_max_concurrent = mammo_green_max_concurrent
+        self.openai_api_key = openai_api_key
+        self.gemini_api_key = gemini_api_key
         self.do_bleu = do_bleu
         self.do_rouge = do_rouge
         self.do_bertscore = do_bertscore
@@ -72,17 +74,15 @@ class RadEval():
         self.do_temporal = do_temporal
         self.do_radfact_ct = do_radfact_ct
         self.radfact_ct_model = radfact_ct_model
-        self.radfact_ct_api_key = radfact_ct_api_key
         self.radfact_ct_filter_negatives = radfact_ct_filter_negatives
         self.radfact_ct_max_concurrent = radfact_ct_max_concurrent
         self.do_crimson = do_crimson
         self.crimson_api = crimson_api
-        self.crimson_api_key = crimson_api_key
         self.crimson_model = crimson_model
         self.crimson_batch_size = crimson_batch_size
+        self.crimson_max_concurrent = crimson_max_concurrent
         self.do_hoppr_crimson_ct = do_hoppr_crimson_ct
         self.hoppr_crimson_ct_api = hoppr_crimson_ct_api
-        self.hoppr_crimson_ct_api_key = hoppr_crimson_ct_api_key
         self.hoppr_crimson_ct_model = hoppr_crimson_ct_model
         self.do_radeval_bertscore = do_radeval_bertscore
         self.do_per_sample = do_per_sample
@@ -112,7 +112,9 @@ class RadEval():
             from .metrics.green_score import MammoGREEN
             self.mammo_green_scorer = MammoGREEN(
                 model_name=self.mammo_green_model,
-                api_key=self.mammo_green_api_key,
+                openai_api_key=self.openai_api_key,
+                gemini_api_key=self.gemini_api_key,
+                max_concurrent=self.mammo_green_max_concurrent,
                 output_dir="."
             )
 
@@ -187,7 +189,7 @@ class RadEval():
                     raise ImportError("RadFactCT is not available")
                 self.radfact_ct_scorer = RadFactCT(
                     model_name=self.radfact_ct_model,
-                    api_key=self.radfact_ct_api_key,
+                    openai_api_key=self.openai_api_key,
                     filter_negatives=self.radfact_ct_filter_negatives,
                     max_concurrent=self.radfact_ct_max_concurrent,
                 )
@@ -202,10 +204,12 @@ class RadEval():
                 if CRIMSON is None:
                     raise ImportError("CRIMSON is not available")
                 self.crimson_scorer = CRIMSON(
-                    api=self.crimson_api,
+                    provider=self.crimson_api,
                     model_name=self.crimson_model,
-                    api_key=self.crimson_api_key,
+                    openai_api_key=self.openai_api_key,
+                    gemini_api_key=self.gemini_api_key,
                     batch_size=self.crimson_batch_size,
+                    max_concurrent=self.crimson_max_concurrent,
                 )
             except (ImportError, EnvironmentError, OSError) as e:
                 warnings.warn(
@@ -218,9 +222,10 @@ class RadEval():
                 if CRIMSON_CT is None:
                     raise ImportError("CRIMSON_CT is not available")
                 self.hoppr_crimson_ct_scorer = CRIMSON_CT(
-                    api=self.hoppr_crimson_ct_api,
+                    provider=self.hoppr_crimson_ct_api,
                     model_name=self.hoppr_crimson_ct_model,
-                    api_key=self.hoppr_crimson_ct_api_key,
+                    openai_api_key=self.openai_api_key,
+                    gemini_api_key=self.gemini_api_key,
                 )
             except (ImportError, EnvironmentError, OSError) as e:
                 warnings.warn(
@@ -458,8 +463,22 @@ class RadEval():
             # ----------------------------------------------------------
             if self.do_mammo_green:
                 progress.update(metric_task, description="Computing MammoGREEN")
+                sample_task = progress.add_task(
+                    "  [dim]Samples", total=n_samples)
+                mg_cost = getattr(self.mammo_green_scorer, 'cost_tracker', None)
+
+                def _mg_sample_done():
+                    progress.advance(sample_task)
+                    if mg_cost:
+                        progress.update(sample_task,
+                                        description=f"  [dim]Samples (${mg_cost.cost:.2f})")
+
                 mean, std, sample_scores, results_df = self.mammo_green_scorer(
-                    refs, hyps)
+                    refs, hyps, on_sample_done=_mg_sample_done)
+                if mg_cost:
+                    progress.update(sample_task,
+                                    description=f"  [dim]Samples (${mg_cost.cost:.2f})")
+                progress.remove_task(sample_task)
                 if self.do_details:
                     scores["mammo_green"] = round(mean, 4)
                     scores["mammo_green_std"] = round(std, 4)
@@ -736,9 +755,20 @@ class RadEval():
                 progress.update(metric_task, description="Computing CRIMSON")
                 sample_task = progress.add_task(
                     "  [dim]Samples", total=n_samples)
+                crimson_cost = getattr(self.crimson_scorer, 'cost_tracker', None)
+
+                def _crimson_sample_done():
+                    progress.advance(sample_task)
+                    if crimson_cost:
+                        progress.update(sample_task,
+                                        description=f"  [dim]Samples (${crimson_cost.cost:.2f})")
+
                 mean, std, sample_scores, results_df = self.crimson_scorer(
                     refs, hyps,
-                    on_sample_done=lambda: progress.advance(sample_task))
+                    on_sample_done=_crimson_sample_done)
+                if crimson_cost:
+                    progress.update(sample_task,
+                                    description=f"  [dim]Samples (${crimson_cost.cost:.2f})")
                 progress.remove_task(sample_task)
                 if self.do_details:
                     scores["crimson"] = round(mean, 4)

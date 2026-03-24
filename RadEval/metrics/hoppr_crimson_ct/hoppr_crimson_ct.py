@@ -39,16 +39,20 @@ class HopprCrimsonCT(CRIMSONScore):
 
     def __init__(
         self,
-        api="openai",
+        provider="openai",
         model_name=None,
-        api_key=None,
+        openai_api_key=None,
+        gemini_api_key=None,
         batch_size=1,
+        max_concurrent=50,
     ):
         super().__init__(
-            api=api,
+            provider=provider,
             model_name=model_name or self.DEFAULT_OPENAI_MODEL,
-            api_key=api_key,
+            openai_api_key=openai_api_key,
+            gemini_api_key=gemini_api_key,
             batch_size=batch_size,
+            max_concurrent=max_concurrent,
         )
 
     def _build_evaluation_prompt(self, reference_findings, predicted_findings,
@@ -73,16 +77,20 @@ class CRIMSON_CT:
 
     def __init__(
         self,
-        api="openai",
+        provider="openai",
         model_name=None,
-        api_key=None,
+        openai_api_key=None,
+        gemini_api_key=None,
         batch_size=1,
+        max_concurrent=50,
     ):
         self.scorer = HopprCrimsonCT(
-            api=api,
+            provider=provider,
             model_name=model_name,
-            api_key=api_key,
+            openai_api_key=openai_api_key,
+            gemini_api_key=gemini_api_key,
             batch_size=batch_size,
+            max_concurrent=max_concurrent,
         )
         self.cost_tracker = getattr(self.scorer, "cost_tracker", None)
 

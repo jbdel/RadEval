@@ -17,7 +17,7 @@ import logging
 import os
 import warnings
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, ClassVar, Dict, List, Optional, Tuple
 
 import yaml
 from openai import AsyncOpenAI, OpenAI
@@ -25,6 +25,7 @@ from openai import AsyncOpenAI, OpenAI
 from .._llm import (
     CostTracker, call_openai, call_openai_async,
 )
+from .._llm_base import LLMMetricBase
 
 logger = logging.getLogger(__name__)
 
@@ -362,33 +363,50 @@ def compute_radfact_scores(
 # Main metric class
 # ---------------------------------------------------------------------------
 
-class RadFactCT:
+class RadFactCT(LLMMetricBase):
     """RadFact-CT: LLM-based factual evaluation for CT radiology reports.
 
     Implements both RadFact +/- (default) and RadFact + (filter_negatives=True).
     Supports async concurrent evaluation via max_concurrent parameter.
+
+    Inherits from LLMMetricBase for key resolution and provider validation,
+    but keeps its own multi-step async pipeline (split → entail → aggregate).
     """
+
+    SUPPORTED_PROVIDERS: ClassVar[set[str]] = {"openai"}
 
     def __init__(
         self,
         model_name: str = "gpt-4o-mini",
-        api_key: Optional[str] = None,
+        openai_api_key: Optional[str] = None,
+        gemini_api_key: Optional[str] = None,
         temperature: float = 0.0,
         filter_negatives: bool = False,
         max_concurrent: int = 50,
     ):
-        key = api_key or os.environ.get("OPENAI_API_KEY")
-        if not key:
-            raise EnvironmentError(
-                "No API key provided. Set OPENAI_API_KEY or pass api_key=."
-            )
-        self.client = OpenAI(api_key=key)
-        self._api_key = key
-        self.model_name = model_name
+        super().__init__(
+            provider="openai",
+            model_name=model_name,
+            openai_api_key=openai_api_key,
+            gemini_api_key=gemini_api_key,
+            max_concurrent=max_concurrent,
+        )
+
+        self.client = self._openai_client
+        self._api_key = self._resolved_openai_key
         self.temperature = temperature
         self.filter_negatives = filter_negatives
-        self.max_concurrent = max_concurrent
-        self.cost_tracker = CostTracker(model_name)
+
+    # Stubs required by LLMMetricBase ABC (not used — RadFactCT has its own pipeline)
+    def _build_request(self, ref, hyp, **kw):
+        raise NotImplementedError("RadFactCT uses its own multi-step pipeline.")
+
+    def _parse_response(self, raw):
+        raise NotImplementedError("RadFactCT uses its own multi-step pipeline.")
+
+    def _aggregate(self, results, refs, hyps):
+        raise NotImplementedError("RadFactCT uses _aggregate_results.")
+
 
     def _process_report(self, text: str) -> list[str]:
         phrases = report_to_phrases(
@@ -474,6 +492,7 @@ class RadFactCT:
     def __call__(
         self, hyps: List[str], refs: List[str], on_sample_done=None,
     ) -> Tuple[dict, list]:
+        """Override LLMMetricBase.__call__ — RadFactCT uses its own pipeline."""
         return self.forward(hyps=hyps, refs=refs, on_sample_done=on_sample_done)
 
     async def forward_async(

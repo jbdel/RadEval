@@ -13,13 +13,13 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import re
-from typing import List, Optional, Tuple
+from typing import Any, ClassVar, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 
+from .._llm_base import LLMMetricBase
 from .prompt_parts import build_prompt as _build_evaluation_prompt_fn
 
 logger = logging.getLogger(__name__)
@@ -29,6 +29,10 @@ _SYSTEM_MSG = (
     "the accuracy of radiology reports."
 )
 
+
+# ---------------------------------------------------------------------------
+# JSON helpers (module-level, reused by HopprCrimsonCT)
+# ---------------------------------------------------------------------------
 
 def _extract_json_str(text: str) -> str:
     """Extract JSON from LLM response, handling markdown fences and trailing commas."""
@@ -45,6 +49,49 @@ def _extract_json_str(text: str) -> str:
     return t
 
 
+def _repair_truncated_json(text: str) -> Optional[str]:
+    """Try to close a truncated JSON object so it can be parsed.
+
+    Walks through the string tracking bracket/brace depth and string
+    state, then appends the missing closing characters.  Returns *None*
+    if the result still cannot be parsed.
+    """
+    in_string = False
+    escape = False
+    stack: list[str] = []
+    closer = {"{": "}", "[": "]"}
+
+    for ch in text:
+        if escape:
+            escape = False
+            continue
+        if ch == "\\":
+            escape = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if ch in closer:
+            stack.append(closer[ch])
+        elif ch in ("}", "]"):
+            if stack and stack[-1] == ch:
+                stack.pop()
+
+    if in_string:
+        text += '"'
+
+    text = re.sub(r",\s*$", "", text)
+    text += "".join(reversed(stack))
+
+    try:
+        json.loads(text)
+        return text
+    except json.JSONDecodeError:
+        return None
+
+
 def _validate_crimson_response(data: dict) -> None:
     """Validate the LLM response has the expected CRIMSON structure."""
     if not isinstance(data, dict):
@@ -57,81 +104,284 @@ def _validate_crimson_response(data: dict) -> None:
         raise ValueError(f"'errors' must be a dict, got {type(errors).__name__}")
 
 
-class CRIMSONScore:
+# ---------------------------------------------------------------------------
+# CRIMSONScore – main scorer
+# ---------------------------------------------------------------------------
+
+class CRIMSONScore(LLMMetricBase):
     """CRIMSON scorer with OpenAI or HuggingFace backend."""
+
+    SUPPORTED_PROVIDERS: ClassVar[set[str]] = {"openai", "hf"}
 
     DEFAULT_HF_MODEL = "CRIMSONScore/medgemma-4b-it-crimson"
     DEFAULT_OPENAI_MODEL = "gpt-5.2"
 
     def __init__(
         self,
-        api="hf",
+        provider="hf",
         model_name=None,
-        api_key=None,
+        openai_api_key=None,
+        gemini_api_key=None,
         device=None,
         batch_size=1,
+        max_concurrent=50,
     ):
-        self.api = api
+        resolved_model = model_name or (
+            self.DEFAULT_OPENAI_MODEL if provider == "openai"
+            else self.DEFAULT_HF_MODEL
+        )
+
+        super().__init__(
+            provider=provider,
+            model_name=resolved_model,
+            openai_api_key=openai_api_key,
+            gemini_api_key=gemini_api_key,
+            max_concurrent=max_concurrent,
+        )
+
         self.batch_size = batch_size
 
-        if api == "openai":
-            from openai import OpenAI
-            self.model_name = model_name or self.DEFAULT_OPENAI_MODEL
-            resolved_key = api_key or os.environ.get("OPENAI_API_KEY")
-            if not resolved_key:
-                raise EnvironmentError(
-                    "OPENAI_API_KEY not found. Pass api_key or set OPENAI_API_KEY.")
-            self.client = OpenAI(api_key=resolved_key)
-            from .._llm import CostTracker
-            self.cost_tracker = CostTracker(self.model_name)
+        if provider in ("huggingface", "hf"):
+            self._init_hf_pipeline()
 
-        elif api in ("huggingface", "hf"):
-            import torch
-            import transformers
-            self.model_name = model_name or self.DEFAULT_HF_MODEL
-            self.torch_dtype = torch.bfloat16
-            logger.info("Loading HuggingFace model: %s", self.model_name)
-            self.pipe = transformers.pipeline(
-                "text-generation",
-                model=self.model_name,
-                dtype=self.torch_dtype,
-                device_map="auto",
-            )
-            logger.info("Model loaded.")
-        else:
-            raise ValueError(
-                f"Unsupported api: {api}. Use 'openai', 'huggingface', or 'hf'.")
+    def _init_hf_pipeline(self):
+        import torch
+        import transformers
 
-    def _chat_completion(self, prompt: str) -> str:
-        if self.api == "openai":
-            from .._llm import call_openai
-            return call_openai(
-                self.client, self.model_name,
-                [
+        self.torch_dtype = torch.bfloat16
+        logger.info("Loading HuggingFace model: %s", self.model_name)
+
+        model_kwargs = {"torch_dtype": self.torch_dtype}
+        try:
+            from transformers.utils import is_flash_attn_2_available
+            if is_flash_attn_2_available():
+                model_kwargs["attn_implementation"] = "flash_attention_2"
+                logger.info("Using Flash Attention 2.")
+        except ImportError:
+            pass
+
+        self.pipe = transformers.pipeline(
+            "text-generation",
+            model=self.model_name,
+            model_kwargs=model_kwargs,
+            device_map="auto",
+        )
+        logger.info("Model loaded.")
+
+    # ------------------------------------------------------------------
+    # LLMMetricBase interface
+    # ------------------------------------------------------------------
+
+    def _build_request(self, ref: str, hyp: str, **kwargs) -> dict[str, Any]:
+        patient_context = kwargs.get("patient_context")
+        include_guidelines = kwargs.get("include_guidelines", True)
+        prompt = self._build_evaluation_prompt(
+            ref, hyp, patient_context, include_guidelines)
+
+        if self.provider == "openai":
+            return {
+                "messages": [
                     {"role": "system", "content": _SYSTEM_MSG},
                     {"role": "user", "content": prompt},
                 ],
-                temperature=0,
-                cost_tracker=self.cost_tracker,
-                seed=42,
-                response_format={"type": "json_object"},
-            )
+                "temperature": 0,
+                "seed": 42,
+                "response_format": {"type": "json_object"},
+            }
+        else:
+            return {"prompt": prompt}
 
-        elif self.api in ("huggingface", "hf"):
-            messages = [
-                {"role": "system", "content": _SYSTEM_MSG},
-                {"role": "user", "content": prompt + "\nPlease respond with valid JSON only."},
-            ]
-            outputs = self.pipe(
-                messages,
-                max_new_tokens=4096,
-                do_sample=False,
-                batch_size=self.batch_size,
-            )
-            response = outputs[0]["generated_text"][-1]["content"]
-            if not response:
-                logger.warning("Empty response from HF pipeline. Raw: %s", outputs)
-            return response
+    def _parse_response(self, raw: str) -> dict:
+        cleaned = _extract_json_str(raw)
+        try:
+            evaluation = json.loads(cleaned)
+        except json.JSONDecodeError:
+            repaired = _repair_truncated_json(cleaned)
+            if repaired is not None:
+                logger.warning("Repaired truncated CRIMSON JSON.")
+                evaluation = json.loads(repaired)
+            else:
+                raise ValueError(
+                    f"Failed to parse CRIMSON JSON: {raw[:500]}")
+
+        _validate_crimson_response(evaluation)
+        return self._calculate_crimson(evaluation)
+
+    def _aggregate(
+        self, results: list[dict], refs: list[str], hyps: list[str],
+    ) -> tuple:
+        crimson_scores = [r["crimson_score"] for r in results]
+        valid = [s for s in crimson_scores
+                 if not (isinstance(s, float) and np.isnan(s))]
+        n_failed = len(crimson_scores) - len(valid)
+        if n_failed:
+            logger.warning(
+                "CRIMSON: %d/%d samples failed and were excluded.",
+                n_failed, len(crimson_scores))
+        mean = float(np.mean(valid)) if valid else 0.0
+        std = float(np.std(valid)) if len(valid) > 1 else 0.0
+
+        rows = []
+        for ref, hyp, result in zip(refs, hyps, results):
+            counts = result.get("error_counts", {})
+            rows.append({
+                "reference": ref,
+                "prediction": hyp,
+                "crimson_score": result.get("crimson_score", 0.0),
+                **{k: counts.get(k, 0) for k in (
+                    "false_findings", "missing_findings", "attribute_errors",
+                    "location_errors", "severity_errors", "descriptor_errors",
+                    "measurement_errors", "certainty_errors", "unspecific_errors",
+                    "overinterpretation_errors", "temporal_errors",
+                )},
+            })
+        results_df = pd.DataFrame(rows)
+        return mean, std, crimson_scores, results_df
+
+    # ------------------------------------------------------------------
+    # HF-specific chat completion (overrides base for local model)
+    # ------------------------------------------------------------------
+
+    def _chat_completion(self, request: dict[str, Any]) -> str:
+        if self.provider in ("huggingface", "hf"):
+            return self._hf_generate(request["prompt"])
+        return super()._chat_completion(request)
+
+    def _hf_generate(self, prompt: str) -> str:
+        messages = [
+            {"role": "system", "content": _SYSTEM_MSG},
+            {"role": "user", "content": prompt + "\nPlease respond with valid JSON only."},
+        ]
+        outputs = self.pipe(
+            messages,
+            max_new_tokens=8192,
+            do_sample=False,
+            repetition_penalty=1.1,
+        )
+        response = outputs[0]["generated_text"][-1]["content"]
+        if not response:
+            logger.warning("Empty response from HF pipeline. Raw: %s", outputs)
+        return response
+
+    # ------------------------------------------------------------------
+    # Override _evaluate_one for NaN fallback on persistent failure
+    # ------------------------------------------------------------------
+
+    def _evaluate_one(self, ref, hyp, max_retries=2, **kwargs):
+        try:
+            return super()._evaluate_one(ref, hyp, max_retries=max_retries, **kwargs)
+        except RuntimeError:
+            logger.error(
+                "CRIMSON: all attempts failed – returning NaN score.")
+            return self._nan_fallback()
+
+    async def _evaluate_one_async(self, ref, hyp, max_retries=2, **kwargs):
+        try:
+            return await super()._evaluate_one_async(
+                ref, hyp, max_retries=max_retries, **kwargs)
+        except RuntimeError:
+            logger.error(
+                "CRIMSON: all async attempts failed – returning NaN score.")
+            return self._nan_fallback()
+
+    # ------------------------------------------------------------------
+    # Override __call__ to support patient_contexts
+    # ------------------------------------------------------------------
+
+    def __call__(self, refs, hyps, patient_contexts=None,
+                 include_guidelines=True, on_sample_done=None):
+        """Compute CRIMSON across multiple report pairs.
+
+        Uses async concurrency for OpenAI, sequential for HF.
+
+        Returns:
+            (mean, std, crimson_scores, results_df)
+        """
+        if not isinstance(refs, list) or not isinstance(hyps, list):
+            raise TypeError("refs and hyps must be of type list")
+        if len(refs) != len(hyps):
+            raise ValueError("refs and hyps lists don't have the same size")
+
+        if patient_contexts is None:
+            patient_contexts = [None] * len(refs)
+        elif len(patient_contexts) != len(refs):
+            raise ValueError(
+                "patient_contexts must have same size as refs/hyps")
+
+        if self.provider == "openai":
+            results = self._run_concurrent_crimson(
+                refs, hyps, patient_contexts, include_guidelines,
+                on_sample_done)
+        else:
+            results = []
+            for ref, hyp, ctx in zip(refs, hyps, patient_contexts):
+                results.append(self._evaluate_one(
+                    ref, hyp,
+                    patient_context=ctx,
+                    include_guidelines=include_guidelines))
+                if on_sample_done:
+                    on_sample_done()
+
+        return self._aggregate(results, refs, hyps)
+
+    def _run_concurrent_crimson(self, refs, hyps, patient_contexts,
+                                include_guidelines, on_sample_done):
+        """Run CRIMSON evaluations concurrently (passes patient_context per sample)."""
+        import asyncio
+
+        sem = asyncio.Semaphore(self.max_concurrent)
+
+        async def _sem_eval(ref, hyp, ctx):
+            async with sem:
+                result = await self._evaluate_one_async(
+                    ref, hyp,
+                    patient_context=ctx,
+                    include_guidelines=include_guidelines)
+                if on_sample_done:
+                    on_sample_done()
+                return result
+
+        async def _gather():
+            tasks = [_sem_eval(r, h, c)
+                     for r, h, c in zip(refs, hyps, patient_contexts)]
+            return list(await asyncio.gather(*tasks))
+
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = None
+
+        if loop and loop.is_running():
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor(1) as pool:
+                return pool.submit(lambda: asyncio.run(_gather())).result()
+        return asyncio.run(_gather())
+
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _nan_fallback():
+        """Return a result dict with NaN score for unparseable responses."""
+        return {
+            "raw_evaluation": {},
+            "error_counts": {k: 0 for k in (
+                "false_findings", "missing_findings", "attribute_errors",
+                "location_errors", "severity_errors", "descriptor_errors",
+                "measurement_errors", "certainty_errors", "unspecific_errors",
+                "overinterpretation_errors", "temporal_errors",
+            )},
+            "weighted_error_counts": {
+                "false_findings": 0, "missing_findings": 0,
+                "attribute_errors": 0,
+            },
+            "metrics": {
+                "N_G": 0, "E_penalty": 0, "correct": 0,
+                "errors_more_than_correct": 0, "S": 0,
+            },
+            "crimson_score": float("nan"),
+        }
 
     def _build_evaluation_prompt(self, reference_findings, predicted_findings,
                                  patient_context=None, include_guidelines=True):
@@ -143,24 +393,6 @@ class CRIMSONScore:
             include_attribute_guidelines=include_guidelines,
             include_context_guidelines=include_guidelines,
         )
-
-    def evaluate(self, reference_findings, predicted_findings,
-                 patient_context=None, include_guidelines=True):
-        """Evaluate a single pair and return CRIMSON result dict."""
-        prompt = self._build_evaluation_prompt(
-            reference_findings, predicted_findings,
-            patient_context, include_guidelines=include_guidelines)
-
-        raw = self._chat_completion(prompt)
-        cleaned = _extract_json_str(raw)
-        try:
-            evaluation = json.loads(cleaned)
-        except json.JSONDecodeError as e:
-            raise ValueError(
-                f"Failed to parse CRIMSON response as JSON: {e}\nResponse: {raw}")
-
-        _validate_crimson_response(evaluation)
-        return self._calculate_crimson(evaluation)
 
     def _calculate_crimson(self, evaluation):
         """Calculate CRIMSON score from parsed evaluation. Science-critical -- do not alter."""
@@ -286,56 +518,6 @@ class CRIMSONScore:
             },
             "crimson_score": round(crimson, 4),
         }
-
-    def __call__(self, refs, hyps, patient_contexts=None,
-                 include_guidelines=True, on_sample_done=None):
-        """Compute CRIMSON across multiple report pairs.
-
-        Returns:
-            (mean, std, crimson_scores, results_df)
-        """
-        if not (isinstance(refs, list) and isinstance(hyps, list)):
-            raise TypeError("refs and hyps must be of type list")
-        if len(refs) != len(hyps):
-            raise ValueError("refs and hyps lists don't have the same size")
-
-        if patient_contexts is None:
-            patient_contexts = [None] * len(refs)
-        elif len(patient_contexts) != len(refs):
-            raise ValueError("patient_contexts must have same size as refs/hyps")
-
-        pair_results = []
-        for ref, hyp, context in zip(refs, hyps, patient_contexts):
-            pair_results.append(self.evaluate(
-                reference_findings=ref,
-                predicted_findings=hyp,
-                patient_context=context,
-                include_guidelines=include_guidelines,
-            ))
-            if on_sample_done:
-                on_sample_done()
-
-        crimson_scores = [r["crimson_score"] for r in pair_results]
-        mean = float(np.mean(crimson_scores)) if crimson_scores else 0.0
-        std = float(np.std(crimson_scores)) if len(crimson_scores) > 1 else 0.0
-
-        rows = []
-        for ref, hyp, result in zip(refs, hyps, pair_results):
-            counts = result.get("error_counts", {})
-            rows.append({
-                "reference": ref,
-                "prediction": hyp,
-                "crimson_score": result.get("crimson_score", 0.0),
-                **{k: counts.get(k, 0) for k in (
-                    "false_findings", "missing_findings", "attribute_errors",
-                    "location_errors", "severity_errors", "descriptor_errors",
-                    "measurement_errors", "certainty_errors", "unspecific_errors",
-                    "overinterpretation_errors", "temporal_errors",
-                )},
-            })
-
-        results_df = pd.DataFrame(rows)
-        return mean, std, crimson_scores, results_df
 
 
 class CRIMSON(CRIMSONScore):

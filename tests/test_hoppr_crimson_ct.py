@@ -5,7 +5,7 @@ Integration tests require OPENAI_API_KEY and are marked with @pytest.mark.integr
 import json
 import math
 import os
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 import warnings
@@ -111,30 +111,37 @@ class TestHopprCrimsonCTUnit:
         assert "Aortic dissection" in prompt
 
     def test_mock_identical_reports(self):
-        with patch("openai.OpenAI") as mock_class:
+        with patch("openai.OpenAI") as mock_class, \
+             patch("openai.AsyncOpenAI"):
             mock_client = MagicMock()
             mock_client.chat.completions.create.return_value = (
                 _mock_openai_response(json.dumps(mock_eval_identical)))
             mock_class.return_value = mock_client
 
-            scorer = CRIMSON_CT(api="openai", api_key="test-key")
+            scorer = CRIMSON_CT(provider="openai", openai_api_key="test-key")
+            scorer.scorer._chat_completion_async = AsyncMock(
+                return_value=json.dumps(mock_eval_identical))
             mean, std, scores, df = scorer(REFS_IDENTICAL, HYPS_IDENTICAL)
             assert mean == 1.0
 
     def test_mock_different_reports(self):
-        with patch("openai.OpenAI") as mock_class:
+        with patch("openai.OpenAI") as mock_class, \
+             patch("openai.AsyncOpenAI"):
             mock_client = MagicMock()
             mock_client.chat.completions.create.return_value = (
                 _mock_openai_response(json.dumps(mock_eval_different)))
             mock_class.return_value = mock_client
 
-            scorer = CRIMSON_CT(api="openai", api_key="test-key")
+            scorer = CRIMSON_CT(provider="openai", openai_api_key="test-key")
+            scorer.scorer._chat_completion_async = AsyncMock(
+                return_value=json.dumps(mock_eval_different))
             mean, std, scores, df = scorer(REFS_DIFFERENT, HYPS_DIFFERENT)
             assert mean <= 0
 
     def test_radeval_integration_mock(self):
         from RadEval import RadEval
-        with patch("openai.OpenAI") as mock_class:
+        with patch("openai.OpenAI") as mock_class, \
+             patch("openai.AsyncOpenAI"):
             mock_client = MagicMock()
             mock_client.chat.completions.create.return_value = (
                 _mock_openai_response(json.dumps(mock_eval_identical)))
@@ -143,16 +150,19 @@ class TestHopprCrimsonCTUnit:
             evaluator = RadEval(
                 do_hoppr_crimson_ct=True,
                 hoppr_crimson_ct_api="openai",
-                hoppr_crimson_ct_api_key="test-key",
+                openai_api_key="test-key",
                 show_progress=False,
             )
+            evaluator.hoppr_crimson_ct_scorer.scorer._chat_completion_async = AsyncMock(
+                return_value=json.dumps(mock_eval_identical))
             results = evaluator(refs=REFS_IDENTICAL, hyps=HYPS_IDENTICAL)
             assert "hoppr_crimson_ct" in results
             assert results["hoppr_crimson_ct"] == 1.0
 
     def test_radeval_per_sample_mock(self):
         from RadEval import RadEval
-        with patch("openai.OpenAI") as mock_class:
+        with patch("openai.OpenAI") as mock_class, \
+             patch("openai.AsyncOpenAI"):
             mock_client = MagicMock()
             mock_client.chat.completions.create.return_value = (
                 _mock_openai_response(json.dumps(mock_eval_identical)))
@@ -161,17 +171,20 @@ class TestHopprCrimsonCTUnit:
             evaluator = RadEval(
                 do_hoppr_crimson_ct=True,
                 hoppr_crimson_ct_api="openai",
-                hoppr_crimson_ct_api_key="test-key",
+                openai_api_key="test-key",
                 do_per_sample=True,
                 show_progress=False,
             )
+            evaluator.hoppr_crimson_ct_scorer.scorer._chat_completion_async = AsyncMock(
+                return_value=json.dumps(mock_eval_identical))
             results = evaluator(refs=REFS_IDENTICAL, hyps=HYPS_IDENTICAL)
             assert isinstance(results["hoppr_crimson_ct"], list)
             assert len(results["hoppr_crimson_ct"]) == 1
 
     def test_radeval_details_mock(self):
         from RadEval import RadEval
-        with patch("openai.OpenAI") as mock_class:
+        with patch("openai.OpenAI") as mock_class, \
+             patch("openai.AsyncOpenAI"):
             mock_client = MagicMock()
             mock_client.chat.completions.create.return_value = (
                 _mock_openai_response(json.dumps(mock_eval_identical)))
@@ -180,13 +193,20 @@ class TestHopprCrimsonCTUnit:
             evaluator = RadEval(
                 do_hoppr_crimson_ct=True,
                 hoppr_crimson_ct_api="openai",
-                hoppr_crimson_ct_api_key="test-key",
+                openai_api_key="test-key",
                 do_details=True,
                 show_progress=False,
             )
+            evaluator.hoppr_crimson_ct_scorer.scorer._chat_completion_async = AsyncMock(
+                return_value=json.dumps(mock_eval_identical))
             results = evaluator(refs=REFS_IDENTICAL, hyps=HYPS_IDENTICAL)
             assert isinstance(results["hoppr_crimson_ct"], float)
             assert "hoppr_crimson_ct_std" in results
+
+    def test_unsupported_provider_raises(self):
+        """Test that unsupported provider raises NotImplementedError."""
+        with pytest.raises(NotImplementedError, match="does not support"):
+            CRIMSON_CT(provider="gemini", openai_api_key="test-key")
 
 
 @pytest.mark.integration
@@ -201,17 +221,17 @@ class TestHopprCrimsonCTIntegration:
         return key
 
     def test_identical_reports(self, api_key):
-        scorer = CRIMSON_CT(api="openai", api_key=api_key)
+        scorer = CRIMSON_CT(provider="openai", openai_api_key=api_key)
         mean, std, scores, df = scorer(REFS_IDENTICAL, HYPS_IDENTICAL)
         assert mean >= 0.5
 
     def test_different_reports(self, api_key):
-        scorer = CRIMSON_CT(api="openai", api_key=api_key)
+        scorer = CRIMSON_CT(provider="openai", openai_api_key=api_key)
         mean, std, scores, df = scorer(REFS_DIFFERENT, HYPS_DIFFERENT)
         assert mean < 0.5
 
     def test_partial_match(self, api_key):
-        scorer = CRIMSON_CT(api="openai", api_key=api_key)
+        scorer = CRIMSON_CT(provider="openai", openai_api_key=api_key)
         mean, std, scores, df = scorer(REFS_PARTIAL, HYPS_PARTIAL)
         assert -1.0 <= mean <= 1.0
 

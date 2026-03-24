@@ -1,8 +1,9 @@
 import os
 import math
+import json
 import pytest
 import pandas as pd
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import AsyncMock, Mock, patch, MagicMock
 import warnings
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -78,23 +79,18 @@ expected_scores = [1/3, 0.6, 1.0]
 expected_mean = sum(expected_scores) / len(expected_scores)
 
 
-def create_mock_openai_response(content: str):
-    """Create a mock OpenAI API response."""
-    mock_response = MagicMock()
-    mock_response.choices = [MagicMock()]
-    mock_response.choices[0].message.content = content
-    return mock_response
-
-
 class TestMammoGreenUnit:
     """Unit tests with mocked OpenAI API."""
 
     @pytest.fixture
     def mock_openai_client(self):
         """Create a mocked OpenAI client."""
-        with patch('RadEval.metrics.green_score.mammo_green.OpenAI') as mock_class:
+        with patch('openai.OpenAI') as mock_class, \
+             patch('openai.AsyncOpenAI') as mock_async_class:
             mock_client = MagicMock()
             mock_class.return_value = mock_client
+            mock_async_client = MagicMock()
+            mock_async_class.return_value = mock_async_client
             yield mock_client
 
     def test_import(self):
@@ -111,7 +107,6 @@ class TestMammoGreenUnit:
         """Test that initialization fails without API key."""
         from RadEval.metrics.green_score import MammoGREEN
 
-        # Remove env var if present
         old_key = os.environ.pop("OPENAI_API_KEY", None)
         try:
             with pytest.raises(EnvironmentError):
@@ -123,19 +118,13 @@ class TestMammoGreenUnit:
     def test_gemini_initialization_without_api_key(self):
         """Test that Gemini initialization fails without API key (or ImportError if not installed)."""
         from RadEval.metrics.green_score import MammoGREEN
-        from RadEval.metrics.green_score.mammo_green import GEMINI_AVAILABLE
+        from RadEval.metrics.green_score.mammo_green import GEMINI_TYPES_AVAILABLE
 
-        # Remove env var if present
         old_gemini_key = os.environ.pop("GEMINI_API_KEY", None)
         old_google_key = os.environ.pop("GOOGLE_API_KEY", None)
         try:
-            if GEMINI_AVAILABLE:
-                with pytest.raises(EnvironmentError):
-                    MammoGREEN(model_name="gemini-2.5-flash")
-            else:
-                # If google-genai is not installed, ImportError is raised
-                with pytest.raises(ImportError):
-                    MammoGREEN(model_name="gemini-2.5-flash")
+            with pytest.raises((EnvironmentError, ImportError)):
+                MammoGREEN(model_name="gemini-2.5-flash")
         finally:
             if old_gemini_key:
                 os.environ["GEMINI_API_KEY"] = old_gemini_key
@@ -146,38 +135,37 @@ class TestMammoGreenUnit:
         """Test that provider is correctly detected based on model name."""
         from RadEval.metrics.green_score.mammo_green import _detect_provider
 
-        # OpenAI models
         assert _detect_provider("gpt-4o") == "openai"
         assert _detect_provider("gpt-4o-mini") == "openai"
         assert _detect_provider("gpt-5.2-2025-12-11") == "openai"
         assert _detect_provider("gpt-5-mini-2025-08-07") == "openai"
         assert _detect_provider("o1-preview") == "openai"
 
-        # Gemini models (2.5+ only)
         assert _detect_provider("gemini-2.5-flash") == "gemini"
         assert _detect_provider("gemini-2.5-pro") == "gemini"
-        assert _detect_provider("Gemini-2.5-Flash") == "gemini"  # Case insensitive
+        assert _detect_provider("Gemini-2.5-Flash") == "gemini"
 
     def test_explicit_provider_parameter(self, mock_openai_client):
         """Test that explicit provider parameter overrides auto-detection."""
         from RadEval.metrics.green_score import MammoGREEN
 
-        # Explicit OpenAI provider
-        scorer = MammoGREEN(model_name="custom-model", provider="openai", api_key="test-key")
+        scorer = MammoGREEN(model_name="custom-model", provider="openai",
+                            openai_api_key="test-key")
         assert scorer.provider == "openai"
 
     def test_invalid_provider(self):
         """Test that invalid provider raises error."""
         from RadEval.metrics.green_score import MammoGREEN
 
-        with pytest.raises(ValueError, match="Unsupported provider"):
-            MammoGREEN(model_name="gpt-4o", provider="invalid", api_key="test-key")
+        with pytest.raises(NotImplementedError, match="does not support"):
+            MammoGREEN(model_name="gpt-4o", provider="invalid",
+                       openai_api_key="test-key")
 
     def test_initialization_with_api_key(self, mock_openai_client):
         """Test that initialization succeeds with API key."""
         from RadEval.metrics.green_score import MammoGREEN
 
-        scorer = MammoGREEN(model_name="gpt-4o", api_key="test-key")
+        scorer = MammoGREEN(model_name="gpt-4o", openai_api_key="test-key")
         assert scorer is not None
         assert scorer.model_name == "gpt-4o"
 
@@ -185,7 +173,6 @@ class TestMammoGreenUnit:
         """Test the mammo_green_score function."""
         from RadEval.metrics.green_score.mammo_green import mammo_green_score
 
-        # Test case 1: 1 match, 2 errors -> 1/3
         matched = 1
         errors = {
             "false_finding": 0,
@@ -198,11 +185,9 @@ class TestMammoGreenUnit:
         score = mammo_green_score(matched, errors)
         assert math.isclose(score, 1/3, rel_tol=epsilon)
 
-        # Test case 2: 0 matches, 0 errors -> 0.0
         score = mammo_green_score(0, {k: 0 for k in errors})
         assert score == 0.0
 
-        # Test case 3: 5 matches, 0 errors -> 1.0
         score = mammo_green_score(5, {k: 0 for k in errors})
         assert score == 1.0
 
@@ -210,19 +195,15 @@ class TestMammoGreenUnit:
         """Test the JSON extraction helper."""
         from RadEval.metrics.green_score.mammo_green import _extract_json_str
 
-        # Clean JSON
         clean = '{"matched_findings": 1}'
         assert _extract_json_str(clean) == clean
 
-        # JSON with surrounding text
         wrapped = 'Here is the result: {"matched_findings": 1} end'
         assert _extract_json_str(wrapped) == '{"matched_findings": 1}'
 
-        # JSON with markdown code block (common LLM output)
         markdown = '```json\n{"matched_findings": 1}\n```'
         assert _extract_json_str(markdown) == '{"matched_findings": 1}'
 
-        # JSON with trailing comma (common LLM error)
         trailing_comma = '{"matched_findings": 1,}'
         result = _extract_json_str(trailing_comma)
         assert result == '{"matched_findings": 1}'
@@ -231,7 +212,6 @@ class TestMammoGreenUnit:
         """Test the MammoGreenOutput schema validation."""
         from RadEval.metrics.green_score.mammo_green import MammoGreenOutput
 
-        # Valid output with all 6 error types
         valid_data = {
             "matched_findings": 2,
             "significant_errors": {
@@ -245,15 +225,13 @@ class TestMammoGreenUnit:
             "insignificant_errors": 0,
         }
         output = MammoGreenOutput(**valid_data)
-        output.validate_keys()  # Should not raise
+        output.validate_keys()
 
-        # Missing key in significant_errors
         invalid_data = {
             "matched_findings": 2,
             "significant_errors": {
                 "false_finding": 0,
                 "missing_finding": 1,
-                # missing other keys
             },
             "insignificant_errors": 0,
         }
@@ -263,29 +241,22 @@ class TestMammoGreenUnit:
 
     def test_call_interface(self, mock_openai_client):
         """Test the __call__ interface returns correct format."""
-        import json
         from RadEval.metrics.green_score import MammoGREEN
 
-        # Setup mock to return test responses
-        mock_openai_client.chat.completions.create.side_effect = [
-            create_mock_openai_response(json.dumps(mock_judge_responses[i]))
-            for i in range(len(refs))
-        ]
-
-        scorer = MammoGREEN(model_name="gpt-4o", api_key="test-key")
+        scorer = MammoGREEN(model_name="gpt-4o", openai_api_key="test-key")
+        scorer._chat_completion_async = AsyncMock(side_effect=[
+            json.dumps(mock_judge_responses[i]) for i in range(len(refs))
+        ])
         mean, std, scores, results_df = scorer(refs, hyps)
 
-        # Check return types
         assert isinstance(mean, float)
         assert isinstance(std, float)
         assert isinstance(scores, list)
         assert isinstance(results_df, pd.DataFrame)
 
-        # Check lengths
         assert len(scores) == len(refs)
         assert len(results_df) == len(refs)
 
-        # Check DataFrame columns (includes incorrect_breast_density)
         expected_columns = [
             "reference", "prediction", "green_score", "matched_findings",
             "false_finding", "missing_finding", "mischaracterization",
@@ -297,53 +268,40 @@ class TestMammoGreenUnit:
 
     def test_score_method_interface(self, mock_openai_client):
         """Test the .score() method returns dict format."""
-        import json
         from RadEval.metrics.green_score import MammoGREEN
 
-        # Setup mock
-        mock_openai_client.chat.completions.create.side_effect = [
-            create_mock_openai_response(json.dumps(mock_judge_responses[i]))
-            for i in range(len(refs))
-        ]
-
-        scorer = MammoGREEN(model_name="gpt-4o", api_key="test-key")
+        scorer = MammoGREEN(model_name="gpt-4o", openai_api_key="test-key")
+        scorer._chat_completion_async = AsyncMock(side_effect=[
+            json.dumps(mock_judge_responses[i]) for i in range(len(refs))
+        ])
         result = scorer.score(refs, hyps)
 
-        # Check return type and keys
         assert isinstance(result, dict)
         assert "green_scores" in result
         assert "error_counts" in result
         assert "summary" in result
 
-        # Check summary keys
         summary = result["summary"]
         assert "n" in summary
         assert "mean_green" in summary
         assert "total_significant_errors_by_type" in summary
 
-        # Verify incorrect_breast_density is tracked in summary
         assert "incorrect_breast_density" in summary["total_significant_errors_by_type"]
 
     def test_computed_scores(self, mock_openai_client):
         """Test that computed scores match expected values."""
-        import json
         from RadEval.metrics.green_score import MammoGREEN
 
-        # Setup mock
-        mock_openai_client.chat.completions.create.side_effect = [
-            create_mock_openai_response(json.dumps(mock_judge_responses[i]))
-            for i in range(len(refs))
-        ]
-
-        scorer = MammoGREEN(model_name="gpt-4o", api_key="test-key")
+        scorer = MammoGREEN(model_name="gpt-4o", openai_api_key="test-key")
+        scorer._chat_completion_async = AsyncMock(side_effect=[
+            json.dumps(mock_judge_responses[i]) for i in range(len(refs))
+        ])
         mean, std, scores, results_df = scorer(refs, hyps)
 
-        # Check individual scores
         for i, (actual, expected) in enumerate(zip(scores, expected_scores)):
             assert math.isclose(actual, expected, rel_tol=epsilon), \
                 f"Score mismatch at index {i}: actual={actual}, expected={expected}"
 
-        # Check mean
         assert math.isclose(mean, expected_mean, rel_tol=epsilon), \
             f"Mean mismatch: actual={mean}, expected={expected_mean}"
 
@@ -351,10 +309,10 @@ class TestMammoGreenUnit:
         """Test that mismatched refs/hyps lengths raise error."""
         from RadEval.metrics.green_score import MammoGREEN
 
-        scorer = MammoGREEN(model_name="gpt-4o", api_key="test-key")
+        scorer = MammoGREEN(model_name="gpt-4o", openai_api_key="test-key")
 
         with pytest.raises(ValueError):
-            scorer(refs[:2], hyps)  # Different lengths
+            scorer(refs[:2], hyps)
 
     def test_significant_error_keys_constant(self):
         """Test that SIGNIFICANT_ERROR_KEYS contains all 6 error types."""
@@ -370,21 +328,28 @@ class TestMammoGreenUnit:
         }
         assert set(SIGNIFICANT_ERROR_KEYS) == expected_keys
 
+    def test_unsupported_provider_raises(self):
+        """Test that unsupported provider raises NotImplementedError."""
+        from RadEval.metrics.green_score import MammoGREEN
+        with pytest.raises(NotImplementedError, match="does not support"):
+            MammoGREEN(model_name="gpt-4o", provider="hf",
+                       openai_api_key="test-key")
+
 
 class TestMammoGreenRadEvalIntegration:
     """Test MammoGREEN integration with RadEval main class."""
 
     def test_radeval_initialization(self):
         """Test that RadEval can be initialized with do_mammo_green."""
-        # This test doesn't actually call the API, just checks initialization params
         from RadEval import RadEval
 
-        # Check that the parameter exists (but don't initialize scorer without API key)
         import inspect
         sig = inspect.signature(RadEval.__init__)
         assert "do_mammo_green" in sig.parameters
         assert "mammo_green_model" in sig.parameters
-        assert "mammo_green_api_key" in sig.parameters
+        assert "openai_api_key" in sig.parameters
+        assert "gemini_api_key" in sig.parameters
+        assert "mammo_green_max_concurrent" in sig.parameters
 
 
 @pytest.mark.integration
@@ -406,26 +371,23 @@ class TestMammoGreenIntegration:
         """Test with real OpenAI API call."""
         from RadEval.metrics.green_score import MammoGREEN
 
-        # Use all samples
         test_refs = refs
         test_hyps = hyps
 
         scorer = MammoGREEN(
-            model_name="gpt-5.2-2025-12-11", #"gpt-4o",
-            api_key=api_key,
+            model_name="gpt-5.2-2025-12-11",
+            openai_api_key=api_key,
             temperature=0.0,
         )
 
         mean, std, scores, results_df = scorer(test_refs, test_hyps)
 
-        # Basic sanity checks
         assert 0.0 <= mean <= 1.0
         assert len(scores) == len(refs)
         for score in scores:
             assert 0.0 <= score <= 1.0
         assert len(results_df) == len(refs)
 
-        # Check that error counts are non-negative for all samples
         for i in range(len(refs)):
             assert results_df["matched_findings"].iloc[i] >= 0
             assert results_df["false_finding"].iloc[i] >= 0
@@ -448,13 +410,12 @@ class TestMammoGreenIntegration:
         """Test MammoGREEN through RadEval interface."""
         from RadEval import RadEval
 
-        # Use all pairs
         test_refs = refs
         test_hyps = hyps
 
         evaluator = RadEval(
             do_mammo_green=True,
-            mammo_green_api_key=api_key,
+            openai_api_key=api_key,
             mammo_green_model="gpt-4o",
         )
 
@@ -476,27 +437,24 @@ class TestMammoGreenIntegration:
         if not key:
             pytest.skip("GOOGLE_API_KEY or GEMINI_API_KEY not set")
 
-        # Use all samples
         test_refs = refs
         test_hyps = hyps
 
         scorer = MammoGREEN(
             model_name="gemini-2.5-flash",
             provider="gemini",
-            api_key=key,
+            gemini_api_key=key,
             temperature=0.0,
         )
 
         mean, std, scores, results_df = scorer(test_refs, test_hyps)
 
-        # Basic sanity checks
         assert 0.0 <= mean <= 1.0
         assert len(scores) == len(refs)
         for score in scores:
             assert 0.0 <= score <= 1.0
         assert len(results_df) == len(refs)
 
-        # Check that error counts are non-negative for all samples
         for i in range(len(refs)):
             assert results_df["matched_findings"].iloc[i] >= 0
             assert results_df["false_finding"].iloc[i] >= 0

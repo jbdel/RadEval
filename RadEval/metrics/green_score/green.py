@@ -136,6 +136,8 @@ def _worker_generate(
 
 
 class GREEN:
+    SUPPORTED_PROVIDERS = {"local"}
+
     def __init__(
         self,
         model_name=None,

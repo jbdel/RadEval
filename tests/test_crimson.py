@@ -2,7 +2,7 @@ import inspect
 import json
 import math
 import os
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pandas as pd
 import pytest
@@ -96,9 +96,12 @@ class TestCrimsonUnit:
     @pytest.fixture
     def mock_openai_client(self):
         """Create a mocked OpenAI client."""
-        with patch("openai.OpenAI") as mock_class:
+        with patch("openai.OpenAI") as mock_class, \
+             patch("openai.AsyncOpenAI") as mock_async_class:
             mock_client = MagicMock()
             mock_class.return_value = mock_client
+            mock_async_client = MagicMock()
+            mock_async_class.return_value = mock_async_client
             yield mock_client
 
     @pytest.fixture
@@ -115,11 +118,11 @@ class TestCrimsonUnit:
         assert CRIMSON is not None
         assert CRIMSONScore is not None
 
-    def test_invalid_api(self):
-        """Test that invalid API raises error."""
+    def test_invalid_provider(self):
+        """Test that invalid provider raises error."""
         from RadEval.metrics.crimson import CRIMSONScore
-        with pytest.raises(ValueError, match="Unsupported api"):
-            CRIMSONScore(api="invalid")
+        with pytest.raises(NotImplementedError, match="does not support"):
+            CRIMSONScore(provider="invalid")
 
     def test_openai_initialization_without_api_key(self):
         """Test that OpenAI initialization fails without API key."""
@@ -128,7 +131,7 @@ class TestCrimsonUnit:
         old_key = os.environ.pop("OPENAI_API_KEY", None)
         try:
             with pytest.raises(EnvironmentError):
-                CRIMSONScore(api="openai")
+                CRIMSONScore(provider="openai")
         finally:
             if old_key:
                 os.environ["OPENAI_API_KEY"] = old_key
@@ -137,18 +140,18 @@ class TestCrimsonUnit:
         """Test that OpenAI initialization succeeds with API key."""
         from RadEval.metrics.crimson import CRIMSONScore
 
-        scorer = CRIMSONScore(api="openai", api_key="test-key")
+        scorer = CRIMSONScore(provider="openai", openai_api_key="test-key")
         assert scorer is not None
-        assert scorer.api == "openai"
+        assert scorer.provider == "openai"
         assert scorer.model_name == scorer.DEFAULT_OPENAI_MODEL
 
     def test_hf_initialization_default_model(self, mock_hf_pipeline):
         """Test that HF initialization uses correct default model."""
         from RadEval.metrics.crimson import CRIMSONScore
 
-        scorer = CRIMSONScore(api="hf")
+        scorer = CRIMSONScore(provider="hf")
         assert scorer.model_name == scorer.DEFAULT_HF_MODEL
-        assert scorer.api == "hf"
+        assert scorer.provider == "hf"
 
     def test_hf_single_evaluate(self, mock_hf_pipeline):
         """Test single evaluate with mocked HF backend."""
@@ -165,8 +168,8 @@ class TestCrimsonUnit:
             }
         ]
 
-        scorer = CRIMSONScore(api="hf", model_name="mock-crimson-model")
-        result = scorer.evaluate(refs[0], hyps[0])
+        scorer = CRIMSONScore(provider="hf", model_name="mock-crimson-model")
+        result = scorer._evaluate_one(refs[0], hyps[0])
 
         assert result["crimson_score"] == 1.0
         assert result["error_counts"]["attribute_errors"] == 0
@@ -179,8 +182,8 @@ class TestCrimsonUnit:
             json.dumps(mock_evaluations[0])
         )
 
-        scorer = CRIMSONScore(api="openai", api_key="test-key")
-        result = scorer.evaluate(refs[0], hyps[0])
+        scorer = CRIMSONScore(provider="openai", openai_api_key="test-key")
+        result = scorer._evaluate_one(refs[0], hyps[0])
 
         assert isinstance(result, dict)
         assert result["crimson_score"] == 1.0
@@ -191,21 +194,18 @@ class TestCrimsonUnit:
         """Test the __call__ interface returns correct format."""
         from RadEval.metrics.crimson import CRIMSONScore
 
-        mock_openai_client.chat.completions.create.side_effect = [
-            create_mock_openai_response(json.dumps(mock_evaluations[0])),
-            create_mock_openai_response(json.dumps(mock_evaluations[1])),
-        ]
-
-        scorer = CRIMSONScore(api="openai", api_key="test-key")
+        scorer = CRIMSONScore(provider="openai", openai_api_key="test-key")
+        scorer._chat_completion_async = AsyncMock(side_effect=[
+            json.dumps(mock_evaluations[0]),
+            json.dumps(mock_evaluations[1]),
+        ])
         mean, std, scores, results_df = scorer(refs, hyps)
 
-        # Check return types
         assert isinstance(mean, float)
         assert isinstance(std, float)
         assert isinstance(scores, list)
         assert isinstance(results_df, pd.DataFrame)
 
-        # Check lengths
         assert len(scores) == len(refs)
         assert len(results_df) == len(refs)
 
@@ -213,21 +213,18 @@ class TestCrimsonUnit:
         """Test that computed scores match expected values."""
         from RadEval.metrics.crimson import CRIMSONScore
 
-        mock_openai_client.chat.completions.create.side_effect = [
-            create_mock_openai_response(json.dumps(mock_evaluations[0])),
-            create_mock_openai_response(json.dumps(mock_evaluations[1])),
-        ]
-
-        scorer = CRIMSONScore(api="openai", api_key="test-key")
+        scorer = CRIMSONScore(provider="openai", openai_api_key="test-key")
+        scorer._chat_completion_async = AsyncMock(side_effect=[
+            json.dumps(mock_evaluations[0]),
+            json.dumps(mock_evaluations[1]),
+        ])
         mean, std, scores, results_df = scorer(refs, hyps)
 
-        # Check individual scores
         for i, (actual, expected) in enumerate(zip(scores, expected_scores)):
             assert math.isclose(actual, expected, rel_tol=epsilon), (
                 f"Score mismatch at index {i}: actual={actual}, expected={expected}"
             )
 
-        # Check mean and std
         assert math.isclose(mean, expected_mean, rel_tol=epsilon), \
             f"Mean mismatch: actual={mean}, expected={expected_mean}"
         assert math.isclose(std, expected_std, rel_tol=epsilon), \
@@ -237,12 +234,11 @@ class TestCrimsonUnit:
         """Test that results DataFrame has expected columns."""
         from RadEval.metrics.crimson import CRIMSONScore
 
-        mock_openai_client.chat.completions.create.side_effect = [
-            create_mock_openai_response(json.dumps(mock_evaluations[0])),
-            create_mock_openai_response(json.dumps(mock_evaluations[1])),
-        ]
-
-        scorer = CRIMSONScore(api="openai", api_key="test-key")
+        scorer = CRIMSONScore(provider="openai", openai_api_key="test-key")
+        scorer._chat_completion_async = AsyncMock(side_effect=[
+            json.dumps(mock_evaluations[0]),
+            json.dumps(mock_evaluations[1]),
+        ])
         _, _, _, results_df = scorer(refs, hyps)
 
         expected_columns = [
@@ -268,9 +264,15 @@ class TestCrimsonUnit:
         """Test that mismatched refs/hyps lengths raise error."""
         from RadEval.metrics.crimson import CRIMSONScore
 
-        scorer = CRIMSONScore(api="openai", api_key="test-key")
+        scorer = CRIMSONScore(provider="openai", openai_api_key="test-key")
         with pytest.raises(ValueError):
             scorer(refs[:1], hyps)
+
+    def test_unsupported_provider_raises(self):
+        """Test that unsupported provider raises NotImplementedError."""
+        from RadEval.metrics.crimson import CRIMSONScore
+        with pytest.raises(NotImplementedError, match="does not support"):
+            CRIMSONScore(provider="gemini")
 
 
 class TestCrimsonRadEvalIntegration:
@@ -283,14 +285,17 @@ class TestCrimsonRadEvalIntegration:
         sig = inspect.signature(RadEval.__init__)
         assert "do_crimson" in sig.parameters
         assert "crimson_api" in sig.parameters
-        assert "crimson_api_key" in sig.parameters
+        assert "openai_api_key" in sig.parameters
+        assert "gemini_api_key" in sig.parameters
         assert "crimson_batch_size" in sig.parameters
+        assert "crimson_max_concurrent" in sig.parameters
 
     def test_radeval_with_crimson_openai(self):
         """Test RadEval with CRIMSON using mocked OpenAI backend."""
         from RadEval import RadEval
 
-        with patch("openai.OpenAI") as mock_class:
+        with patch("openai.OpenAI") as mock_class, \
+             patch("openai.AsyncOpenAI"):
             mock_client = MagicMock()
             mock_client.chat.completions.create.side_effect = [
                 create_mock_openai_response(json.dumps(mock_evaluations[0])),
@@ -301,9 +306,13 @@ class TestCrimsonRadEvalIntegration:
             evaluator = RadEval(
                 do_crimson=True,
                 crimson_api="openai",
-                crimson_api_key="test-key",
+                openai_api_key="test-key",
                 show_progress=False,
             )
+            evaluator.crimson_scorer._chat_completion_async = AsyncMock(side_effect=[
+                json.dumps(mock_evaluations[0]),
+                json.dumps(mock_evaluations[1]),
+            ])
             results = evaluator(refs=refs, hyps=hyps)
 
         assert "crimson" in results
@@ -326,7 +335,8 @@ class TestCrimsonRadEvalIntegration:
         """Test RadEval with CRIMSON in details mode."""
         from RadEval import RadEval
 
-        with patch("openai.OpenAI") as mock_class:
+        with patch("openai.OpenAI") as mock_class, \
+             patch("openai.AsyncOpenAI"):
             mock_client = MagicMock()
             mock_client.chat.completions.create.side_effect = [
                 create_mock_openai_response(json.dumps(mock_evaluations[0])),
@@ -337,10 +347,14 @@ class TestCrimsonRadEvalIntegration:
             evaluator = RadEval(
                 do_crimson=True,
                 crimson_api="openai",
-                crimson_api_key="test-key",
+                openai_api_key="test-key",
                 do_details=True,
                 show_progress=False,
             )
+            evaluator.crimson_scorer._chat_completion_async = AsyncMock(side_effect=[
+                json.dumps(mock_evaluations[0]),
+                json.dumps(mock_evaluations[1]),
+            ])
             results = evaluator(refs=refs, hyps=hyps)
 
         assert "crimson" in results
@@ -353,7 +367,8 @@ class TestCrimsonRadEvalIntegration:
         """Test RadEval with CRIMSON in per-sample mode."""
         from RadEval import RadEval
 
-        with patch("openai.OpenAI") as mock_class:
+        with patch("openai.OpenAI") as mock_class, \
+             patch("openai.AsyncOpenAI"):
             mock_client = MagicMock()
             mock_client.chat.completions.create.side_effect = [
                 create_mock_openai_response(json.dumps(mock_evaluations[0])),
@@ -364,10 +379,14 @@ class TestCrimsonRadEvalIntegration:
             evaluator = RadEval(
                 do_crimson=True,
                 crimson_api="openai",
-                crimson_api_key="test-key",
+                openai_api_key="test-key",
                 do_per_sample=True,
                 show_progress=False,
             )
+            evaluator.crimson_scorer._chat_completion_async = AsyncMock(side_effect=[
+                json.dumps(mock_evaluations[0]),
+                json.dumps(mock_evaluations[1]),
+            ])
             results = evaluator(refs=refs, hyps=hyps)
 
         assert "crimson" in results
@@ -388,7 +407,6 @@ class TestCrimsonIntegration:
     def api_key(self):
         """Get API key from environment."""
         key = os.environ.get("OPENAI_API_KEY")
-        # print(key)
         if not key:
             pytest.skip("OPENAI_API_KEY not set")
         return key
@@ -397,13 +415,12 @@ class TestCrimsonIntegration:
         """Test with real OpenAI API call."""
         from RadEval.metrics.crimson import CRIMSONScore
 
-        scorer = CRIMSONScore(api="openai", api_key=api_key)
+        scorer = CRIMSONScore(provider="openai", openai_api_key=api_key)
         mean, std, scores, results_df = scorer(refs, hyps)
 
         assert len(scores) == len(refs)
         assert len(results_df) == len(refs)
 
-        # Check that error counts are non-negative
         for i in range(len(refs)):
             assert results_df["false_findings"].iloc[i] >= 0
             assert results_df["missing_findings"].iloc[i] >= 0
@@ -422,7 +439,7 @@ class TestCrimsonIntegration:
         evaluator = RadEval(
             do_crimson=True,
             crimson_api="openai",
-            crimson_api_key=api_key,
+            openai_api_key=api_key,
         )
 
         results = evaluator(refs=refs, hyps=hyps)
