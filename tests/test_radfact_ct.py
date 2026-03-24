@@ -31,10 +31,20 @@ class TestRadFactCTUnit:
         old = os.environ.pop("OPENAI_API_KEY", None)
         try:
             with pytest.raises(EnvironmentError):
-                RadFactCT(api_key=None)
+                RadFactCT(openai_api_key=None)
         finally:
             if old:
                 os.environ["OPENAI_API_KEY"] = old
+
+    def test_unsupported_provider_raises(self):
+        from RadEval.metrics._llm_base import LLMMetricBase
+        with pytest.raises(NotImplementedError, match="does not support"):
+            class _FakeRadFact(LLMMetricBase):
+                SUPPORTED_PROVIDERS = {"openai"}
+                def _build_request(self, ref, hyp, **kw): pass
+                def _parse_response(self, raw): pass
+                def _aggregate(self, results, refs, hyps): pass
+            _FakeRadFact(provider="gemini", model_name="gemini-2.5-flash")
 
     def test_validation_errors(self):
         if not _HAS_API_KEY:

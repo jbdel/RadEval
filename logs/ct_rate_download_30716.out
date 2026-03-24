@@ -1,0 +1,552 @@
+2026-03-24 03:54:50,889 INFO ======================================================================
+2026-03-24 03:54:50,889 INFO CT-RATE download starting
+2026-03-24 03:54:50,889 INFO Dest: /nfs/cluster/hoppr_vlm_ressources/vlm_datasets/CT_RATE | Workers: 8 | Splits: ['train_fixed', 'valid_fixed']
+2026-03-24 03:54:50,890 INFO Listing files in dataset/train_fixed/ (this may take a minute)...
+2026-03-24 03:56:06,813 INFO Found 47149 .nii.gz files in train_fixed
+2026-03-24 03:56:06,814 INFO Listing files in dataset/valid_fixed/ (this may take a minute)...
+2026-03-24 03:56:08,298 INFO Found 3039 .nii.gz files in valid_fixed
+2026-03-24 03:56:08,443 INFO Saved manifest (50188 files) to /nfs/cluster/hoppr_vlm_ressources/vlm_datasets/CT_RATE/.manifest.json
+2026-03-24 03:56:08,445 INFO Total: 50188 files, 7656.0 GB
+/nfs/cluster/miniconda3/envs/radeval/lib/python3.11/site-packages/huggingface_hub/file_download.py:942: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/nfs/cluster/miniconda3/envs/radeval/lib/python3.11/site-packages/huggingface_hub/file_download.py:979: UserWarning: `local_dir_use_symlinks` parameter is deprecated and will be ignored. The process to download files to a local folder has been updated and do not rely on symlinks anymore. You only need to pass a destination folder as`local_dir`.
+For more details, check out https://huggingface.co/docs/huggingface_hub/main/en/guides/download#download-files-to-local-folder.
+  warnings.warn(
+2026-03-24 03:57:08,716 INFO [03:57:08] Progress: 98/50188 files (done=98, skip=0, fail=0) | Downloaded: 14.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 252.8 MB/s | ETA: 08:33:25
+2026-03-24 03:58:08,743 INFO [03:58:08] Progress: 201/50188 files (done=201, skip=0, fail=0) | Downloaded: 32.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 272.6 MB/s | ETA: 08:18:37
+2026-03-24 03:59:12,516 INFO [03:59:12] Progress: 307/50188 files (done=307, skip=0, fail=0) | Downloaded: 48.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 268.6 MB/s | ETA: 08:18:27
+2026-03-24 04:00:12,942 INFO [04:00:12] Progress: 398/50188 files (done=398, skip=0, fail=0) | Downloaded: 63.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 264.8 MB/s | ETA: 08:29:46
+2026-03-24 04:01:13,171 INFO [04:01:13] Progress: 504/50188 files (done=504, skip=0, fail=0) | Downloaded: 79.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 266.4 MB/s | ETA: 08:20:39
+2026-03-24 04:02:13,247 INFO [04:02:13] Progress: 621/50188 files (done=621, skip=0, fail=0) | Downloaded: 94.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 263.7 MB/s | ETA: 08:05:17
+2026-03-24 04:03:13,621 INFO [04:03:13] Progress: 721/50188 files (done=721, skip=0, fail=0) | Downloaded: 108.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 261.8 MB/s | ETA: 08:06:10
+2026-03-24 04:04:15,264 INFO [04:04:15] Progress: 810/50188 files (done=810, skip=0, fail=0) | Downloaded: 121.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 255.8 MB/s | ETA: 08:14:36
+2026-03-24 04:05:15,347 INFO [04:05:15] Progress: 915/50188 files (done=915, skip=0, fail=0) | Downloaded: 137.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 257.9 MB/s | ETA: 08:10:50
+2026-03-24 04:06:16,294 INFO [04:06:16] Progress: 1015/50188 files (done=1015, skip=0, fail=0) | Downloaded: 153.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 259.1 MB/s | ETA: 08:10:48
+2026-03-24 04:07:17,481 INFO [04:07:17] Progress: 1116/50188 files (done=1116, skip=0, fail=0) | Downloaded: 169.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 259.6 MB/s | ETA: 08:10:18
+2026-03-24 04:08:18,369 INFO [04:08:18] Progress: 1216/50188 files (done=1216, skip=0, fail=0) | Downloaded: 184.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 258.1 MB/s | ETA: 08:09:56
+2026-03-24 04:09:20,984 INFO [04:09:20] Progress: 1322/50188 files (done=1322, skip=0, fail=0) | Downloaded: 199.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 258.0 MB/s | ETA: 08:08:15
+2026-03-24 04:10:21,088 INFO [04:10:21] Progress: 1415/50188 files (done=1415, skip=0, fail=0) | Downloaded: 213.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 256.7 MB/s | ETA: 08:09:49
+2026-03-24 04:11:21,603 INFO [04:11:21] Progress: 1521/50188 files (done=1521, skip=0, fail=0) | Downloaded: 230.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 257.9 MB/s | ETA: 08:06:58
+2026-03-24 04:12:22,606 INFO [04:12:22] Progress: 1622/50188 files (done=1622, skip=0, fail=0) | Downloaded: 245.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 257.6 MB/s | ETA: 08:06:08
+2026-03-24 04:13:23,472 INFO [04:13:23] Progress: 1719/50188 files (done=1719, skip=0, fail=0) | Downloaded: 260.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 257.3 MB/s | ETA: 08:06:23
+2026-03-24 04:14:23,840 INFO [04:14:23] Progress: 1830/50188 files (done=1830, skip=0, fail=0) | Downloaded: 275.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 257.3 MB/s | ETA: 08:02:25
+2026-03-24 04:15:23,849 INFO [04:15:23] Progress: 1925/50188 files (done=1925, skip=0, fail=0) | Downloaded: 288.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 255.8 MB/s | ETA: 08:02:47
+2026-03-24 04:16:23,872 INFO [04:16:23] Progress: 2037/50188 files (done=2037, skip=0, fail=0) | Downloaded: 303.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 255.9 MB/s | ETA: 07:58:50
+2026-03-24 04:17:26,523 INFO [04:17:26] Progress: 2140/50188 files (done=2140, skip=0, fail=0) | Downloaded: 319.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 256.0 MB/s | ETA: 07:58:15
+2026-03-24 04:18:26,909 INFO [04:18:26] Progress: 2245/50188 files (done=2245, skip=0, fail=0) | Downloaded: 334.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 256.2 MB/s | ETA: 07:56:23
+2026-03-24 04:19:27,159 INFO [04:19:27] Progress: 2352/50188 files (done=2352, skip=0, fail=0) | Downloaded: 350.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 256.9 MB/s | ETA: 07:54:07
+2026-03-24 04:20:27,665 INFO [04:20:27] Progress: 2455/50188 files (done=2455, skip=0, fail=0) | Downloaded: 364.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 256.1 MB/s | ETA: 07:52:51
+2026-03-24 04:21:28,458 INFO [04:21:28] Progress: 2565/50188 files (done=2565, skip=0, fail=0) | Downloaded: 382.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 257.9 MB/s | ETA: 07:50:21
+2026-03-24 04:22:30,279 INFO [04:22:30] Progress: 2647/50188 files (done=2647, skip=0, fail=0) | Downloaded: 395.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 256.2 MB/s | ETA: 07:53:30
+2026-03-24 04:23:30,833 INFO [04:23:30] Progress: 2761/50188 files (done=2761, skip=0, fail=0) | Downloaded: 412.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 257.0 MB/s | ETA: 07:50:12
+2026-03-24 04:24:30,925 INFO [04:24:30] Progress: 2857/50188 files (done=2857, skip=0, fail=0) | Downloaded: 426.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 256.7 MB/s | ETA: 07:50:04
+2026-03-24 04:25:31,407 INFO [04:25:31] Progress: 2970/50188 files (done=2970, skip=0, fail=0) | Downloaded: 443.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 257.7 MB/s | ETA: 07:47:08
+2026-03-24 04:26:33,163 INFO [04:26:33] Progress: 3065/50188 files (done=3065, skip=0, fail=0) | Downloaded: 458.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 257.5 MB/s | ETA: 07:47:34
+2026-03-24 04:27:34,195 INFO [04:27:34] Progress: 3172/50188 files (done=3172, skip=0, fail=0) | Downloaded: 474.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 257.8 MB/s | ETA: 07:45:50
+2026-03-24 04:28:34,499 INFO [04:28:34] Progress: 3266/50188 files (done=3266, skip=0, fail=0) | Downloaded: 489.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 257.6 MB/s | ETA: 07:45:58
+2026-03-24 04:29:36,134 INFO [04:29:36] Progress: 3373/50188 files (done=3373, skip=0, fail=0) | Downloaded: 505.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 258.0 MB/s | ETA: 07:44:25
+2026-03-24 04:30:36,399 INFO [04:30:36] Progress: 3478/50188 files (done=3478, skip=0, fail=0) | Downloaded: 522.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 258.8 MB/s | ETA: 07:42:52
+2026-03-24 04:31:40,039 INFO [04:31:40] Progress: 3586/50188 files (done=3586, skip=0, fail=0) | Downloaded: 539.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 259.3 MB/s | ETA: 07:41:41
+2026-03-24 04:32:40,157 INFO [04:32:40] Progress: 3701/50188 files (done=3701, skip=0, fail=0) | Downloaded: 556.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 259.9 MB/s | ETA: 07:38:49
+2026-03-24 04:33:42,131 INFO [04:33:42] Progress: 3807/50188 files (done=3807, skip=0, fail=0) | Downloaded: 572.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 259.9 MB/s | ETA: 07:37:36
+2026-03-24 04:34:43,313 INFO [04:34:43] Progress: 3912/50188 files (done=3912, skip=0, fail=0) | Downloaded: 587.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 260.0 MB/s | ETA: 07:36:23
+2026-03-24 04:35:44,223 INFO [04:35:44] Progress: 4010/50188 files (done=4010, skip=0, fail=0) | Downloaded: 602.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 259.7 MB/s | ETA: 07:35:58
+2026-03-24 04:36:47,325 INFO [04:36:47] Progress: 4110/50188 files (done=4110, skip=0, fail=0) | Downloaded: 618.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 259.6 MB/s | ETA: 07:35:42
+2026-03-24 04:37:49,544 INFO [04:37:49] Progress: 4214/50188 files (done=4214, skip=0, fail=0) | Downloaded: 635.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 260.2 MB/s | ETA: 07:34:46
+2026-03-24 04:38:51,236 INFO [04:38:51] Progress: 4321/50188 files (done=4321, skip=0, fail=0) | Downloaded: 651.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 260.2 MB/s | ETA: 07:33:23
+2026-03-24 04:39:55,245 INFO [04:39:55] Progress: 4432/50188 files (done=4432, skip=0, fail=0) | Downloaded: 668.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 260.5 MB/s | ETA: 07:31:59
+2026-03-24 04:40:55,696 INFO [04:40:55] Progress: 4533/50188 files (done=4533, skip=0, fail=0) | Downloaded: 683.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 260.4 MB/s | ETA: 07:31:05
+2026-03-24 04:41:56,926 INFO [04:41:56] Progress: 4637/50188 files (done=4637, skip=0, fail=0) | Downloaded: 700.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 261.0 MB/s | ETA: 07:29:59
+2026-03-24 04:42:57,546 INFO [04:42:57] Progress: 4741/50188 files (done=4741, skip=0, fail=0) | Downloaded: 716.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 261.2 MB/s | ETA: 07:28:47
+2026-03-24 04:43:59,131 INFO [04:43:59] Progress: 4846/50188 files (done=4846, skip=0, fail=0) | Downloaded: 733.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 261.5 MB/s | ETA: 07:27:39
+2026-03-24 04:44:59,551 INFO [04:44:59] Progress: 4953/50188 files (done=4953, skip=0, fail=0) | Downloaded: 749.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 261.8 MB/s | ETA: 07:26:09
+2026-03-24 04:46:00,635 INFO [04:46:00] Progress: 5058/50188 files (done=5058, skip=0, fail=0) | Downloaded: 765.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 262.0 MB/s | ETA: 07:24:57
+2026-03-24 04:47:01,131 INFO [04:47:01] Progress: 5170/50188 files (done=5170, skip=0, fail=0) | Downloaded: 781.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 262.1 MB/s | ETA: 07:23:01
+2026-03-24 04:48:02,148 INFO [04:48:02] Progress: 5283/50188 files (done=5283, skip=0, fail=0) | Downloaded: 797.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 262.3 MB/s | ETA: 07:21:06
+2026-03-24 04:49:03,207 INFO [04:49:03] Progress: 5397/50188 files (done=5397, skip=0, fail=0) | Downloaded: 814.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 262.5 MB/s | ETA: 07:19:08
+2026-03-24 04:50:06,549 INFO [04:50:06] Progress: 5502/50188 files (done=5502, skip=0, fail=0) | Downloaded: 831.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 263.0 MB/s | ETA: 07:18:19
+2026-03-24 04:51:09,250 INFO [04:51:09] Progress: 5612/50188 files (done=5612, skip=0, fail=0) | Downloaded: 848.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 263.2 MB/s | ETA: 07:16:58
+2026-03-24 04:52:10,737 INFO [04:52:10] Progress: 5706/50188 files (done=5706, skip=0, fail=0) | Downloaded: 863.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 263.1 MB/s | ETA: 07:16:51
+2026-03-24 04:53:12,701 INFO [04:53:12] Progress: 5814/50188 files (done=5814, skip=0, fail=0) | Downloaded: 880.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 263.2 MB/s | ETA: 07:15:34
+2026-03-24 04:54:15,763 INFO [04:54:15] Progress: 5926/50188 files (done=5926, skip=0, fail=0) | Downloaded: 897.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 263.6 MB/s | ETA: 07:14:07
+2026-03-24 04:55:15,900 INFO [04:55:15] Progress: 6030/50188 files (done=6030, skip=0, fail=0) | Downloaded: 915.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 264.2 MB/s | ETA: 07:12:58
+2026-03-24 04:56:16,399 INFO [04:56:16] Progress: 6126/50188 files (done=6126, skip=0, fail=0) | Downloaded: 930.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 264.0 MB/s | ETA: 07:12:30
+2026-03-24 04:57:17,043 INFO [04:57:17] Progress: 6234/50188 files (done=6234, skip=0, fail=0) | Downloaded: 948.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 264.7 MB/s | ETA: 07:11:06
+2026-03-24 04:58:17,301 INFO [04:58:17] Progress: 6342/50188 files (done=6342, skip=0, fail=0) | Downloaded: 965.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 265.2 MB/s | ETA: 07:09:39
+2026-03-24 04:59:17,348 INFO [04:59:17] Progress: 6464/50188 files (done=6464, skip=0, fail=0) | Downloaded: 983.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 265.9 MB/s | ETA: 07:07:09
+2026-03-24 05:00:19,126 INFO [05:00:19] Progress: 6579/50188 files (done=6579, skip=0, fail=0) | Downloaded: 1000.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 266.2 MB/s | ETA: 07:05:24
+2026-03-24 05:01:19,772 INFO [05:01:19] Progress: 6696/50188 files (done=6696, skip=0, fail=0) | Downloaded: 1018.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 266.7 MB/s | ETA: 07:03:24
+2026-03-24 05:02:19,811 INFO [05:02:19] Progress: 6812/50188 files (done=6812, skip=0, fail=0) | Downloaded: 1034.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 266.8 MB/s | ETA: 07:01:28
+2026-03-24 05:03:24,869 INFO [05:03:24] Progress: 6921/50188 files (done=6921, skip=0, fail=0) | Downloaded: 1052.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 267.0 MB/s | ETA: 07:00:33
+2026-03-24 05:04:24,890 INFO [05:04:24] Progress: 7026/50188 files (done=7026, skip=0, fail=0) | Downloaded: 1068.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 267.2 MB/s | ETA: 06:59:25
+2026-03-24 05:05:29,617 INFO [05:05:29] Progress: 7128/50188 files (done=7128, skip=0, fail=0) | Downloaded: 1086.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 267.2 MB/s | ETA: 06:58:57
+2026-03-24 05:06:30,514 INFO [05:06:30] Progress: 7232/50188 files (done=7232, skip=0, fail=0) | Downloaded: 1103.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 267.6 MB/s | ETA: 06:57:57
+2026-03-24 05:07:33,918 INFO [05:07:33] Progress: 7342/50188 files (done=7342, skip=0, fail=0) | Downloaded: 1120.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 267.8 MB/s | ETA: 06:56:48
+2026-03-24 05:08:35,491 INFO [05:08:35] Progress: 7422/50188 files (done=7422, skip=0, fail=0) | Downloaded: 1134.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 267.3 MB/s | ETA: 06:57:27
+2026-03-24 05:09:35,971 INFO [05:09:35] Progress: 7535/50188 files (done=7535, skip=0, fail=0) | Downloaded: 1152.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 267.6 MB/s | ETA: 06:55:49
+2026-03-24 05:10:36,002 INFO [05:10:35] Progress: 7630/50188 files (done=7630, skip=0, fail=0) | Downloaded: 1166.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 267.4 MB/s | ETA: 06:55:18
+2026-03-24 05:11:37,471 INFO [05:11:37] Progress: 7740/50188 files (done=7740, skip=0, fail=0) | Downloaded: 1182.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 267.4 MB/s | ETA: 06:53:58
+2026-03-24 05:12:38,504 INFO [05:12:38] Progress: 7847/50188 files (done=7847, skip=0, fail=0) | Downloaded: 1198.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 267.3 MB/s | ETA: 06:52:47
+2026-03-24 05:13:41,222 INFO [05:13:41] Progress: 7955/50188 files (done=7955, skip=0, fail=0) | Downloaded: 1215.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 267.5 MB/s | ETA: 06:51:41
+2026-03-24 05:14:41,516 INFO [05:14:41] Progress: 8069/50188 files (done=8069, skip=0, fail=0) | Downloaded: 1233.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 268.0 MB/s | ETA: 06:50:01
+2026-03-24 05:15:44,544 INFO [05:15:44] Progress: 8180/50188 files (done=8180, skip=0, fail=0) | Downloaded: 1248.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 267.7 MB/s | ETA: 06:48:47
+2026-03-24 05:16:44,581 INFO [05:16:44] Progress: 8292/50188 files (done=8292, skip=0, fail=0) | Downloaded: 1265.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 267.9 MB/s | ETA: 06:47:14
+2026-03-24 05:17:45,152 INFO [05:17:45] Progress: 8407/50188 files (done=8407, skip=0, fail=0) | Downloaded: 1281.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 268.0 MB/s | ETA: 06:45:35
+2026-03-24 05:18:47,300 INFO [05:18:47] Progress: 8522/50188 files (done=8522, skip=0, fail=0) | Downloaded: 1298.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 268.1 MB/s | ETA: 06:44:04
+2026-03-24 05:19:48,182 INFO [05:19:48] Progress: 8623/50188 files (done=8623, skip=0, fail=0) | Downloaded: 1314.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 268.2 MB/s | ETA: 06:43:16
+2026-03-24 05:20:48,587 INFO [05:20:48] Progress: 8725/50188 files (done=8725, skip=0, fail=0) | Downloaded: 1331.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 268.3 MB/s | ETA: 06:42:21
+2026-03-24 05:21:50,605 INFO [05:21:50] Progress: 8839/50188 files (done=8839, skip=0, fail=0) | Downloaded: 1347.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 268.4 MB/s | ETA: 06:40:55
+2026-03-24 05:22:50,884 INFO [05:22:50] Progress: 8942/50188 files (done=8942, skip=0, fail=0) | Downloaded: 1364.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 268.5 MB/s | ETA: 06:39:56
+2026-03-24 05:23:51,672 INFO [05:23:51] Progress: 9039/50188 files (done=9039, skip=0, fail=0) | Downloaded: 1380.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 268.6 MB/s | ETA: 06:39:20
+2026-03-24 05:24:53,473 INFO [05:24:53] Progress: 9167/50188 files (done=9167, skip=0, fail=0) | Downloaded: 1397.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 268.8 MB/s | ETA: 06:37:08
+2026-03-24 05:25:54,856 INFO [05:25:54] Progress: 9269/50188 files (done=9269, skip=0, fail=0) | Downloaded: 1413.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 268.8 MB/s | ETA: 06:36:18
+2026-03-24 05:26:56,839 INFO [05:26:56] Progress: 9381/50188 files (done=9381, skip=0, fail=0) | Downloaded: 1431.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 268.9 MB/s | ETA: 06:35:00
+2026-03-24 05:27:57,728 INFO [05:27:57] Progress: 9487/50188 files (done=9487, skip=0, fail=0) | Downloaded: 1448.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 269.2 MB/s | ETA: 06:33:55
+2026-03-24 05:28:58,783 INFO [05:28:58] Progress: 9600/50188 files (done=9600, skip=0, fail=0) | Downloaded: 1465.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 269.4 MB/s | ETA: 06:32:30
+2026-03-24 05:29:58,817 INFO [05:29:58] Progress: 9705/50188 files (done=9705, skip=0, fail=0) | Downloaded: 1480.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 269.2 MB/s | ETA: 06:31:26
+2026-03-24 05:30:59,089 INFO [05:30:59] Progress: 9819/50188 files (done=9819, skip=0, fail=0) | Downloaded: 1497.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 269.4 MB/s | ETA: 06:29:56
+2026-03-24 05:32:02,198 INFO [05:32:02] Progress: 9948/50188 files (done=9948, skip=0, fail=0) | Downloaded: 1515.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 269.8 MB/s | ETA: 06:27:54
+2026-03-24 05:33:02,328 INFO [05:33:02] Progress: 10061/50188 files (done=10061, skip=0, fail=0) | Downloaded: 1532.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 269.9 MB/s | ETA: 06:26:27
+2026-03-24 05:34:04,054 INFO [05:34:04] Progress: 10172/50188 files (done=10172, skip=0, fail=0) | Downloaded: 1550.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 270.2 MB/s | ETA: 06:25:14
+2026-03-24 05:35:04,180 INFO [05:35:04] Progress: 10278/50188 files (done=10278, skip=0, fail=0) | Downloaded: 1567.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 270.4 MB/s | ETA: 06:24:08
+2026-03-24 05:36:05,573 INFO [05:36:05] Progress: 10391/50188 files (done=10391, skip=0, fail=0) | Downloaded: 1583.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 270.4 MB/s | ETA: 06:22:48
+2026-03-24 05:37:05,607 INFO [05:37:05] Progress: 10478/50188 files (done=10478, skip=0, fail=0) | Downloaded: 1598.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 270.2 MB/s | ETA: 06:22:35
+2026-03-24 05:38:09,576 INFO [05:38:09] Progress: 10592/50188 files (done=10592, skip=0, fail=0) | Downloaded: 1616.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 270.4 MB/s | ETA: 06:21:22
+2026-03-24 05:39:11,077 INFO [05:39:11] Progress: 10698/50188 files (done=10698, skip=0, fail=0) | Downloaded: 1633.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 270.5 MB/s | ETA: 06:20:22
+2026-03-24 05:40:11,791 INFO [05:40:11] Progress: 10812/50188 files (done=10812, skip=0, fail=0) | Downloaded: 1650.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 270.7 MB/s | ETA: 06:18:57
+2026-03-24 05:41:11,793 INFO [05:41:11] Progress: 10914/50188 files (done=10914, skip=0, fail=0) | Downloaded: 1666.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 270.7 MB/s | ETA: 06:18:02
+2026-03-24 05:42:11,949 INFO [05:42:11] Progress: 11028/50188 files (done=11028, skip=0, fail=0) | Downloaded: 1683.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 270.9 MB/s | ETA: 06:16:36
+2026-03-24 05:43:13,367 INFO [05:43:13] Progress: 11143/50188 files (done=11143, skip=0, fail=0) | Downloaded: 1701.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 271.1 MB/s | ETA: 06:15:12
+2026-03-24 05:44:15,934 INFO [05:44:15] Progress: 11258/50188 files (done=11258, skip=0, fail=0) | Downloaded: 1719.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 271.4 MB/s | ETA: 06:13:53
+2026-03-24 05:45:15,991 INFO [05:45:15] Progress: 11372/50188 files (done=11372, skip=0, fail=0) | Downloaded: 1736.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 271.5 MB/s | ETA: 06:12:28
+2026-03-24 05:46:20,371 INFO [05:46:20] Progress: 11492/50188 files (done=11492, skip=0, fail=0) | Downloaded: 1753.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 271.5 MB/s | ETA: 06:11:03
+2026-03-24 05:47:20,540 INFO [05:47:20] Progress: 11601/50188 files (done=11601, skip=0, fail=0) | Downloaded: 1771.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 271.8 MB/s | ETA: 06:09:52
+2026-03-24 05:48:20,653 INFO [05:48:20] Progress: 11710/50188 files (done=11710, skip=0, fail=0) | Downloaded: 1787.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 271.9 MB/s | ETA: 06:08:41
+2026-03-24 05:49:21,315 INFO [05:49:21] Progress: 11821/50188 files (done=11821, skip=0, fail=0) | Downloaded: 1804.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 272.0 MB/s | ETA: 06:07:27
+2026-03-24 05:50:21,419 INFO [05:50:21] Progress: 11919/50188 files (done=11919, skip=0, fail=0) | Downloaded: 1819.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 271.9 MB/s | ETA: 06:06:43
+2026-03-24 05:51:22,024 INFO [05:51:22] Progress: 12042/50188 files (done=12042, skip=0, fail=0) | Downloaded: 1838.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 272.2 MB/s | ETA: 06:05:00
+2026-03-24 05:52:24,735 INFO [05:52:24] Progress: 12159/50188 files (done=12159, skip=0, fail=0) | Downloaded: 1855.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 272.3 MB/s | ETA: 06:03:39
+2026-03-24 05:53:27,010 INFO [05:53:27] Progress: 12289/50188 files (done=12289, skip=0, fail=0) | Downloaded: 1873.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 272.6 MB/s | ETA: 06:01:46
+2026-03-24 05:54:27,244 INFO [05:54:27] Progress: 12404/50188 files (done=12404, skip=0, fail=0) | Downloaded: 1891.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 272.9 MB/s | ETA: 06:00:23
+2026-03-24 05:55:29,720 INFO [05:55:29] Progress: 12499/50188 files (done=12499, skip=0, fail=0) | Downloaded: 1905.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 272.5 MB/s | ETA: 05:59:53
+2026-03-24 05:56:33,546 INFO [05:56:33] Progress: 12623/50188 files (done=12623, skip=0, fail=0) | Downloaded: 1924.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 272.8 MB/s | ETA: 05:58:21
+2026-03-24 05:57:34,788 INFO [05:57:34] Progress: 12744/50188 files (done=12744, skip=0, fail=0) | Downloaded: 1941.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 272.9 MB/s | ETA: 05:56:48
+2026-03-24 05:58:35,828 INFO [05:58:35] Progress: 12859/50188 files (done=12859, skip=0, fail=0) | Downloaded: 1959.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 273.1 MB/s | ETA: 05:55:29
+2026-03-24 05:59:35,904 INFO [05:59:35] Progress: 12981/50188 files (done=12981, skip=0, fail=0) | Downloaded: 1978.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 273.4 MB/s | ETA: 05:53:51
+2026-03-24 06:00:38,995 INFO [06:00:38] Progress: 13095/50188 files (done=13095, skip=0, fail=0) | Downloaded: 1994.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 273.4 MB/s | ETA: 05:52:41
+2026-03-24 06:01:39,367 INFO [06:01:39] Progress: 13209/50188 files (done=13209, skip=0, fail=0) | Downloaded: 2010.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 273.4 MB/s | ETA: 05:51:23
+2026-03-24 06:02:39,387 INFO [06:02:39] Progress: 13317/50188 files (done=13317, skip=0, fail=0) | Downloaded: 2026.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 273.4 MB/s | ETA: 05:50:17
+2026-03-24 06:03:41,262 INFO [06:03:41] Progress: 13423/50188 files (done=13423, skip=0, fail=0) | Downloaded: 2043.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 273.4 MB/s | ETA: 05:49:20
+2026-03-24 06:04:41,293 INFO [06:04:41] Progress: 13533/50188 files (done=13533, skip=0, fail=0) | Downloaded: 2060.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 273.6 MB/s | ETA: 05:48:10
+2026-03-24 06:05:43,630 INFO [06:05:43] Progress: 13642/50188 files (done=13642, skip=0, fail=0) | Downloaded: 2078.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 273.7 MB/s | ETA: 05:47:09
+2026-03-24 06:06:43,646 INFO [06:06:43] Progress: 13752/50188 files (done=13752, skip=0, fail=0) | Downloaded: 2096.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 273.9 MB/s | ETA: 05:45:59
+2026-03-24 06:07:46,299 INFO [06:07:46] Progress: 13856/50188 files (done=13856, skip=0, fail=0) | Downloaded: 2111.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 273.8 MB/s | ETA: 05:45:09
+2026-03-24 06:08:48,236 INFO [06:08:48] Progress: 13961/50188 files (done=13961, skip=0, fail=0) | Downloaded: 2127.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 273.7 MB/s | ETA: 05:44:14
+2026-03-24 06:09:50,957 INFO [06:09:50] Progress: 14074/50188 files (done=14074, skip=0, fail=0) | Downloaded: 2143.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 273.6 MB/s | ETA: 05:43:05
+2026-03-24 06:10:53,106 INFO [06:10:53] Progress: 14185/50188 files (done=14185, skip=0, fail=0) | Downloaded: 2160.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 273.6 MB/s | ETA: 05:41:59
+2026-03-24 06:11:53,495 INFO [06:11:53] Progress: 14294/50188 files (done=14294, skip=0, fail=0) | Downloaded: 2177.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 273.7 MB/s | ETA: 05:40:53
+2026-03-24 06:12:53,527 INFO [06:12:53] Progress: 14396/50188 files (done=14396, skip=0, fail=0) | Downloaded: 2194.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 273.8 MB/s | ETA: 05:39:59
+2026-03-24 06:13:53,696 INFO [06:13:53] Progress: 14516/50188 files (done=14516, skip=0, fail=0) | Downloaded: 2213.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 274.2 MB/s | ETA: 05:38:31
+2026-03-24 06:14:54,865 INFO [06:14:54] Progress: 14629/50188 files (done=14629, skip=0, fail=0) | Downloaded: 2230.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 274.3 MB/s | ETA: 05:37:19
+2026-03-24 06:15:56,322 INFO [06:15:56] Progress: 14736/50188 files (done=14736, skip=0, fail=0) | Downloaded: 2248.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 274.5 MB/s | ETA: 05:36:19
+2026-03-24 06:16:57,744 INFO [06:16:57] Progress: 14850/50188 files (done=14850, skip=0, fail=0) | Downloaded: 2266.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 274.7 MB/s | ETA: 05:35:06
+2026-03-24 06:18:00,779 INFO [06:18:00] Progress: 14962/50188 files (done=14962, skip=0, fail=0) | Downloaded: 2284.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 274.8 MB/s | ETA: 05:34:01
+2026-03-24 06:19:01,160 INFO [06:19:01] Progress: 15068/50188 files (done=15068, skip=0, fail=0) | Downloaded: 2301.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 274.9 MB/s | ETA: 05:33:01
+2026-03-24 06:20:04,064 INFO [06:20:04] Progress: 15171/50188 files (done=15171, skip=0, fail=0) | Downloaded: 2318.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 275.0 MB/s | ETA: 05:32:12
+2026-03-24 06:21:04,368 INFO [06:21:04] Progress: 15274/50188 files (done=15274, skip=0, fail=0) | Downloaded: 2336.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 275.1 MB/s | ETA: 05:31:17
+2026-03-24 06:22:06,629 INFO [06:22:06] Progress: 15378/50188 files (done=15378, skip=0, fail=0) | Downloaded: 2353.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 275.1 MB/s | ETA: 05:30:25
+2026-03-24 06:23:08,585 INFO [06:23:08] Progress: 15501/50188 files (done=15501, skip=0, fail=0) | Downloaded: 2370.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 275.3 MB/s | ETA: 05:28:57
+2026-03-24 06:24:09,445 INFO [06:24:09] Progress: 15624/50188 files (done=15624, skip=0, fail=0) | Downloaded: 2387.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 275.3 MB/s | ETA: 05:27:26
+2026-03-24 06:25:11,768 INFO [06:25:11] Progress: 15740/50188 files (done=15740, skip=0, fail=0) | Downloaded: 2406.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 275.5 MB/s | ETA: 05:26:13
+2026-03-24 06:26:13,981 INFO [06:26:13] Progress: 15845/50188 files (done=15845, skip=0, fail=0) | Downloaded: 2422.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 275.4 MB/s | ETA: 05:25:18
+2026-03-24 06:27:14,745 INFO [06:27:14] Progress: 15960/50188 files (done=15960, skip=0, fail=0) | Downloaded: 2439.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 275.6 MB/s | ETA: 05:24:03
+2026-03-24 06:28:15,534 INFO [06:28:15] Progress: 16073/50188 files (done=16073, skip=0, fail=0) | Downloaded: 2456.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 275.6 MB/s | ETA: 05:22:52
+2026-03-24 06:29:16,210 INFO [06:29:16] Progress: 16171/50188 files (done=16171, skip=0, fail=0) | Downloaded: 2472.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 275.5 MB/s | ETA: 05:22:07
+2026-03-24 06:30:20,489 INFO [06:30:20] Progress: 16295/50188 files (done=16295, skip=0, fail=0) | Downloaded: 2491.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 275.8 MB/s | ETA: 05:20:43
+2026-03-24 06:31:20,616 INFO [06:31:20] Progress: 16412/50188 files (done=16412, skip=0, fail=0) | Downloaded: 2506.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 275.7 MB/s | ETA: 05:19:24
+2026-03-24 06:32:23,612 INFO [06:32:23] Progress: 16518/50188 files (done=16518, skip=0, fail=0) | Downloaded: 2524.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 275.7 MB/s | ETA: 05:18:30
+2026-03-24 06:33:23,665 INFO [06:33:23] Progress: 16620/50188 files (done=16620, skip=0, fail=0) | Downloaded: 2540.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 275.7 MB/s | ETA: 05:17:36
+2026-03-24 06:34:25,843 INFO [06:34:25] Progress: 16724/50188 files (done=16724, skip=0, fail=0) | Downloaded: 2556.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 275.7 MB/s | ETA: 05:16:43
+2026-03-24 06:35:27,514 INFO [06:35:27] Progress: 16834/50188 files (done=16834, skip=0, fail=0) | Downloaded: 2575.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 275.9 MB/s | ETA: 05:15:39
+2026-03-24 06:36:29,776 INFO [06:36:29] Progress: 16967/50188 files (done=16967, skip=0, fail=0) | Downloaded: 2593.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 276.1 MB/s | ETA: 05:13:58
+2026-03-24 06:37:29,997 INFO [06:37:29] Progress: 17098/50188 files (done=17098, skip=0, fail=0) | Downloaded: 2614.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 276.6 MB/s | ETA: 05:12:16
+2026-03-24 06:38:30,213 INFO [06:38:30] Progress: 17218/50188 files (done=17218, skip=0, fail=0) | Downloaded: 2633.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 276.8 MB/s | ETA: 05:10:54
+2026-03-24 06:39:34,673 INFO [06:39:34] Progress: 17317/50188 files (done=17317, skip=0, fail=0) | Downloaded: 2649.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 276.7 MB/s | ETA: 05:10:14
+2026-03-24 06:40:36,156 INFO [06:40:36] Progress: 17418/50188 files (done=17418, skip=0, fail=0) | Downloaded: 2664.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 276.5 MB/s | ETA: 05:09:24
+2026-03-24 06:41:37,007 INFO [06:41:37] Progress: 17516/50188 files (done=17516, skip=0, fail=0) | Downloaded: 2681.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 276.5 MB/s | ETA: 05:08:39
+2026-03-24 06:42:37,684 INFO [06:42:37] Progress: 17637/50188 files (done=17637, skip=0, fail=0) | Downloaded: 2697.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 276.5 MB/s | ETA: 05:07:16
+2026-03-24 06:43:41,748 INFO [06:43:41] Progress: 17753/50188 files (done=17753, skip=0, fail=0) | Downloaded: 2713.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 276.4 MB/s | ETA: 05:06:07
+2026-03-24 06:44:45,512 INFO [06:44:45] Progress: 17875/50188 files (done=17875, skip=0, fail=0) | Downloaded: 2731.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 276.5 MB/s | ETA: 05:04:48
+2026-03-24 06:45:47,513 INFO [06:45:47] Progress: 17989/50188 files (done=17989, skip=0, fail=0) | Downloaded: 2749.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 276.6 MB/s | ETA: 05:03:39
+2026-03-24 06:46:48,056 INFO [06:46:48] Progress: 18111/50188 files (done=18111, skip=0, fail=0) | Downloaded: 2769.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 277.0 MB/s | ETA: 05:02:15
+2026-03-24 06:47:48,815 INFO [06:47:48] Progress: 18238/50188 files (done=18238, skip=0, fail=0) | Downloaded: 2789.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 277.3 MB/s | ETA: 05:00:44
+2026-03-24 06:48:50,271 INFO [06:48:50] Progress: 18359/50188 files (done=18359, skip=0, fail=0) | Downloaded: 2808.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 277.6 MB/s | ETA: 04:59:24
+2026-03-24 06:49:50,770 INFO [06:49:50] Progress: 18475/50188 files (done=18475, skip=0, fail=0) | Downloaded: 2827.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 277.8 MB/s | ETA: 04:58:10
+2026-03-24 06:50:51,156 INFO [06:50:51] Progress: 18589/50188 files (done=18589, skip=0, fail=0) | Downloaded: 2847.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 278.1 MB/s | ETA: 04:56:59
+2026-03-24 06:51:53,934 INFO [06:51:53] Progress: 18716/50188 files (done=18716, skip=0, fail=0) | Downloaded: 2868.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 278.6 MB/s | ETA: 04:55:32
+2026-03-24 06:52:54,368 INFO [06:52:54] Progress: 18852/50188 files (done=18852, skip=0, fail=0) | Downloaded: 2888.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 278.9 MB/s | ETA: 04:53:49
+2026-03-24 06:53:57,136 INFO [06:53:57] Progress: 18982/50188 files (done=18982, skip=0, fail=0) | Downloaded: 2906.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 279.0 MB/s | ETA: 04:52:19
+2026-03-24 06:54:57,215 INFO [06:54:57] Progress: 19121/50188 files (done=19121, skip=0, fail=0) | Downloaded: 2926.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 279.3 MB/s | ETA: 04:50:31
+2026-03-24 06:55:57,822 INFO [06:55:57] Progress: 19253/50188 files (done=19253, skip=0, fail=0) | Downloaded: 2945.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 279.5 MB/s | ETA: 04:48:55
+HTTP Error 500 thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_17368/train_17368_a/train_17368_a_2.nii.gz
+2026-03-24 06:56:10,220 WARNING HTTP Error 500 thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_17368/train_17368_a/train_17368_a_2.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 06:56:10,222 WARNING Retrying in 1s [Retry 1/5].
+2026-03-24 06:56:58,579 INFO [06:56:58] Progress: 19379/50188 files (done=19379, skip=0, fail=0) | Downloaded: 2963.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 279.7 MB/s | ETA: 04:47:29
+2026-03-24 06:57:59,182 INFO [06:57:59] Progress: 19511/50188 files (done=19511, skip=0, fail=0) | Downloaded: 2982.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 280.0 MB/s | ETA: 04:45:54
+2026-03-24 06:58:59,873 INFO [06:58:59] Progress: 19637/50188 files (done=19637, skip=0, fail=0) | Downloaded: 3003.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 280.3 MB/s | ETA: 04:44:29
+2026-03-24 07:00:00,563 INFO [07:00:00] Progress: 19775/50188 files (done=19775, skip=0, fail=0) | Downloaded: 3024.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 280.7 MB/s | ETA: 04:42:46
+2026-03-24 07:01:01,217 INFO [07:01:01] Progress: 19901/50188 files (done=19901, skip=0, fail=0) | Downloaded: 3042.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 280.9 MB/s | ETA: 04:41:21
+2026-03-24 07:02:02,326 INFO [07:02:02] Progress: 20021/50188 files (done=20021, skip=0, fail=0) | Downloaded: 3060.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 280.9 MB/s | ETA: 04:40:06
+2026-03-24 07:03:03,504 INFO [07:03:03] Progress: 20140/50188 files (done=20140, skip=0, fail=0) | Downloaded: 3078.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 281.0 MB/s | ETA: 04:38:52
+2026-03-24 07:04:04,036 INFO [07:04:04] Progress: 20262/50188 files (done=20262, skip=0, fail=0) | Downloaded: 3096.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 281.2 MB/s | ETA: 04:37:33
+2026-03-24 07:05:07,002 INFO [07:05:06] Progress: 20387/50188 files (done=20387, skip=0, fail=0) | Downloaded: 3116.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 281.5 MB/s | ETA: 04:36:14
+2026-03-24 07:06:07,067 INFO [07:06:07] Progress: 20509/50188 files (done=20509, skip=0, fail=0) | Downloaded: 3135.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 281.7 MB/s | ETA: 04:34:55
+2026-03-24 07:07:07,114 INFO [07:07:07] Progress: 20632/50188 files (done=20632, skip=0, fail=0) | Downloaded: 3154.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 281.9 MB/s | ETA: 04:33:34
+2026-03-24 07:08:07,222 INFO [07:08:07] Progress: 20751/50188 files (done=20751, skip=0, fail=0) | Downloaded: 3173.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 282.1 MB/s | ETA: 04:32:20
+2026-03-24 07:09:07,781 INFO [07:09:07] Progress: 20867/50188 files (done=20867, skip=0, fail=0) | Downloaded: 3191.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 282.2 MB/s | ETA: 04:31:10
+2026-03-24 07:10:08,023 INFO [07:10:08] Progress: 20984/50188 files (done=20984, skip=0, fail=0) | Downloaded: 3209.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 282.4 MB/s | ETA: 04:29:59
+2026-03-24 07:11:08,899 INFO [07:11:08] Progress: 21107/50188 files (done=21107, skip=0, fail=0) | Downloaded: 3227.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 282.4 MB/s | ETA: 04:28:40
+2026-03-24 07:12:09,218 INFO [07:12:09] Progress: 21222/50188 files (done=21222, skip=0, fail=0) | Downloaded: 3245.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 282.6 MB/s | ETA: 04:27:32
+2026-03-24 07:13:10,484 INFO [07:13:10] Progress: 21354/50188 files (done=21354, skip=0, fail=0) | Downloaded: 3264.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 282.7 MB/s | ETA: 04:26:03
+2026-03-24 07:14:10,508 INFO [07:14:10] Progress: 21481/50188 files (done=21481, skip=0, fail=0) | Downloaded: 3283.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 282.9 MB/s | ETA: 04:24:39
+2026-03-24 07:15:13,421 INFO [07:15:13] Progress: 21601/50188 files (done=21601, skip=0, fail=0) | Downloaded: 3302.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 283.1 MB/s | ETA: 04:23:28
+2026-03-24 07:16:13,460 INFO [07:16:13] Progress: 21703/50188 files (done=21703, skip=0, fail=0) | Downloaded: 3319.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 283.1 MB/s | ETA: 04:22:36
+2026-03-24 07:17:17,398 INFO [07:17:17] Progress: 21827/50188 files (done=21827, skip=0, fail=0) | Downloaded: 3339.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 283.3 MB/s | ETA: 04:21:21
+2026-03-24 07:18:17,684 INFO [07:18:17] Progress: 21954/50188 files (done=21954, skip=0, fail=0) | Downloaded: 3357.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 283.5 MB/s | ETA: 04:19:58
+2026-03-24 07:19:19,828 INFO [07:19:19] Progress: 22077/50188 files (done=22077, skip=0, fail=0) | Downloaded: 3376.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 283.6 MB/s | ETA: 04:18:43
+2026-03-24 07:20:20,143 INFO [07:20:20] Progress: 22212/50188 files (done=22212, skip=0, fail=0) | Downloaded: 3395.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 283.8 MB/s | ETA: 04:17:11
+2026-03-24 07:21:20,812 INFO [07:21:20] Progress: 22334/50188 files (done=22334, skip=0, fail=0) | Downloaded: 3414.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 284.0 MB/s | ETA: 04:15:55
+2026-03-24 07:22:21,761 INFO [07:22:21] Progress: 22453/50188 files (done=22453, skip=0, fail=0) | Downloaded: 3434.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 284.2 MB/s | ETA: 04:14:44
+2026-03-24 07:23:22,152 INFO [07:23:22] Progress: 22574/50188 files (done=22574, skip=0, fail=0) | Downloaded: 3454.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 284.5 MB/s | ETA: 04:13:29
+2026-03-24 07:24:23,022 INFO [07:24:23] Progress: 22705/50188 files (done=22705, skip=0, fail=0) | Downloaded: 3472.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 284.6 MB/s | ETA: 04:12:03
+2026-03-24 07:25:23,190 INFO [07:25:23] Progress: 22843/50188 files (done=22843, skip=0, fail=0) | Downloaded: 3493.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 284.9 MB/s | ETA: 04:10:29
+2026-03-24 07:26:23,271 INFO [07:26:23] Progress: 22987/50188 files (done=22987, skip=0, fail=0) | Downloaded: 3512.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 285.1 MB/s | ETA: 04:08:47
+2026-03-24 07:27:23,797 INFO [07:27:23] Progress: 23115/50188 files (done=23115, skip=0, fail=0) | Downloaded: 3530.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 285.2 MB/s | ETA: 04:07:25
+2026-03-24 07:28:23,815 INFO [07:28:23] Progress: 23238/50188 files (done=23238, skip=0, fail=0) | Downloaded: 3548.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 285.3 MB/s | ETA: 04:06:09
+2026-03-24 07:29:25,570 INFO [07:29:25] Progress: 23374/50188 files (done=23374, skip=0, fail=0) | Downloaded: 3568.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 285.5 MB/s | ETA: 04:04:40
+2026-03-24 07:30:28,430 INFO [07:30:28] Progress: 23512/50188 files (done=23512, skip=0, fail=0) | Downloaded: 3588.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 285.7 MB/s | ETA: 04:03:10
+2026-03-24 07:31:29,508 INFO [07:31:29] Progress: 23649/50188 files (done=23649, skip=0, fail=0) | Downloaded: 3607.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 285.9 MB/s | ETA: 04:01:40
+2026-03-24 07:32:29,564 INFO [07:32:29] Progress: 23769/50188 files (done=23769, skip=0, fail=0) | Downloaded: 3626.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 286.0 MB/s | ETA: 04:00:28
+2026-03-24 07:33:30,052 INFO [07:33:30] Progress: 23891/50188 files (done=23891, skip=0, fail=0) | Downloaded: 3644.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 286.2 MB/s | ETA: 03:59:14
+2026-03-24 07:34:30,320 INFO [07:34:30] Progress: 24015/50188 files (done=24015, skip=0, fail=0) | Downloaded: 3664.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 286.4 MB/s | ETA: 03:57:59
+2026-03-24 07:35:30,388 INFO [07:35:30] Progress: 24140/50188 files (done=24140, skip=0, fail=0) | Downloaded: 3683.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 286.6 MB/s | ETA: 03:56:42
+2026-03-24 07:36:30,664 INFO [07:36:30] Progress: 24248/50188 files (done=24248, skip=0, fail=0) | Downloaded: 3699.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 286.5 MB/s | ETA: 03:55:44
+2026-03-24 07:37:30,827 INFO [07:37:30] Progress: 24369/50188 files (done=24369, skip=0, fail=0) | Downloaded: 3718.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 286.7 MB/s | ETA: 03:54:32
+2026-03-24 07:38:32,225 INFO [07:38:32] Progress: 24503/50188 files (done=24503, skip=0, fail=0) | Downloaded: 3738.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 286.9 MB/s | ETA: 03:53:07
+2026-03-24 07:39:33,542 INFO [07:39:33] Progress: 24630/50188 files (done=24630, skip=0, fail=0) | Downloaded: 3757.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 287.1 MB/s | ETA: 03:51:50
+2026-03-24 07:40:33,988 INFO [07:40:33] Progress: 24763/50188 files (done=24763, skip=0, fail=0) | Downloaded: 3778.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 287.4 MB/s | ETA: 03:50:25
+2026-03-24 07:41:36,468 INFO [07:41:36] Progress: 24891/50188 files (done=24891, skip=0, fail=0) | Downloaded: 3798.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 287.5 MB/s | ETA: 03:49:08
+2026-03-24 07:42:37,618 INFO [07:42:37] Progress: 25023/50188 files (done=25023, skip=0, fail=0) | Downloaded: 3816.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 287.6 MB/s | ETA: 03:47:46
+2026-03-24 07:43:37,721 INFO [07:43:37] Progress: 25151/50188 files (done=25151, skip=0, fail=0) | Downloaded: 3835.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 287.7 MB/s | ETA: 03:46:27
+2026-03-24 07:44:37,894 INFO [07:44:37] Progress: 25281/50188 files (done=25281, skip=0, fail=0) | Downloaded: 3854.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 287.9 MB/s | ETA: 03:45:06
+2026-03-24 07:45:38,324 INFO [07:45:38] Progress: 25417/50188 files (done=25417, skip=0, fail=0) | Downloaded: 3873.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 288.1 MB/s | ETA: 03:43:39
+2026-03-24 07:46:38,326 INFO [07:46:38] Progress: 25551/50188 files (done=25551, skip=0, fail=0) | Downloaded: 3892.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 288.2 MB/s | ETA: 03:42:15
+2026-03-24 07:47:38,595 INFO [07:47:38] Progress: 25686/50188 files (done=25686, skip=0, fail=0) | Downloaded: 3912.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 288.5 MB/s | ETA: 03:40:49
+2026-03-24 07:48:39,174 INFO [07:48:39] Progress: 25794/50188 files (done=25794, skip=0, fail=0) | Downloaded: 3930.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 288.5 MB/s | ETA: 03:39:53
+2026-03-24 07:49:40,389 INFO [07:49:40] Progress: 25908/50188 files (done=25908, skip=0, fail=0) | Downloaded: 3947.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 288.5 MB/s | ETA: 03:38:51
+2026-03-24 07:50:42,221 INFO [07:50:42] Progress: 26021/50188 files (done=26021, skip=0, fail=0) | Downloaded: 3966.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 288.6 MB/s | ETA: 03:37:51
+2026-03-24 07:51:42,502 INFO [07:51:42] Progress: 26153/50188 files (done=26153, skip=0, fail=0) | Downloaded: 3984.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 288.7 MB/s | ETA: 03:36:29
+2026-03-24 07:52:42,575 INFO [07:52:42] Progress: 26268/50188 files (done=26268, skip=0, fail=0) | Downloaded: 4002.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 288.8 MB/s | ETA: 03:35:25
+2026-03-24 07:53:43,660 INFO [07:53:43] Progress: 26398/50188 files (done=26398, skip=0, fail=0) | Downloaded: 4021.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 288.9 MB/s | ETA: 03:34:06
+2026-03-24 07:54:43,664 INFO [07:54:43] Progress: 26541/50188 files (done=26541, skip=0, fail=0) | Downloaded: 4039.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 289.0 MB/s | ETA: 03:32:34
+2026-03-24 07:55:43,791 INFO [07:55:43] Progress: 26658/50188 files (done=26658, skip=0, fail=0) | Downloaded: 4057.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 289.0 MB/s | ETA: 03:31:28
+2026-03-24 07:56:44,811 INFO [07:56:44] Progress: 26785/50188 files (done=26785, skip=0, fail=0) | Downloaded: 4076.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 289.1 MB/s | ETA: 03:30:13
+2026-03-24 07:57:45,260 INFO [07:57:45] Progress: 26910/50188 files (done=26910, skip=0, fail=0) | Downloaded: 4095.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 289.3 MB/s | ETA: 03:29:00
+2026-03-24 07:58:45,774 INFO [07:58:45] Progress: 27036/50188 files (done=27036, skip=0, fail=0) | Downloaded: 4115.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 289.5 MB/s | ETA: 03:27:46
+2026-03-24 07:59:47,603 INFO [07:59:47] Progress: 27170/50188 files (done=27170, skip=0, fail=0) | Downloaded: 4135.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 289.7 MB/s | ETA: 03:26:25
+2026-03-24 08:00:47,694 INFO [08:00:47] Progress: 27294/50188 files (done=27294, skip=0, fail=0) | Downloaded: 4155.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 289.9 MB/s | ETA: 03:25:12
+2026-03-24 08:01:48,975 INFO [08:01:48] Progress: 27414/50188 files (done=27414, skip=0, fail=0) | Downloaded: 4173.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 289.9 MB/s | ETA: 03:24:05
+2026-03-24 08:02:49,915 INFO [08:02:49] Progress: 27554/50188 files (done=27554, skip=0, fail=0) | Downloaded: 4194.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 290.1 MB/s | ETA: 03:22:38
+2026-03-24 08:03:50,299 INFO [08:03:50] Progress: 27678/50188 files (done=27678, skip=0, fail=0) | Downloaded: 4213.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 290.3 MB/s | ETA: 03:21:26
+2026-03-24 08:04:50,778 INFO [08:04:50] Progress: 27798/50188 files (done=27798, skip=0, fail=0) | Downloaded: 4232.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 290.4 MB/s | ETA: 03:20:19
+2026-03-24 08:05:52,190 INFO [08:05:52] Progress: 27920/50188 files (done=27920, skip=0, fail=0) | Downloaded: 4249.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 290.4 MB/s | ETA: 03:19:10
+2026-03-24 08:06:52,846 INFO [08:06:52] Progress: 28029/50188 files (done=28029, skip=0, fail=0) | Downloaded: 4267.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 290.5 MB/s | ETA: 03:18:13
+2026-03-24 08:07:53,663 INFO [08:07:53] Progress: 28135/50188 files (done=28135, skip=0, fail=0) | Downloaded: 4284.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 290.4 MB/s | ETA: 03:17:19
+2026-03-24 08:08:54,488 INFO [08:08:54] Progress: 28244/50188 files (done=28244, skip=0, fail=0) | Downloaded: 4301.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 290.4 MB/s | ETA: 03:16:23
+2026-03-24 08:09:56,588 INFO [08:09:56] Progress: 28373/50188 files (done=28373, skip=0, fail=0) | Downloaded: 4320.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 290.5 MB/s | ETA: 03:15:08
+2026-03-24 08:10:56,619 INFO [08:10:56] Progress: 28496/50188 files (done=28496, skip=0, fail=0) | Downloaded: 4337.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 290.5 MB/s | ETA: 03:13:57
+2026-03-24 08:11:59,211 INFO [08:11:59] Progress: 28618/50188 files (done=28618, skip=0, fail=0) | Downloaded: 4356.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 290.6 MB/s | ETA: 03:12:50
+2026-03-24 08:13:00,913 INFO [08:13:00] Progress: 28722/50188 files (done=28722, skip=0, fail=0) | Downloaded: 4373.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 290.6 MB/s | ETA: 03:11:58
+2026-03-24 08:14:01,748 INFO [08:14:01] Progress: 28843/50188 files (done=28843, skip=0, fail=0) | Downloaded: 4392.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 290.7 MB/s | ETA: 03:10:50
+2026-03-24 08:15:03,290 INFO [08:15:03] Progress: 28968/50188 files (done=28968, skip=0, fail=0) | Downloaded: 4410.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 290.7 MB/s | ETA: 03:09:39
+2026-03-24 08:16:03,805 INFO [08:16:03] Progress: 29081/50188 files (done=29081, skip=0, fail=0) | Downloaded: 4428.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 290.8 MB/s | ETA: 03:08:39
+2026-03-24 08:17:05,410 INFO [08:17:05] Progress: 29202/50188 files (done=29202, skip=0, fail=0) | Downloaded: 4445.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 290.8 MB/s | ETA: 03:07:31
+2026-03-24 08:18:05,415 INFO [08:18:05] Progress: 29331/50188 files (done=29331, skip=0, fail=0) | Downloaded: 4465.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 291.0 MB/s | ETA: 03:06:16
+2026-03-24 08:19:06,739 INFO [08:19:06] Progress: 29450/50188 files (done=29450, skip=0, fail=0) | Downloaded: 4483.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 291.0 MB/s | ETA: 03:05:10
+2026-03-24 08:20:06,849 INFO [08:20:06] Progress: 29577/50188 files (done=29577, skip=0, fail=0) | Downloaded: 4504.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 291.2 MB/s | ETA: 03:03:57
+2026-03-24 08:21:08,532 INFO [08:21:08] Progress: 29700/50188 files (done=29700, skip=0, fail=0) | Downloaded: 4524.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 291.4 MB/s | ETA: 03:02:48
+2026-03-24 08:22:10,098 INFO [08:22:10] Progress: 29827/50188 files (done=29827, skip=0, fail=0) | Downloaded: 4543.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 291.5 MB/s | ETA: 03:01:36
+2026-03-24 08:23:11,051 INFO [08:23:11] Progress: 29942/50188 files (done=29942, skip=0, fail=0) | Downloaded: 4560.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 291.5 MB/s | ETA: 03:00:34
+2026-03-24 08:24:11,550 INFO [08:24:11] Progress: 30048/50188 files (done=30048, skip=0, fail=0) | Downloaded: 4577.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 291.4 MB/s | ETA: 02:59:39
+2026-03-24 08:25:12,649 INFO [08:25:12] Progress: 30178/50188 files (done=30178, skip=0, fail=0) | Downloaded: 4596.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 291.6 MB/s | ETA: 02:58:24
+2026-03-24 08:26:16,220 INFO [08:26:16] Progress: 30306/50188 files (done=30306, skip=0, fail=0) | Downloaded: 4616.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 291.6 MB/s | ETA: 02:57:12
+2026-03-24 08:27:16,246 INFO [08:27:16] Progress: 30437/50188 files (done=30437, skip=0, fail=0) | Downloaded: 4637.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 291.9 MB/s | ETA: 02:55:56
+2026-03-24 08:28:16,983 INFO [08:28:16] Progress: 30563/50188 files (done=30563, skip=0, fail=0) | Downloaded: 4656.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 292.0 MB/s | ETA: 02:54:44
+2026-03-24 08:29:17,361 INFO [08:29:17] Progress: 30677/50188 files (done=30677, skip=0, fail=0) | Downloaded: 4675.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 292.1 MB/s | ETA: 02:53:43
+2026-03-24 08:30:20,591 INFO [08:30:20] Progress: 30810/50188 files (done=30810, skip=0, fail=0) | Downloaded: 4694.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 292.2 MB/s | ETA: 02:52:27
+2026-03-24 08:31:21,186 INFO [08:31:21] Progress: 30918/50188 files (done=30918, skip=0, fail=0) | Downloaded: 4711.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 292.2 MB/s | ETA: 02:51:31
+2026-03-24 08:32:21,976 INFO [08:32:21] Progress: 31040/50188 files (done=31040, skip=0, fail=0) | Downloaded: 4730.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 292.3 MB/s | ETA: 02:50:23
+2026-03-24 08:33:22,167 INFO [08:33:22] Progress: 31160/50188 files (done=31160, skip=0, fail=0) | Downloaded: 4748.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 292.3 MB/s | ETA: 02:49:17
+2026-03-24 08:34:22,764 INFO [08:34:22] Progress: 31295/50188 files (done=31295, skip=0, fail=0) | Downloaded: 4767.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 292.4 MB/s | ETA: 02:47:58
+2026-03-24 08:35:23,055 INFO [08:35:23] Progress: 31414/50188 files (done=31414, skip=0, fail=0) | Downloaded: 4785.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 292.5 MB/s | ETA: 02:46:53
+2026-03-24 08:36:24,270 INFO [08:36:24] Progress: 31549/50188 files (done=31549, skip=0, fail=0) | Downloaded: 4805.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 292.7 MB/s | ETA: 02:45:34
+2026-03-24 08:37:24,332 INFO [08:37:24] Progress: 31678/50188 files (done=31678, skip=0, fail=0) | Downloaded: 4825.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 292.8 MB/s | ETA: 02:44:20
+2026-03-24 08:38:25,266 INFO [08:38:25] Progress: 31810/50188 files (done=31810, skip=0, fail=0) | Downloaded: 4847.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 293.0 MB/s | ETA: 02:43:05
+2026-03-24 08:39:25,688 INFO [08:39:25] Progress: 31935/50188 files (done=31935, skip=0, fail=0) | Downloaded: 4866.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 293.2 MB/s | ETA: 02:41:55
+2026-03-24 08:40:29,036 INFO [08:40:29] Progress: 32064/50188 files (done=32064, skip=0, fail=0) | Downloaded: 4886.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 293.3 MB/s | ETA: 02:40:43
+2026-03-24 08:41:30,261 INFO [08:41:30] Progress: 32197/50188 files (done=32197, skip=0, fail=0) | Downloaded: 4905.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 293.4 MB/s | ETA: 02:39:27
+2026-03-24 08:42:31,696 INFO [08:42:31] Progress: 32328/50188 files (done=32328, skip=0, fail=0) | Downloaded: 4925.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 293.5 MB/s | ETA: 02:38:13
+2026-03-24 08:43:33,111 INFO [08:43:33] Progress: 32448/50188 files (done=32448, skip=0, fail=0) | Downloaded: 4944.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 293.6 MB/s | ETA: 02:37:08
+2026-03-24 08:44:35,246 INFO [08:44:35] Progress: 32564/50188 files (done=32564, skip=0, fail=0) | Downloaded: 4962.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 293.6 MB/s | ETA: 02:36:06
+2026-03-24 08:45:37,048 INFO [08:45:37] Progress: 32683/50188 files (done=32683, skip=0, fail=0) | Downloaded: 4980.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 293.7 MB/s | ETA: 02:35:02
+2026-03-24 08:46:37,582 INFO [08:46:37] Progress: 32800/50188 files (done=32800, skip=0, fail=0) | Downloaded: 4999.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 293.7 MB/s | ETA: 02:33:59
+2026-03-24 08:47:37,643 INFO [08:47:37] Progress: 32936/50188 files (done=32936, skip=0, fail=0) | Downloaded: 5019.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 293.9 MB/s | ETA: 02:32:40
+2026-03-24 08:48:37,910 INFO [08:48:37] Progress: 33058/50188 files (done=33058, skip=0, fail=0) | Downloaded: 5039.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.0 MB/s | ETA: 02:31:33
+2026-03-24 08:49:38,000 INFO [08:49:37] Progress: 33168/50188 files (done=33168, skip=0, fail=0) | Downloaded: 5058.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.1 MB/s | ETA: 02:30:36
+2026-03-24 08:50:39,042 INFO [08:50:39] Progress: 33291/50188 files (done=33291, skip=0, fail=0) | Downloaded: 5076.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.2 MB/s | ETA: 02:29:28
+2026-03-24 08:51:40,024 INFO [08:51:40] Progress: 33412/50188 files (done=33412, skip=0, fail=0) | Downloaded: 5096.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.3 MB/s | ETA: 02:28:22
+2026-03-24 08:52:41,381 INFO [08:52:41] Progress: 33528/50188 files (done=33528, skip=0, fail=0) | Downloaded: 5114.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.4 MB/s | ETA: 02:27:21
+2026-03-24 08:53:43,755 INFO [08:53:43] Progress: 33646/50188 files (done=33646, skip=0, fail=0) | Downloaded: 5132.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.4 MB/s | ETA: 02:26:18
+2026-03-24 08:54:43,948 INFO [08:54:43] Progress: 33759/50188 files (done=33759, skip=0, fail=0) | Downloaded: 5151.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.4 MB/s | ETA: 02:25:18
+2026-03-24 08:55:44,488 INFO [08:55:44] Progress: 33882/50188 files (done=33882, skip=0, fail=0) | Downloaded: 5169.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.5 MB/s | ETA: 02:24:11
+2026-03-24 08:56:44,810 INFO [08:56:44] Progress: 34006/50188 files (done=34006, skip=0, fail=0) | Downloaded: 5188.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.6 MB/s | ETA: 02:23:02
+2026-03-24 08:57:46,377 INFO [08:57:46] Progress: 34124/50188 files (done=34124, skip=0, fail=0) | Downloaded: 5206.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.6 MB/s | ETA: 02:21:59
+2026-03-24 08:58:49,652 INFO [08:58:49] Progress: 34238/50188 files (done=34238, skip=0, fail=0) | Downloaded: 5226.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.7 MB/s | ETA: 02:21:00
+2026-03-24 08:59:49,689 INFO [08:59:49] Progress: 34363/50188 files (done=34363, skip=0, fail=0) | Downloaded: 5248.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.9 MB/s | ETA: 02:19:51
+2026-03-24 09:00:49,918 INFO [09:00:49] Progress: 34483/50188 files (done=34483, skip=0, fail=0) | Downloaded: 5264.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.9 MB/s | ETA: 02:18:46
+2026-03-24 09:01:50,002 INFO [09:01:49] Progress: 34603/50188 files (done=34603, skip=0, fail=0) | Downloaded: 5282.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.9 MB/s | ETA: 02:17:40
+2026-03-24 09:02:50,583 INFO [09:02:50] Progress: 34727/50188 files (done=34727, skip=0, fail=0) | Downloaded: 5301.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.0 MB/s | ETA: 02:16:32
+2026-03-24 09:03:51,616 INFO [09:03:51] Progress: 34849/50188 files (done=34849, skip=0, fail=0) | Downloaded: 5321.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.1 MB/s | ETA: 02:15:26
+2026-03-24 09:04:51,627 INFO [09:04:51] Progress: 34969/50188 files (done=34969, skip=0, fail=0) | Downloaded: 5341.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.3 MB/s | ETA: 02:14:21
+2026-03-24 09:05:52,154 INFO [09:05:52] Progress: 35084/50188 files (done=35084, skip=0, fail=0) | Downloaded: 5359.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.3 MB/s | ETA: 02:13:20
+2026-03-24 09:06:52,166 INFO [09:06:52] Progress: 35208/50188 files (done=35208, skip=0, fail=0) | Downloaded: 5379.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.5 MB/s | ETA: 02:12:12
+2026-03-24 09:07:54,041 INFO [09:07:54] Progress: 35340/50188 files (done=35340, skip=0, fail=0) | Downloaded: 5399.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.6 MB/s | ETA: 02:10:59
+2026-03-24 09:08:56,015 INFO [09:08:56] Progress: 35413/50188 files (done=35413, skip=0, fail=0) | Downloaded: 5411.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.2 MB/s | ETA: 02:10:30
+2026-03-24 09:09:58,593 INFO [09:09:58] Progress: 35521/50188 files (done=35521, skip=0, fail=0) | Downloaded: 5428.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.2 MB/s | ETA: 02:09:35
+2026-03-24 09:10:59,700 INFO [09:10:59] Progress: 35638/50188 files (done=35638, skip=0, fail=0) | Downloaded: 5446.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.2 MB/s | ETA: 02:08:32
+2026-03-24 09:12:00,025 INFO [09:12:00] Progress: 35726/50188 files (done=35726, skip=0, fail=0) | Downloaded: 5458.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.9 MB/s | ETA: 02:07:51
+2026-03-24 09:13:00,707 INFO [09:13:00] Progress: 35837/50188 files (done=35837, skip=0, fail=0) | Downloaded: 5474.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.8 MB/s | ETA: 02:06:53
+2026-03-24 09:14:01,722 INFO [09:14:01] Progress: 35945/50188 files (done=35945, skip=0, fail=0) | Downloaded: 5491.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.8 MB/s | ETA: 02:05:57
+2026-03-24 09:15:02,571 INFO [09:15:02] Progress: 36062/50188 files (done=36062, skip=0, fail=0) | Downloaded: 5511.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.9 MB/s | ETA: 02:04:55
+2026-03-24 09:16:02,665 INFO [09:16:02] Progress: 36208/50188 files (done=36208, skip=0, fail=0) | Downloaded: 5534.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.3 MB/s | ETA: 02:03:30
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 90b3331a-d1f0-4ffb-869d-d8e669048a84)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5867/train_5867_a/train_5867_a_2.nii.gz
+2026-03-24 09:16:17,231 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 90b3331a-d1f0-4ffb-869d-d8e669048a84)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5867/train_5867_a/train_5867_a_2.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 09:16:17,350 WARNING Retrying in 1s [Retry 1/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 6fa37add-7d21-428b-a2c0-00aa169fcc09)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5868/train_5868_a/train_5868_a_2.nii.gz
+2026-03-24 09:16:17,739 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 6fa37add-7d21-428b-a2c0-00aa169fcc09)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5868/train_5868_a/train_5868_a_2.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 09:16:17,739 WARNING Retrying in 1s [Retry 1/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 1bd3295c-bb51-40ee-963b-04c58e3e7fd8)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_588/train_588_b/train_588_b_2.nii.gz
+2026-03-24 09:16:35,671 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 1bd3295c-bb51-40ee-963b-04c58e3e7fd8)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_588/train_588_b/train_588_b_2.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 09:16:35,671 WARNING Retrying in 1s [Retry 1/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 99772042-1ff4-4f64-9c9b-f5a12d7a8068)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5882/train_5882_a/train_5882_a_2.nii.gz
+2026-03-24 09:16:37,007 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 99772042-1ff4-4f64-9c9b-f5a12d7a8068)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5882/train_5882_a/train_5882_a_2.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 09:16:37,007 WARNING Retrying in 1s [Retry 1/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 9fdc2c8d-1c46-4e62-9616-92ba574cbedd)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5883/train_5883_c/train_5883_c_2.nii.gz
+2026-03-24 09:16:41,435 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 9fdc2c8d-1c46-4e62-9616-92ba574cbedd)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5883/train_5883_c/train_5883_c_2.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 09:16:41,436 WARNING Retrying in 1s [Retry 1/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: c407c208-88e6-4f53-a658-e22b151f7dea)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5884/train_5884_a/train_5884_a_1.nii.gz
+2026-03-24 09:16:41,451 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: c407c208-88e6-4f53-a658-e22b151f7dea)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5884/train_5884_a/train_5884_a_1.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 09:16:41,451 WARNING Retrying in 1s [Retry 1/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 7c317b7d-4a21-44d2-8889-c7c9818f33a3)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5886/train_5886_a/train_5886_a_2.nii.gz
+2026-03-24 09:16:45,119 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 7c317b7d-4a21-44d2-8889-c7c9818f33a3)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5886/train_5886_a/train_5886_a_2.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 09:16:45,120 WARNING Retrying in 1s [Retry 1/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 908daa8a-163e-4632-b8e4-fc4edb40d6ca)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5889/train_5889_a/train_5889_a_2.nii.gz
+2026-03-24 09:16:51,135 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 908daa8a-163e-4632-b8e4-fc4edb40d6ca)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5889/train_5889_a/train_5889_a_2.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 09:16:51,135 WARNING Retrying in 1s [Retry 1/5].
+2026-03-24 09:17:04,306 INFO [09:17:04] Progress: 36307/50188 files (done=36307, skip=0, fail=0) | Downloaded: 5550.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.2 MB/s | ETA: 02:02:41
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 0fcd2ed3-b24f-4bdb-82d1-4ca6ea2f084e)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5910/train_5910_a/train_5910_a_1.nii.gz
+2026-03-24 09:17:25,911 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 0fcd2ed3-b24f-4bdb-82d1-4ca6ea2f084e)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5910/train_5910_a/train_5910_a_1.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 09:17:25,912 WARNING Retrying in 1s [Retry 1/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: dfd373df-8a9f-4191-b079-be2df2c39799)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5911/train_5911_a/train_5911_a_2.nii.gz
+2026-03-24 09:17:25,935 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: dfd373df-8a9f-4191-b079-be2df2c39799)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5911/train_5911_a/train_5911_a_2.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 09:17:25,935 WARNING Retrying in 1s [Retry 1/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: f276ad9b-cd99-41d2-87d3-bdbdf7f15e22)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5915/train_5915_e/train_5915_e_1.nii.gz
+2026-03-24 09:17:38,167 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: f276ad9b-cd99-41d2-87d3-bdbdf7f15e22)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5915/train_5915_e/train_5915_e_1.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 09:17:38,168 WARNING Retrying in 1s [Retry 1/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: b5a9b1fc-5ad9-4774-8fa6-a169acbd09f5)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5929/train_5929_a/train_5929_a_1.nii.gz
+2026-03-24 09:17:52,871 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: b5a9b1fc-5ad9-4774-8fa6-a169acbd09f5)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5929/train_5929_a/train_5929_a_1.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 09:17:52,872 WARNING Retrying in 1s [Retry 1/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 55f3501f-e4a2-4978-8451-9b1904db63ff)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5931/train_5931_b/train_5931_b_1.nii.gz
+2026-03-24 09:17:57,815 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 55f3501f-e4a2-4978-8451-9b1904db63ff)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5931/train_5931_b/train_5931_b_1.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 09:17:57,815 WARNING Retrying in 1s [Retry 1/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 4fdbf438-893d-4be6-b3db-63f72b3d890a)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5932/train_5932_a/train_5932_a_1.nii.gz
+2026-03-24 09:17:59,295 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 4fdbf438-893d-4be6-b3db-63f72b3d890a)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_5932/train_5932_a/train_5932_a_1.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 09:17:59,393 WARNING Retrying in 1s [Retry 1/5].
+2026-03-24 09:18:04,314 INFO [09:18:04] Progress: 36406/50188 files (done=36406, skip=0, fail=0) | Downloaded: 5567.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.2 MB/s | ETA: 02:01:52
+2026-03-24 09:19:06,931 INFO [09:19:06] Progress: 36533/50188 files (done=36533, skip=0, fail=0) | Downloaded: 5586.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.2 MB/s | ETA: 02:00:43
+2026-03-24 09:20:07,479 INFO [09:20:07] Progress: 36655/50188 files (done=36655, skip=0, fail=0) | Downloaded: 5605.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.3 MB/s | ETA: 01:59:36
+2026-03-24 09:21:08,776 INFO [09:21:08] Progress: 36791/50188 files (done=36791, skip=0, fail=0) | Downloaded: 5625.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.4 MB/s | ETA: 01:58:20
+2026-03-24 09:22:09,345 INFO [09:22:09] Progress: 36916/50188 files (done=36916, skip=0, fail=0) | Downloaded: 5644.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.5 MB/s | ETA: 01:57:12
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 4b6196cf-ea05-4658-8505-d103bb2942f5)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_6166/train_6166_a/train_6166_a_1.nii.gz
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 1e798b84-55f5-4f3b-8a60-c31406406a44)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_6166/train_6166_b/train_6166_b_2.nii.gz
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 7a201014-2d16-48d8-b591-658bd114a4ed)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_6167/train_6167_a/train_6167_a_2.nii.gz
+2026-03-24 09:23:10,715 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 4b6196cf-ea05-4658-8505-d103bb2942f5)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_6166/train_6166_a/train_6166_a_1.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 09:23:10,723 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 1e798b84-55f5-4f3b-8a60-c31406406a44)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_6166/train_6166_b/train_6166_b_2.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 09:23:10,751 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 7a201014-2d16-48d8-b591-658bd114a4ed)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_6167/train_6167_a/train_6167_a_2.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 09:23:10,804 WARNING Retrying in 1s [Retry 1/5].
+2026-03-24 09:23:10,804 WARNING Retrying in 1s [Retry 1/5].
+2026-03-24 09:23:10,804 WARNING Retrying in 1s [Retry 1/5].
+2026-03-24 09:23:11,357 INFO [09:23:11] Progress: 37022/50188 files (done=37022, skip=0, fail=0) | Downloaded: 5659.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.3 MB/s | ETA: 01:56:18
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: e7d8bd21-14f6-4bcc-b664-74bbf1dfdbb4)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_6170/train_6170_a/train_6170_a_1.nii.gz
+2026-03-24 09:23:14,615 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: e7d8bd21-14f6-4bcc-b664-74bbf1dfdbb4)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_6170/train_6170_a/train_6170_a_1.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 09:23:14,659 WARNING Retrying in 1s [Retry 1/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 38bae17a-54c8-4922-b27e-c3d4427123d1)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_6166/train_6166_b/train_6166_b_2.nii.gz
+2026-03-24 09:23:22,035 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 38bae17a-54c8-4922-b27e-c3d4427123d1)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_6166/train_6166_b/train_6166_b_2.nii.gz
+Retrying in 2s [Retry 2/5].
+2026-03-24 09:23:22,036 WARNING Retrying in 2s [Retry 2/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 47a60799-ea6a-4a9e-a313-df8a2cee5986)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_6176/train_6176_a/train_6176_a_1.nii.gz
+2026-03-24 09:23:26,419 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 47a60799-ea6a-4a9e-a313-df8a2cee5986)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_6176/train_6176_a/train_6176_a_1.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 09:23:26,423 WARNING Retrying in 1s [Retry 1/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: d8700e6c-476e-4684-b47c-11c0b2ddb804)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_6179/train_6179_a/train_6179_a_1.nii.gz
+2026-03-24 09:23:30,059 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: d8700e6c-476e-4684-b47c-11c0b2ddb804)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_6179/train_6179_a/train_6179_a_1.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 09:23:30,060 WARNING Retrying in 1s [Retry 1/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: cedfb8e1-be36-444a-bd76-670a06def240)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_6184/train_6184_a/train_6184_a_1.nii.gz
+2026-03-24 09:23:39,883 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: cedfb8e1-be36-444a-bd76-670a06def240)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_6184/train_6184_a/train_6184_a_1.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 09:23:39,884 WARNING Retrying in 1s [Retry 1/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: bb97d958-0e45-4798-8c7e-51bd1f489022)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_6184/train_6184_a/train_6184_a_2.nii.gz
+2026-03-24 09:23:39,903 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: bb97d958-0e45-4798-8c7e-51bd1f489022)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_6184/train_6184_a/train_6184_a_2.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 09:23:39,903 WARNING Retrying in 1s [Retry 1/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: ed66ed78-d915-446e-882b-eae0c2658046)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_6187/train_6187_c/train_6187_c_2.nii.gz
+2026-03-24 09:23:46,315 WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: ed66ed78-d915-446e-882b-eae0c2658046)')' thrown while requesting HEAD https://huggingface.co/datasets/ibrahimhamamci/CT-RATE/resolve/main/dataset/train_fixed/train_6187/train_6187_c/train_6187_c_2.nii.gz
+Retrying in 1s [Retry 1/5].
+2026-03-24 09:23:46,315 WARNING Retrying in 1s [Retry 1/5].
+2026-03-24 09:24:13,120 INFO [09:24:13] Progress: 37116/50188 files (done=37116, skip=0, fail=0) | Downloaded: 5674.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.2 MB/s | ETA: 01:55:32
+2026-03-24 09:25:14,807 INFO [09:25:14] Progress: 37230/50188 files (done=37230, skip=0, fail=0) | Downloaded: 5691.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.1 MB/s | ETA: 01:54:32
+2026-03-24 09:26:15,677 INFO [09:26:15] Progress: 37343/50188 files (done=37343, skip=0, fail=0) | Downloaded: 5709.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.2 MB/s | ETA: 01:53:33
+2026-03-24 09:27:17,174 INFO [09:27:17] Progress: 37466/50188 files (done=37466, skip=0, fail=0) | Downloaded: 5727.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.2 MB/s | ETA: 01:52:26
+2026-03-24 09:28:17,409 INFO [09:28:17] Progress: 37588/50188 files (done=37588, skip=0, fail=0) | Downloaded: 5744.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.2 MB/s | ETA: 01:51:20
+2026-03-24 09:29:18,186 INFO [09:29:18] Progress: 37697/50188 files (done=37697, skip=0, fail=0) | Downloaded: 5761.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.1 MB/s | ETA: 01:50:23
+2026-03-24 09:30:19,283 INFO [09:30:19] Progress: 37813/50188 files (done=37813, skip=0, fail=0) | Downloaded: 5778.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.1 MB/s | ETA: 01:49:22
+2026-03-24 09:31:21,655 INFO [09:31:21] Progress: 37927/50188 files (done=37927, skip=0, fail=0) | Downloaded: 5796.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.1 MB/s | ETA: 01:48:22
+2026-03-24 09:32:23,405 INFO [09:32:23] Progress: 38049/50188 files (done=38049, skip=0, fail=0) | Downloaded: 5816.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.2 MB/s | ETA: 01:47:16
+2026-03-24 09:33:26,109 INFO [09:33:26] Progress: 38164/50188 files (done=38164, skip=0, fail=0) | Downloaded: 5834.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.2 MB/s | ETA: 01:46:16
+2026-03-24 09:34:26,790 INFO [09:34:26] Progress: 38286/50188 files (done=38286, skip=0, fail=0) | Downloaded: 5852.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.2 MB/s | ETA: 01:45:10
+2026-03-24 09:35:27,899 INFO [09:35:27] Progress: 38387/50188 files (done=38387, skip=0, fail=0) | Downloaded: 5868.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.2 MB/s | ETA: 01:44:18
+2026-03-24 09:36:27,930 INFO [09:36:27] Progress: 38498/50188 files (done=38498, skip=0, fail=0) | Downloaded: 5885.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.2 MB/s | ETA: 01:43:20
+2026-03-24 09:37:32,038 INFO [09:37:32] Progress: 38618/50188 files (done=38618, skip=0, fail=0) | Downloaded: 5904.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.1 MB/s | ETA: 01:42:16
+2026-03-24 09:38:33,697 INFO [09:38:33] Progress: 38739/50188 files (done=38739, skip=0, fail=0) | Downloaded: 5922.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.2 MB/s | ETA: 01:41:11
+2026-03-24 09:39:33,758 INFO [09:39:33] Progress: 38852/50188 files (done=38852, skip=0, fail=0) | Downloaded: 5939.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.2 MB/s | ETA: 01:40:12
+2026-03-24 09:40:35,060 INFO [09:40:35] Progress: 38977/50188 files (done=38977, skip=0, fail=0) | Downloaded: 5959.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.3 MB/s | ETA: 01:39:04
+2026-03-24 09:41:35,754 INFO [09:41:35] Progress: 39095/50188 files (done=39095, skip=0, fail=0) | Downloaded: 5978.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.4 MB/s | ETA: 01:38:01
+2026-03-24 09:42:35,756 INFO [09:42:35] Progress: 39199/50188 files (done=39199, skip=0, fail=0) | Downloaded: 5995.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.3 MB/s | ETA: 01:37:07
+2026-03-24 09:43:36,143 INFO [09:43:36] Progress: 39317/50188 files (done=39317, skip=0, fail=0) | Downloaded: 6012.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.3 MB/s | ETA: 01:36:04
+2026-03-24 09:44:38,334 INFO [09:44:38] Progress: 39440/50188 files (done=39440, skip=0, fail=0) | Downloaded: 6030.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.3 MB/s | ETA: 01:34:58
+2026-03-24 09:45:40,270 INFO [09:45:40] Progress: 39553/50188 files (done=39553, skip=0, fail=0) | Downloaded: 6049.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.4 MB/s | ETA: 01:33:58
+2026-03-24 09:46:41,285 INFO [09:46:41] Progress: 39674/50188 files (done=39674, skip=0, fail=0) | Downloaded: 6066.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.4 MB/s | ETA: 01:32:53
+2026-03-24 09:47:42,533 INFO [09:47:42] Progress: 39793/50188 files (done=39793, skip=0, fail=0) | Downloaded: 6085.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.4 MB/s | ETA: 01:31:50
+2026-03-24 09:48:42,874 INFO [09:48:42] Progress: 39926/50188 files (done=39926, skip=0, fail=0) | Downloaded: 6104.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.5 MB/s | ETA: 01:30:37
+2026-03-24 09:49:44,421 INFO [09:49:44] Progress: 40043/50188 files (done=40043, skip=0, fail=0) | Downloaded: 6122.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.5 MB/s | ETA: 01:29:35
+2026-03-24 09:50:44,865 INFO [09:50:44] Progress: 40149/50188 files (done=40149, skip=0, fail=0) | Downloaded: 6138.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.4 MB/s | ETA: 01:28:40
+2026-03-24 09:51:46,753 INFO [09:51:46] Progress: 40270/50188 files (done=40270, skip=0, fail=0) | Downloaded: 6156.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.4 MB/s | ETA: 01:27:35
+2026-03-24 09:52:46,855 INFO [09:52:46] Progress: 40397/50188 files (done=40397, skip=0, fail=0) | Downloaded: 6175.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.5 MB/s | ETA: 01:26:26
+2026-03-24 09:53:49,402 INFO [09:53:49] Progress: 40530/50188 files (done=40530, skip=0, fail=0) | Downloaded: 6193.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.5 MB/s | ETA: 01:25:13
+2026-03-24 09:54:53,331 INFO [09:54:53] Progress: 40660/50188 files (done=40660, skip=0, fail=0) | Downloaded: 6212.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.5 MB/s | ETA: 01:24:04
+2026-03-24 09:55:58,003 INFO [09:55:57] Progress: 40780/50188 files (done=40780, skip=0, fail=0) | Downloaded: 6230.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.5 MB/s | ETA: 01:23:00
+2026-03-24 09:57:01,581 INFO [09:57:01] Progress: 40876/50188 files (done=40876, skip=0, fail=0) | Downloaded: 6245.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.4 MB/s | ETA: 01:22:12
+2026-03-24 09:58:01,637 INFO [09:58:01] Progress: 40990/50188 files (done=40990, skip=0, fail=0) | Downloaded: 6263.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.4 MB/s | ETA: 01:21:12
+2026-03-24 09:59:02,743 INFO [09:59:02] Progress: 41105/50188 files (done=41105, skip=0, fail=0) | Downloaded: 6280.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.3 MB/s | ETA: 01:20:11
+2026-03-24 10:00:05,383 INFO [10:00:05] Progress: 41231/50188 files (done=41231, skip=0, fail=0) | Downloaded: 6297.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.3 MB/s | ETA: 01:19:03
+2026-03-24 10:01:05,406 INFO [10:01:05] Progress: 41339/50188 files (done=41339, skip=0, fail=0) | Downloaded: 6313.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.2 MB/s | ETA: 01:18:07
+2026-03-24 10:02:05,989 INFO [10:02:05] Progress: 41457/50188 files (done=41457, skip=0, fail=0) | Downloaded: 6329.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.2 MB/s | ETA: 01:17:04
+2026-03-24 10:03:06,256 INFO [10:03:06] Progress: 41575/50188 files (done=41575, skip=0, fail=0) | Downloaded: 6346.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.2 MB/s | ETA: 01:16:01
+2026-03-24 10:04:06,271 INFO [10:04:06] Progress: 41686/50188 files (done=41686, skip=0, fail=0) | Downloaded: 6363.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.1 MB/s | ETA: 01:15:02
+2026-03-24 10:05:08,778 INFO [10:05:08] Progress: 41797/50188 files (done=41797, skip=0, fail=0) | Downloaded: 6380.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.1 MB/s | ETA: 01:14:04
+2026-03-24 10:06:09,510 INFO [10:06:09] Progress: 41901/50188 files (done=41901, skip=0, fail=0) | Downloaded: 6396.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.0 MB/s | ETA: 01:13:10
+2026-03-24 10:07:11,778 INFO [10:07:11] Progress: 42016/50188 files (done=42016, skip=0, fail=0) | Downloaded: 6413.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 295.0 MB/s | ETA: 01:12:10
+2026-03-24 10:08:12,162 INFO [10:08:12] Progress: 42122/50188 files (done=42122, skip=0, fail=0) | Downloaded: 6429.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.9 MB/s | ETA: 01:11:14
+2026-03-24 10:09:13,996 INFO [10:09:13] Progress: 42245/50188 files (done=42245, skip=0, fail=0) | Downloaded: 6447.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.9 MB/s | ETA: 01:10:08
+2026-03-24 10:10:15,133 INFO [10:10:15] Progress: 42361/50188 files (done=42361, skip=0, fail=0) | Downloaded: 6464.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.9 MB/s | ETA: 01:09:07
+2026-03-24 10:11:16,795 INFO [10:11:16] Progress: 42479/50188 files (done=42479, skip=0, fail=0) | Downloaded: 6481.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.9 MB/s | ETA: 01:08:04
+2026-03-24 10:12:18,311 INFO [10:12:18] Progress: 42596/50188 files (done=42596, skip=0, fail=0) | Downloaded: 6499.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.9 MB/s | ETA: 01:07:02
+2026-03-24 10:13:19,095 INFO [10:13:19] Progress: 42709/50188 files (done=42709, skip=0, fail=0) | Downloaded: 6517.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.9 MB/s | ETA: 01:06:02
+2026-03-24 10:14:21,838 INFO [10:14:21] Progress: 42812/50188 files (done=42812, skip=0, fail=0) | Downloaded: 6533.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.8 MB/s | ETA: 01:05:09
+2026-03-24 10:15:24,084 INFO [10:15:24] Progress: 42922/50188 files (done=42922, skip=0, fail=0) | Downloaded: 6551.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.8 MB/s | ETA: 01:04:12
+2026-03-24 10:16:24,135 INFO [10:16:24] Progress: 43030/50188 files (done=43030, skip=0, fail=0) | Downloaded: 6567.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.8 MB/s | ETA: 01:03:15
+2026-03-24 10:17:26,048 INFO [10:17:26] Progress: 43150/50188 files (done=43150, skip=0, fail=0) | Downloaded: 6585.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.7 MB/s | ETA: 01:02:11
+2026-03-24 10:18:27,654 INFO [10:18:27] Progress: 43274/50188 files (done=43274, skip=0, fail=0) | Downloaded: 6601.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.7 MB/s | ETA: 01:01:05
+2026-03-24 10:19:29,249 INFO [10:19:29] Progress: 43387/50188 files (done=43387, skip=0, fail=0) | Downloaded: 6619.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.7 MB/s | ETA: 01:00:05
+2026-03-24 10:20:29,701 INFO [10:20:29] Progress: 43494/50188 files (done=43494, skip=0, fail=0) | Downloaded: 6635.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.6 MB/s | ETA: 00:59:09
+2026-03-24 10:21:30,900 INFO [10:21:30] Progress: 43600/50188 files (done=43600, skip=0, fail=0) | Downloaded: 6652.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.6 MB/s | ETA: 00:58:13
+2026-03-24 10:22:30,901 INFO [10:22:30] Progress: 43719/50188 files (done=43719, skip=0, fail=0) | Downloaded: 6670.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.6 MB/s | ETA: 00:57:10
+2026-03-24 10:23:31,439 INFO [10:23:31] Progress: 43825/50188 files (done=43825, skip=0, fail=0) | Downloaded: 6688.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.7 MB/s | ETA: 00:56:14
+2026-03-24 10:24:32,432 INFO [10:24:32] Progress: 43943/50188 files (done=43943, skip=0, fail=0) | Downloaded: 6705.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.6 MB/s | ETA: 00:55:11
+2026-03-24 10:25:34,759 INFO [10:25:34] Progress: 44069/50188 files (done=44069, skip=0, fail=0) | Downloaded: 6722.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.6 MB/s | ETA: 00:54:04
+2026-03-24 10:26:36,938 INFO [10:26:36] Progress: 44191/50188 files (done=44191, skip=0, fail=0) | Downloaded: 6741.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.7 MB/s | ETA: 00:52:59
+2026-03-24 10:27:38,570 INFO [10:27:38] Progress: 44321/50188 files (done=44321, skip=0, fail=0) | Downloaded: 6760.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.7 MB/s | ETA: 00:51:49
+2026-03-24 10:28:38,902 INFO [10:28:38] Progress: 44445/50188 files (done=44445, skip=0, fail=0) | Downloaded: 6776.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.7 MB/s | ETA: 00:50:43
+2026-03-24 10:29:39,018 INFO [10:29:39] Progress: 44567/50188 files (done=44567, skip=0, fail=0) | Downloaded: 6796.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.8 MB/s | ETA: 00:49:37
+2026-03-24 10:30:40,551 INFO [10:30:40] Progress: 44681/50188 files (done=44681, skip=0, fail=0) | Downloaded: 6813.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.7 MB/s | ETA: 00:48:37
+2026-03-24 10:31:42,812 INFO [10:31:42] Progress: 44784/50188 files (done=44784, skip=0, fail=0) | Downloaded: 6830.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.7 MB/s | ETA: 00:47:43
+2026-03-24 10:32:43,928 INFO [10:32:43] Progress: 44899/50188 files (done=44899, skip=0, fail=0) | Downloaded: 6850.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.8 MB/s | ETA: 00:46:43
+2026-03-24 10:33:44,474 INFO [10:33:44] Progress: 45024/50188 files (done=45024, skip=0, fail=0) | Downloaded: 6868.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.8 MB/s | ETA: 00:45:36
+2026-03-24 10:34:45,520 INFO [10:34:45] Progress: 45139/50188 files (done=45139, skip=0, fail=0) | Downloaded: 6886.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.8 MB/s | ETA: 00:44:35
+2026-03-24 10:35:45,748 INFO [10:35:45] Progress: 45250/50188 files (done=45250, skip=0, fail=0) | Downloaded: 6903.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.8 MB/s | ETA: 00:43:36
+2026-03-24 10:36:47,819 INFO [10:36:47] Progress: 45366/50188 files (done=45366, skip=0, fail=0) | Downloaded: 6921.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.8 MB/s | ETA: 00:42:35
+2026-03-24 10:37:49,105 INFO [10:37:49] Progress: 45478/50188 files (done=45478, skip=0, fail=0) | Downloaded: 6939.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.9 MB/s | ETA: 00:41:36
+2026-03-24 10:38:52,958 INFO [10:38:52] Progress: 45590/50188 files (done=45590, skip=0, fail=0) | Downloaded: 6957.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.8 MB/s | ETA: 00:40:37
+2026-03-24 10:39:53,383 INFO [10:39:53] Progress: 45707/50188 files (done=45707, skip=0, fail=0) | Downloaded: 6973.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.8 MB/s | ETA: 00:39:34
+2026-03-24 10:40:55,897 INFO [10:40:55] Progress: 45815/50188 files (done=45815, skip=0, fail=0) | Downloaded: 6990.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.7 MB/s | ETA: 00:38:38
+2026-03-24 10:41:58,150 INFO [10:41:58] Progress: 45911/50188 files (done=45911, skip=0, fail=0) | Downloaded: 7004.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.6 MB/s | ETA: 00:37:48
+2026-03-24 10:42:58,284 INFO [10:42:58] Progress: 46026/50188 files (done=46026, skip=0, fail=0) | Downloaded: 7019.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.5 MB/s | ETA: 00:36:47
+2026-03-24 10:43:59,050 INFO [10:43:59] Progress: 46136/50188 files (done=46136, skip=0, fail=0) | Downloaded: 7035.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.4 MB/s | ETA: 00:35:49
+2026-03-24 10:44:59,202 INFO [10:44:59] Progress: 46259/50188 files (done=46259, skip=0, fail=0) | Downloaded: 7054.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.5 MB/s | ETA: 00:34:43
+2026-03-24 10:46:02,383 INFO [10:46:02] Progress: 46388/50188 files (done=46388, skip=0, fail=0) | Downloaded: 7073.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.5 MB/s | ETA: 00:33:34
+2026-03-24 10:47:04,108 INFO [10:47:04] Progress: 46504/50188 files (done=46504, skip=0, fail=0) | Downloaded: 7091.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.5 MB/s | ETA: 00:32:33
+2026-03-24 10:48:06,969 INFO [10:48:06] Progress: 46631/50188 files (done=46631, skip=0, fail=0) | Downloaded: 7110.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.6 MB/s | ETA: 00:31:25
+2026-03-24 10:49:08,082 INFO [10:49:08] Progress: 46755/50188 files (done=46755, skip=0, fail=0) | Downloaded: 7128.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.6 MB/s | ETA: 00:30:19
+2026-03-24 10:50:08,370 INFO [10:50:08] Progress: 46890/50188 files (done=46890, skip=0, fail=0) | Downloaded: 7148.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.7 MB/s | ETA: 00:29:07
+2026-03-24 10:51:08,372 INFO [10:51:08] Progress: 47011/50188 files (done=47011, skip=0, fail=0) | Downloaded: 7164.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.6 MB/s | ETA: 00:28:02
+2026-03-24 10:52:09,653 INFO [10:52:09] Progress: 47119/50188 files (done=47119, skip=0, fail=0) | Downloaded: 7181.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.6 MB/s | ETA: 00:27:05
+2026-03-24 10:53:12,273 INFO [10:53:12] Progress: 47232/50188 files (done=47232, skip=0, fail=0) | Downloaded: 7198.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.6 MB/s | ETA: 00:26:06
+2026-03-24 10:54:14,779 INFO [10:54:14] Progress: 47344/50188 files (done=47344, skip=0, fail=0) | Downloaded: 7215.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.5 MB/s | ETA: 00:25:06
+2026-03-24 10:55:16,550 INFO [10:55:16] Progress: 47458/50188 files (done=47458, skip=0, fail=0) | Downloaded: 7233.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.5 MB/s | ETA: 00:24:06
+2026-03-24 10:56:21,102 INFO [10:56:21] Progress: 47568/50188 files (done=47568, skip=0, fail=0) | Downloaded: 7250.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.5 MB/s | ETA: 00:23:08
+2026-03-24 10:57:26,172 INFO [10:57:26] Progress: 47685/50188 files (done=47685, skip=0, fail=0) | Downloaded: 7266.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.4 MB/s | ETA: 00:22:06
+2026-03-24 10:58:27,023 INFO [10:58:27] Progress: 47790/50188 files (done=47790, skip=0, fail=0) | Downloaded: 7283.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.3 MB/s | ETA: 00:21:11
+2026-03-24 10:59:27,781 INFO [10:59:27] Progress: 47906/50188 files (done=47906, skip=0, fail=0) | Downloaded: 7300.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.3 MB/s | ETA: 00:20:09
+2026-03-24 11:00:30,141 INFO [11:00:30] Progress: 48010/50188 files (done=48010, skip=0, fail=0) | Downloaded: 7317.7 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.3 MB/s | ETA: 00:19:15
+2026-03-24 11:01:30,550 INFO [11:01:30] Progress: 48112/50188 files (done=48112, skip=0, fail=0) | Downloaded: 7334.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.3 MB/s | ETA: 00:18:21
+2026-03-24 11:02:31,168 INFO [11:02:31] Progress: 48218/50188 files (done=48218, skip=0, fail=0) | Downloaded: 7352.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.3 MB/s | ETA: 00:17:25
+2026-03-24 11:03:31,472 INFO [11:03:31] Progress: 48349/50188 files (done=48349, skip=0, fail=0) | Downloaded: 7370.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.3 MB/s | ETA: 00:16:15
+2026-03-24 11:04:34,003 INFO [11:04:34] Progress: 48473/50188 files (done=48473, skip=0, fail=0) | Downloaded: 7390.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.4 MB/s | ETA: 00:15:09
+2026-03-24 11:05:35,461 INFO [11:05:35] Progress: 48589/50188 files (done=48589, skip=0, fail=0) | Downloaded: 7407.5 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.4 MB/s | ETA: 00:14:07
+2026-03-24 11:06:38,256 INFO [11:06:38] Progress: 48717/50188 files (done=48717, skip=0, fail=0) | Downloaded: 7426.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.4 MB/s | ETA: 00:12:59
+2026-03-24 11:07:38,830 INFO [11:07:38] Progress: 48826/50188 files (done=48826, skip=0, fail=0) | Downloaded: 7443.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.4 MB/s | ETA: 00:12:02
+2026-03-24 11:08:38,924 INFO [11:08:38] Progress: 48953/50188 files (done=48953, skip=0, fail=0) | Downloaded: 7463.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.5 MB/s | ETA: 00:10:54
+2026-03-24 11:09:40,242 INFO [11:09:40] Progress: 49063/50188 files (done=49063, skip=0, fail=0) | Downloaded: 7480.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.5 MB/s | ETA: 00:09:56
+2026-03-24 11:10:41,306 INFO [11:10:41] Progress: 49169/50188 files (done=49169, skip=0, fail=0) | Downloaded: 7496.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.4 MB/s | ETA: 00:09:00
+2026-03-24 11:11:42,829 INFO [11:11:42] Progress: 49281/50188 files (done=49281, skip=0, fail=0) | Downloaded: 7514.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.4 MB/s | ETA: 00:08:00
+2026-03-24 11:12:42,843 INFO [11:12:42] Progress: 49385/50188 files (done=49385, skip=0, fail=0) | Downloaded: 7530.4 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.4 MB/s | ETA: 00:07:05
+2026-03-24 11:13:45,997 INFO [11:13:45] Progress: 49498/50188 files (done=49498, skip=0, fail=0) | Downloaded: 7548.8 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.4 MB/s | ETA: 00:06:06
+2026-03-24 11:14:47,031 INFO [11:14:47] Progress: 49618/50188 files (done=49618, skip=0, fail=0) | Downloaded: 7567.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.4 MB/s | ETA: 00:05:02
+2026-03-24 11:15:47,301 INFO [11:15:47] Progress: 49727/50188 files (done=49727, skip=0, fail=0) | Downloaded: 7583.3 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.4 MB/s | ETA: 00:04:04
+2026-03-24 11:16:47,809 INFO [11:16:47] Progress: 49826/50188 files (done=49826, skip=0, fail=0) | Downloaded: 7599.1 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.3 MB/s | ETA: 00:03:12
+2026-03-24 11:17:50,387 INFO [11:17:50] Progress: 49940/50188 files (done=49940, skip=0, fail=0) | Downloaded: 7615.6 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.3 MB/s | ETA: 00:02:11
+2026-03-24 11:18:52,533 INFO [11:18:52] Progress: 50045/50188 files (done=50045, skip=0, fail=0) | Downloaded: 7633.2 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.2 MB/s | ETA: 00:01:15
+2026-03-24 11:19:55,450 INFO [11:19:55] Progress: 50146/50188 files (done=50146, skip=0, fail=0) | Downloaded: 7649.9 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.2 MB/s | ETA: 00:00:22
+2026-03-24 11:20:26,640 INFO Download complete. Final stats:
+2026-03-24 11:20:26,643 INFO [11:20:26] Progress: 50188/50188 files (done=50188, skip=0, fail=0) | Downloaded: 7656.0 GB, Skipped: 0.0 GB / 7656.0 GB total | Throughput: 294.1 MB/s | ETA: 00:00:00
+2026-03-24 11:20:26,645 INFO All files downloaded successfully!

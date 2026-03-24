@@ -254,7 +254,7 @@ print(results["green"])  # 0.875
 
 Mammography-specific LLM-as-judge metric. Calls an OpenAI or Gemini model to count clinically significant errors (false findings, missing findings, mischaracterization, wrong location, incorrect BI-RADS, incorrect breast density).
 
-Requires `pip install RadEval[api]` and an API key (`mammo_green_api_key` or `OPENAI_API_KEY` / `GOOGLE_API_KEY` env var).
+Requires `pip install RadEval[api]` and an API key (`openai_api_key` or `OPENAI_API_KEY` / `GOOGLE_API_KEY` env var).
 
 | Mode | Output keys | Value |
 |------|------------|-------|
@@ -264,13 +264,13 @@ Requires `pip install RadEval[api]` and an API key (`mammo_green_api_key` or `OP
 
 ```python
 # OpenAI (default: gpt-4o-mini)
-evaluator = RadEval(do_mammo_green=True, mammo_green_api_key="sk-...")
+evaluator = RadEval(do_mammo_green=True, openai_api_key="sk-...")
 
 # Gemini
 evaluator = RadEval(
     do_mammo_green=True,
     mammo_green_model="gemini-2.5-flash",
-    mammo_green_api_key="AIza...",
+    gemini_api_key="AIza...",
 )
 
 results = evaluator(refs=refs, hyps=hyps)
@@ -301,7 +301,7 @@ evaluator = RadEval(do_crimson=True)
 evaluator = RadEval(
     do_crimson=True,
     crimson_api="openai",
-    crimson_api_key="sk-...",
+    openai_api_key="sk-...",
 )
 
 results = evaluator(refs=refs, hyps=hyps)
@@ -316,7 +316,7 @@ Two modes:
 - **RadFact +/-** (default): evaluates all phrases including negatives ("no pneumothorax")
 - **RadFact +** (`radfact_ct_filter_negatives=True`): filters out negative/normal findings first
 
-Requires `pip install RadEval[api]` and `OPENAI_API_KEY`. Uses `gpt-4o-mini` by default.
+Requires `pip install RadEval[api]` and `openai_api_key` or `OPENAI_API_KEY`. Uses `gpt-4o-mini` by default.
 
 Evaluates samples concurrently (default 10) with live cost tracking in the progress bar. Control via `radfact_ct_max_concurrent`.
 
@@ -328,7 +328,7 @@ Evaluates samples concurrently (default 10) with live cost tracking in the progr
 
 ```python
 # RadFact +/- (default, 10 concurrent samples)
-evaluator = RadEval(do_radfact_ct=True)
+evaluator = RadEval(do_radfact_ct=True, openai_api_key="sk-...")
 
 # RadFact + (filter negatives)
 evaluator = RadEval(do_radfact_ct=True, radfact_ct_filter_negatives=True)
@@ -341,3 +341,14 @@ print(results["radfact_ct_precision"])  # 66.67
 print(results["radfact_ct_recall"])     # 83.33
 print(results["radfact_ct_f1"])         # 74.07
 ```
+
+---
+
+## Provider Support Matrix
+
+| Metric | OpenAI | Gemini | Local HF |
+|--------|--------|--------|----------|
+| CRIMSON | yes | -- | yes |
+| MammoGREEN | yes | yes | -- |
+| RadFact-CT | yes | -- | -- |
+| GREEN | -- | -- | yes |
