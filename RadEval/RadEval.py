@@ -26,6 +26,7 @@ class RadEval():
                  do_f1radbert_ct=False,
                  do_f1hopprchexbert=False,
                  do_f1hopprchexbert_ct=False,
+                 do_f1hopprchexbert_msk=False,
                  do_ratescore=False,
                  do_radgraph_radcliq=False,
                  do_radcliq=False,
@@ -68,6 +69,7 @@ class RadEval():
         self.do_f1radbert_ct = do_f1radbert_ct
         self.do_f1hopprchexbert = do_f1hopprchexbert
         self.do_f1hopprchexbert_ct = do_f1hopprchexbert_ct
+        self.do_f1hopprchexbert_msk = do_f1hopprchexbert_msk
         self.do_ratescore = do_ratescore
         self.do_radgraph_radcliq = do_radgraph_radcliq
         self.do_radcliq = do_radcliq
@@ -162,6 +164,17 @@ class RadEval():
                 warnings.warn(
                     f"F1HopprCheXbertCT unavailable ({e}); disabling do_f1hopprchexbert_ct.")
                 self.do_f1hopprchexbert_ct = False
+
+        if self.do_f1hopprchexbert_msk:
+            try:
+                from .metrics.f1hopprchexbert_msk import HopprF1CheXbertMSK
+                if HopprF1CheXbertMSK is None:
+                    raise ImportError("HopprF1CheXbertMSK is not available")
+                self.f1hopprchexbert_msk_scorer = HopprF1CheXbertMSK()
+            except (ImportError, FileNotFoundError, OSError) as e:
+                warnings.warn(
+                    f"F1HopprCheXbertMSK unavailable ({e}); disabling do_f1hopprchexbert_msk.")
+                self.do_f1hopprchexbert_msk = False
 
         if self.do_ratescore:
             from .metrics.RaTEScore import RaTEScore
@@ -285,6 +298,13 @@ class RadEval():
                 "f1hopprchexbert_ct_macro_f1",
                 "f1hopprchexbert_ct_weighted_f1",
             ])
+        if self.do_f1hopprchexbert_msk:
+            self.metric_keys.extend([
+                "f1hopprchexbert_msk_accuracy",
+                "f1hopprchexbert_msk_micro_f1",
+                "f1hopprchexbert_msk_macro_f1",
+                "f1hopprchexbert_msk_weighted_f1",
+            ])
         if self.do_ratescore:
             self.metric_keys.append("ratescore")
         if self.do_radgraph_radcliq:
@@ -378,6 +398,7 @@ class RadEval():
         if self.do_f1radbert_ct:    enabled.append("F1RadBERT-CT")
         if self.do_f1hopprchexbert:   enabled.append("F1HopprCheXbert")
         if self.do_f1hopprchexbert_ct: enabled.append("F1HopprCheXbertCT")
+        if self.do_f1hopprchexbert_msk: enabled.append("F1HopprCheXbertMSK")
         if self.do_ratescore:       enabled.append("RaTEScore")
         if self.do_radgraph_radcliq: enabled.append("RadGraph-RadCliQ")
         if self.do_radcliq:         enabled.append("RadCliQ-v1")
@@ -643,6 +664,42 @@ class RadEval():
                         ct_report["macro avg"]["f1-score"], 4)
                     scores["f1hopprchexbert_ct_weighted_f1"] = round(
                         ct_report["weighted avg"]["f1-score"], 4)
+                progress.advance(metric_task)
+
+            # ----------------------------------------------------------
+            if self.do_f1hopprchexbert_msk:
+                progress.update(metric_task, description="Computing HopprF1CheXbertMSK")
+                n_batches = math.ceil(n_samples / self.f1hopprchexbert_msk_scorer.batch_size) * 2
+                batch_task = progress.add_task("  [dim]Batches", total=n_batches)
+                msk_accuracy, msk_sample_acc, msk_report = self.f1hopprchexbert_msk_scorer(
+                    hyps, refs, on_batch_done=lambda: progress.advance(batch_task))
+                progress.remove_task(batch_task)
+                if self.do_details:
+                    msk_labels = {
+                        k: v["f1-score"]
+                        for k, v in list(msk_report.items())[:-4]
+                    }
+                    scores["f1hopprchexbert_msk_accuracy"] = round(msk_accuracy, 4)
+                    scores["f1hopprchexbert_msk_micro_f1"] = round(
+                        msk_report["micro avg"]["f1-score"], 4)
+                    scores["f1hopprchexbert_msk_macro_f1"] = round(
+                        msk_report["macro avg"]["f1-score"], 4)
+                    scores["f1hopprchexbert_msk_weighted_f1"] = round(
+                        msk_report["weighted avg"]["f1-score"], 4)
+                    scores["f1hopprchexbert_msk_label_scores_f1"] = msk_labels
+                elif self.do_per_sample:
+                    scores["f1hopprchexbert_msk_sample_acc"] = (
+                        msk_sample_acc.tolist()
+                        if hasattr(msk_sample_acc, 'tolist')
+                        else list(msk_sample_acc))
+                else:
+                    scores["f1hopprchexbert_msk_accuracy"] = round(msk_accuracy, 4)
+                    scores["f1hopprchexbert_msk_micro_f1"] = round(
+                        msk_report["micro avg"]["f1-score"], 4)
+                    scores["f1hopprchexbert_msk_macro_f1"] = round(
+                        msk_report["macro avg"]["f1-score"], 4)
+                    scores["f1hopprchexbert_msk_weighted_f1"] = round(
+                        msk_report["weighted avg"]["f1-score"], 4)
                 progress.advance(metric_task)
 
             # ----------------------------------------------------------
