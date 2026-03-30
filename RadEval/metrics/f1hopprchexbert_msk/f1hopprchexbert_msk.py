@@ -24,26 +24,26 @@ _DEFAULT_CKPT = (
 )
 
 CONDITION_NAMES = OrderedDict([
-    ("osteoarthritis", "Osteoarthritis"),
-    ("degenerative_disc_disease", "Degenerative disc disease"),
-    ("scoliosis_or_spinal_deformity", "Scoliosis or spinal deformity"),
-    ("soft_tissue_calcification", "Soft tissue calcification"),
-    ("hardware_or_prosthesis", "Hardware or prosthesis"),
-    ("osteopenia_or_osteoporosis", "Osteopenia or osteoporosis"),
-    ("malalignment_or_deformity", "Malalignment or deformity"),
-    ("healed_or_chronic_fracture", "Healed or chronic fracture"),
-    ("soft_tissue_swelling_or_mass", "Soft tissue swelling or mass"),
-    ("spondylolisthesis", "Spondylolisthesis"),
     ("acute_fracture", "Acute fracture"),
-    ("joint_effusion", "Joint effusion"),
+    ("avascular_necrosis", "Avascular necrosis"),
     ("bone_lesion", "Bone lesion"),
+    ("chondrocalcinosis", "Chondrocalcinosis"),
+    ("degenerative_disc_disease", "Degenerative disc disease"),
     ("dislocation_or_subluxation", "Dislocation or subluxation"),
     ("erosive_or_inflammatory_arthropathy", "Erosive or inflammatory arthropathy"),
-    ("chondrocalcinosis", "Chondrocalcinosis"),
-    ("periosteal_reaction", "Periosteal reaction"),
-    ("avascular_necrosis", "Avascular necrosis"),
+    ("hardware_or_prosthesis", "Hardware or prosthesis"),
+    ("healed_or_chronic_fracture", "Healed or chronic fracture"),
+    ("joint_effusion", "Joint effusion"),
+    ("malalignment_or_deformity", "Malalignment or deformity"),
+    ("osteoarthritis", "Osteoarthritis"),
     ("osteomyelitis", "Osteomyelitis"),
+    ("osteopenia_or_osteoporosis", "Osteopenia or osteoporosis"),
     ("pathologic_fracture", "Pathologic fracture"),
+    ("periosteal_reaction", "Periosteal reaction"),
+    ("scoliosis_or_spinal_deformity", "Scoliosis or spinal deformity"),
+    ("soft_tissue_calcification", "Soft tissue calcification"),
+    ("soft_tissue_swelling_or_mass", "Soft tissue swelling or mass"),
+    ("spondylolisthesis", "Spondylolisthesis"),
 ])
 
 NUM_CONDITIONS = len(CONDITION_NAMES)
@@ -60,7 +60,7 @@ class MultiOutputClassifierOutput(ModelOutput):
     logits: Optional[torch.FloatTensor] = None
 
 
-class MultiOutputClassifier(PreTrainedModel):
+class MSKMultiOutputClassifier(PreTrainedModel):
     """20 independent 4-class heads sharing one BERT-style encoder."""
 
     config_class = AutoConfig
@@ -73,6 +73,8 @@ class MultiOutputClassifier(PreTrainedModel):
         self.heads = nn.ModuleList(
             [nn.Linear(hidden, NUM_CLASSES) for _ in range(NUM_CONDITIONS)]
         )
+        self.class_weights = None
+        self._class_weights_raw = None
         self.post_init()
 
     def forward(
@@ -138,7 +140,7 @@ class HopprF1CheXbertMSK:
             self.tokenizer.pad_token = (
                 self.tokenizer.eos_token or self.tokenizer.unk_token)
 
-        self.model = MultiOutputClassifier.from_pretrained(
+        self.model = MSKMultiOutputClassifier.from_pretrained(
             checkpoint_dir, trust_remote_code=True,
         ).to(self.device)
         self.model.eval()

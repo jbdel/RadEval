@@ -26,27 +26,27 @@ def scorer():
 
 
 # -- Real examples from the dataset ----------------------------------------
-# Condition order (20 heads):
-#   0  osteoarthritis
-#   1  degenerative_disc_disease
-#   2  scoliosis_or_spinal_deformity
-#   3  soft_tissue_calcification
-#   4  hardware_or_prosthesis
-#   5  osteopenia_or_osteoporosis
-#   6  malalignment_or_deformity
-#   7  healed_or_chronic_fracture
-#   8  soft_tissue_swelling_or_mass
-#   9  spondylolisthesis
-#  10  acute_fracture
-#  11  joint_effusion
-#  12  bone_lesion
-#  13  dislocation_or_subluxation
-#  14  erosive_or_inflammatory_arthropathy
-#  15  chondrocalcinosis
-#  16  periosteal_reaction
-#  17  avascular_necrosis
-#  18  osteomyelitis
-#  19  pathologic_fracture
+# Condition order (20 heads, alphabetical):
+#   0  acute_fracture
+#   1  avascular_necrosis
+#   2  bone_lesion
+#   3  chondrocalcinosis
+#   4  degenerative_disc_disease
+#   5  dislocation_or_subluxation
+#   6  erosive_or_inflammatory_arthropathy
+#   7  hardware_or_prosthesis
+#   8  healed_or_chronic_fracture
+#   9  joint_effusion
+#  10  malalignment_or_deformity
+#  11  osteoarthritis
+#  12  osteomyelitis
+#  13  osteopenia_or_osteoporosis
+#  14  pathologic_fracture
+#  15  periosteal_reaction
+#  16  scoliosis_or_spinal_deformity
+#  17  soft_tissue_calcification
+#  18  soft_tissue_swelling_or_mass
+#  19  spondylolisthesis
 
 # Study 00000142: lumbar spine with osteoarthritis, degenerative disc disease,
 # scoliosis
@@ -62,8 +62,8 @@ SAMPLE_LUMBAR_OA_DDD_SCOLIOSIS = (
     "Other discs are normal in height.\n\n\n\nImpression:\n"
     "No evidence of acute fracture or subluxation.\nModerate spondylosis\n\n\n\n\n\n"
 )
-# osteoarthritis=1, degenerative_disc_disease=1, scoliosis_or_spinal_deformity=1
-GT_BINARY_LUMBAR = [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+# degenerative_disc_disease=1, osteoarthritis=1, scoliosis_or_spinal_deformity=1
+GT_BINARY_LUMBAR = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0]
 
 # Study 000002d6: right knee with osteoarthritis, subluxation, joint effusion
 SAMPLE_KNEE_OA_EFFUSION = (
@@ -79,8 +79,8 @@ SAMPLE_KNEE_OA_EFFUSION = (
     "patellofemoral osteoarthrosis, mild intercondylar spine prominence and "
     "mild marginal osteophyte formation.\n\n\n"
 )
-# osteoarthritis=1, dislocation_or_subluxation=1, joint_effusion=1
-GT_BINARY_KNEE = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0]
+# dislocation_or_subluxation=1, joint_effusion=1, osteoarthritis=1
+GT_BINARY_KNEE = [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
 
 # Study 00001663: left toes with acute fracture, soft tissue swelling, deformity
 SAMPLE_TOE_FRACTURE_SWELLING = (
@@ -95,8 +95,8 @@ SAMPLE_TOE_FRACTURE_SWELLING = (
     "the proximal second phalanx extending into the metatarsophalangeal "
     "joint. \n\nHallux valgus deformity of the left foot.\n\n\n\n"
 )
-# acute_fracture=1, soft_tissue_swelling_or_mass=1, malalignment_or_deformity=1
-GT_BINARY_TOE = [0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+# acute_fracture=1, malalignment_or_deformity=1, soft_tissue_swelling_or_mass=1
+GT_BINARY_TOE = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0]
 
 REAL_REFS = [
     SAMPLE_LUMBAR_OA_DDD_SCOLIOSIS,
