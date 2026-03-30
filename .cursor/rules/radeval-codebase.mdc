@@ -24,9 +24,10 @@ RadEval/
     rouge/
     radevalbertscore/
     f1chexbert/           # Stanford CheXpert labels (14 conditions)
-    hoppr_f1chexbert/     # PRIVATE — Hoppr CXR labels (27 conditions), ModernBERT backbone
+    f1hopprchexbert/      # PRIVATE — Hoppr CXR labels (27 conditions), ModernBERT backbone
     f1Radbert_ct/         # CT multi-label classification (18 labels)
     f1hopprchexbert_ct/   # PRIVATE — CT multi-output ModernBERT-large (16 conditions)
+    f1hopprchexbert_msk/  # PRIVATE — MSK multi-output ModernBERT-large (20 conditions)
     green_score/          # GREEN + MammoGREEN
     crimson/              # CRIMSON (LLM-based, OpenAI or HuggingFace MedGemma)
     hoppr_crimson_ct/     # PRIVATE — CT-adapted CRIMSON with CT-specific prompts
@@ -94,3 +95,4 @@ and pushes normally. Private code never enters public history.
 ### Key checkpoints (private, NFS)
 - HopprCheXbert CXR: `/fss/pranta_das/CheXbert/expermints_folder/25507/checkpoint_2.pth`
 - HopprF1CheXbertCT: `/nfs/cluster/hoppr_vlm_ressources/radeval_checkpoints/hoppr_f1chexbert_ct/`
+- HopprF1CheXbertMSK: `/nfs/cluster/hoppr_vlm_ressources/radeval_checkpoints/f1hopprchexbert_msk/`

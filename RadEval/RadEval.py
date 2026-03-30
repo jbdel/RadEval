@@ -145,7 +145,7 @@ class RadEval():
             )
         if self.do_f1hopprchexbert:
             try:
-                from .metrics.hoppr_f1chexbert import HopprF1CheXbert
+                from .metrics.f1hopprchexbert import HopprF1CheXbert
                 if HopprF1CheXbert is None:
                     raise ImportError("HopprF1CheXbert is not available")
                 self.f1hopprchexbert_scorer = HopprF1CheXbert()

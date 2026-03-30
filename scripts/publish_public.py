@@ -31,9 +31,9 @@ PUBLIC_REMOTE = "https://github.com/jbdel/RadEval.git"
 
 PRIVATE_METRICS = [
     {
-        "name": "hoppr_f1chexbert",
-        "metric_dir": "RadEval/metrics/hoppr_f1chexbert",
-        "test_file": "tests/test_hopprf1chexbert.py",
+        "name": "f1hopprchexbert",
+        "metric_dir": "RadEval/metrics/f1hopprchexbert",
+        "test_file": "tests/test_f1hopprchexbert.py",
         "flag": "do_f1hopprchexbert",
         "display_name": "F1HopprCheXbert",
     },

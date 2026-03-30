@@ -8,7 +8,7 @@ alwaysApply: false
 
 This project has two repos:
 - **hopprai/RadEval** (private, origin) -- full codebase with all metrics
-- **jbdel/RadEval** (public) -- same codebase minus private metrics (e.g. HopprCheXbert)
+- **jbdel/RadEval** (public) -- same codebase minus private metrics (HopprF1CheXbert, F1HopprCheXbertCT, HopprCrimsonCT, F1HopprCheXbertMSK)
 
 ## How to publish
 
@@ -50,13 +50,34 @@ Edit `PRIVATE_METRICS` in `scripts/publish_public.py`:
 ```python
 PRIVATE_METRICS = [
     {
-        "name": "hoppr_f1chexbert",              # human label
-        "metric_dir": "RadEval/metrics/hoppr_f1chexbert",  # folder to delete
-        "test_file": "tests/test_hopprf1chexbert.py",      # test to delete
-        "flag": "do_f1hopprchexbert",               # constructor flag to strip
-        "display_name": "HopprCheXbert",          # for logging
+        "name": "f1hopprchexbert",
+        "metric_dir": "RadEval/metrics/f1hopprchexbert",
+        "test_file": "tests/test_f1hopprchexbert.py",
+        "test_file": "tests/test_hopprf1chexbert.py",
+        "flag": "do_f1hopprchexbert",
+        "display_name": "F1HopprCheXbert",
     },
-    # Add new private metrics here with the same structure
+    {
+        "name": "f1hopprchexbert_ct",
+        "metric_dir": "RadEval/metrics/f1hopprchexbert_ct",
+        "test_file": "tests/test_f1hopprchexbert_ct.py",
+        "flag": "do_f1hopprchexbert_ct",
+        "display_name": "F1HopprCheXbertCT",
+    },
+    {
+        "name": "hoppr_crimson_ct",
+        "metric_dir": "RadEval/metrics/hoppr_crimson_ct",
+        "test_file": "tests/test_hoppr_crimson_ct.py",
+        "flag": "do_hoppr_crimson_ct",
+        "display_name": "HopprCrimsonCT",
+    },
+    {
+        "name": "f1hopprchexbert_msk",
+        "metric_dir": "RadEval/metrics/f1hopprchexbert_msk",
+        "test_file": "tests/test_f1hopprchexbert_msk.py",
+        "flag": "do_f1hopprchexbert_msk",
+        "display_name": "F1HopprCheXbertMSK",
+    },
 ]
 ```
 

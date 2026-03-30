@@ -3,7 +3,7 @@ import logging
 import pytest
 import numpy as np
 
-from RadEval.metrics.hoppr_f1chexbert import HopprF1CheXbert
+from RadEval.metrics.f1hopprchexbert import HopprF1CheXbert
 
 logger = logging.getLogger(__name__)
 
