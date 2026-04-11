@@ -27,6 +27,7 @@ class RadEval():
                  do_f1hopprchexbert=False,
                  do_f1hopprchexbert_ct=False,
                  do_f1hopprchexbert_msk=False,
+                 do_f1hopprchexbert_abd=False,
                  do_ratescore=False,
                  do_radgraph_radcliq=False,
                  do_radcliq=False,
@@ -70,6 +71,7 @@ class RadEval():
         self.do_f1hopprchexbert = do_f1hopprchexbert
         self.do_f1hopprchexbert_ct = do_f1hopprchexbert_ct
         self.do_f1hopprchexbert_msk = do_f1hopprchexbert_msk
+        self.do_f1hopprchexbert_abd = do_f1hopprchexbert_abd
         self.do_ratescore = do_ratescore
         self.do_radgraph_radcliq = do_radgraph_radcliq
         self.do_radcliq = do_radcliq
@@ -175,6 +177,17 @@ class RadEval():
                 warnings.warn(
                     f"F1HopprCheXbertMSK unavailable ({e}); disabling do_f1hopprchexbert_msk.")
                 self.do_f1hopprchexbert_msk = False
+
+        if self.do_f1hopprchexbert_abd:
+            try:
+                from .metrics.f1hopprchexbert_abd import HopprF1CheXbertAbd
+                if HopprF1CheXbertAbd is None:
+                    raise ImportError("HopprF1CheXbertAbd is not available")
+                self.f1hopprchexbert_abd_scorer = HopprF1CheXbertAbd()
+            except (ImportError, FileNotFoundError, OSError) as e:
+                warnings.warn(
+                    f"F1HopprCheXbertAbd unavailable ({e}); disabling do_f1hopprchexbert_abd.")
+                self.do_f1hopprchexbert_abd = False
 
         if self.do_ratescore:
             from .metrics.RaTEScore import RaTEScore
@@ -305,6 +318,13 @@ class RadEval():
                 "f1hopprchexbert_msk_macro_f1",
                 "f1hopprchexbert_msk_weighted_f1",
             ])
+        if self.do_f1hopprchexbert_abd:
+            self.metric_keys.extend([
+                "f1hopprchexbert_abd_accuracy",
+                "f1hopprchexbert_abd_micro_f1",
+                "f1hopprchexbert_abd_macro_f1",
+                "f1hopprchexbert_abd_weighted_f1",
+            ])
         if self.do_ratescore:
             self.metric_keys.append("ratescore")
         if self.do_radgraph_radcliq:
@@ -399,6 +419,7 @@ class RadEval():
         if self.do_f1hopprchexbert:   enabled.append("F1HopprCheXbert")
         if self.do_f1hopprchexbert_ct: enabled.append("F1HopprCheXbertCT")
         if self.do_f1hopprchexbert_msk: enabled.append("F1HopprCheXbertMSK")
+        if self.do_f1hopprchexbert_abd: enabled.append("F1HopprCheXbertAbd")
         if self.do_ratescore:       enabled.append("RaTEScore")
         if self.do_radgraph_radcliq: enabled.append("RadGraph-RadCliQ")
         if self.do_radcliq:         enabled.append("RadCliQ-v1")
@@ -471,7 +492,15 @@ class RadEval():
             # ----------------------------------------------------------
             if self.do_green:
                 progress.update(metric_task, description="Computing GREEN")
-                mean, std, sample_scores, _ = self.green_scorer(refs, hyps)
+                sample_task = progress.add_task(
+                    "  [dim]Samples", total=n_samples)
+
+                def _green_sample_done():
+                    progress.advance(sample_task)
+
+                mean, std, sample_scores, _ = self.green_scorer(
+                    refs, hyps, on_sample_done=_green_sample_done)
+                progress.remove_task(sample_task)
                 if self.do_details:
                     scores["green"] = round(mean, 4)
                     scores["green_std"] = round(std, 4)
@@ -700,6 +729,42 @@ class RadEval():
                         msk_report["macro avg"]["f1-score"], 4)
                     scores["f1hopprchexbert_msk_weighted_f1"] = round(
                         msk_report["weighted avg"]["f1-score"], 4)
+                progress.advance(metric_task)
+
+            # ----------------------------------------------------------
+            if self.do_f1hopprchexbert_abd:
+                progress.update(metric_task, description="Computing HopprF1CheXbertAbd")
+                n_batches = math.ceil(n_samples / self.f1hopprchexbert_abd_scorer.batch_size) * 2
+                batch_task = progress.add_task("  [dim]Batches", total=n_batches)
+                abd_accuracy, abd_sample_acc, abd_report = self.f1hopprchexbert_abd_scorer(
+                    hyps, refs, on_batch_done=lambda: progress.advance(batch_task))
+                progress.remove_task(batch_task)
+                if self.do_details:
+                    abd_labels = {
+                        k: v["f1-score"]
+                        for k, v in list(abd_report.items())[:-4]
+                    }
+                    scores["f1hopprchexbert_abd_accuracy"] = round(abd_accuracy, 4)
+                    scores["f1hopprchexbert_abd_micro_f1"] = round(
+                        abd_report["micro avg"]["f1-score"], 4)
+                    scores["f1hopprchexbert_abd_macro_f1"] = round(
+                        abd_report["macro avg"]["f1-score"], 4)
+                    scores["f1hopprchexbert_abd_weighted_f1"] = round(
+                        abd_report["weighted avg"]["f1-score"], 4)
+                    scores["f1hopprchexbert_abd_label_scores_f1"] = abd_labels
+                elif self.do_per_sample:
+                    scores["f1hopprchexbert_abd_sample_acc"] = (
+                        abd_sample_acc.tolist()
+                        if hasattr(abd_sample_acc, 'tolist')
+                        else list(abd_sample_acc))
+                else:
+                    scores["f1hopprchexbert_abd_accuracy"] = round(abd_accuracy, 4)
+                    scores["f1hopprchexbert_abd_micro_f1"] = round(
+                        abd_report["micro avg"]["f1-score"], 4)
+                    scores["f1hopprchexbert_abd_macro_f1"] = round(
+                        abd_report["macro avg"]["f1-score"], 4)
+                    scores["f1hopprchexbert_abd_weighted_f1"] = round(
+                        abd_report["weighted avg"]["f1-score"], 4)
                 progress.advance(metric_task)
 
             # ----------------------------------------------------------

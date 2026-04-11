@@ -8,7 +8,7 @@ alwaysApply: false
 
 This project has two repos:
 - **hopprai/RadEval** (private, origin) -- full codebase with all metrics
-- **jbdel/RadEval** (public) -- same codebase minus private metrics (HopprF1CheXbert, F1HopprCheXbertCT, HopprCrimsonCT, F1HopprCheXbertMSK)
+- **jbdel/RadEval** (public) -- same codebase minus private metrics (HopprF1CheXbert, F1HopprCheXbertCT, HopprCrimsonCT, F1HopprCheXbertMSK, F1HopprCheXbertAbd)
 
 ## How to publish
 
@@ -53,7 +53,6 @@ PRIVATE_METRICS = [
         "name": "f1hopprchexbert",
         "metric_dir": "RadEval/metrics/f1hopprchexbert",
         "test_file": "tests/test_f1hopprchexbert.py",
-        "test_file": "tests/test_hopprf1chexbert.py",
         "flag": "do_f1hopprchexbert",
         "display_name": "F1HopprCheXbert",
     },
@@ -77,6 +76,13 @@ PRIVATE_METRICS = [
         "test_file": "tests/test_f1hopprchexbert_msk.py",
         "flag": "do_f1hopprchexbert_msk",
         "display_name": "F1HopprCheXbertMSK",
+    },
+    {
+        "name": "f1hopprchexbert_abd",
+        "metric_dir": "RadEval/metrics/f1hopprchexbert_abd",
+        "test_file": "tests/test_f1hopprchexbert_abd.py",
+        "flag": "do_f1hopprchexbert_abd",
+        "display_name": "F1HopprCheXbertAbd",
     },
 ]
 ```

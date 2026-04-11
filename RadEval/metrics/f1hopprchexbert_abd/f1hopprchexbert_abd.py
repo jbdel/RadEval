@@ -1,6 +1,6 @@
-"""HopprF1CheXbertMSK: multi-output MSK report evaluator (ModernBERT-large).
+"""HopprF1CheXbertAbd: multi-output abdomen report evaluator (ModernBERT-large).
 
-A single forward pass classifies 20 musculoskeletal conditions simultaneously.
+A single forward pass classifies 13 abdomen conditions simultaneously.
 Each condition head outputs 4-way logits (definitely absent / not reported /
 uncertain / definitely present), collapsed to binary for F1 evaluation.
 """
@@ -20,30 +20,23 @@ from transformers.modeling_outputs import ModelOutput
 from dataclasses import dataclass
 
 _DEFAULT_CKPT = (
-    "/nfs/cluster/hoppr_vlm_ressources/radeval_checkpoints/f1hopprchexbert_msk"
+    "/nfs/cluster/hoppr_vlm_ressources/radeval_checkpoints/f1hopprchexbert_abd"
 )
 
 CONDITION_NAMES = OrderedDict([
-    ("acute_fracture", "Acute fracture"),
-    ("healed_or_chronic_fracture", "Healed or chronic fracture"),
-    ("pathologic_fracture", "Pathologic fracture"),
-    ("osteoarthritis_or_degenerative_joint_disease", "Osteoarthritis or degenerative joint disease"),
-    ("dislocation_or_subluxation", "Dislocation or subluxation"),
-    ("joint_effusion", "Joint effusion"),
-    ("osteopenia", "Osteopenia"),
-    ("soft_tissue_swelling_or_mass", "Soft tissue swelling or mass"),
-    ("bone_lesion", "Bone lesion"),
+    ("small_bowel_obstruction", "Small bowel obstruction"),
+    ("large_bowel_obstruction_or_pseudo_obstruction", "Large bowel obstruction or pseudo-obstruction"),
+    ("volvulus", "Volvulus"),
+    ("ileus", "Ileus"),
+    ("pneumoperitoneum", "Pneumoperitoneum"),
+    ("fecal_loading", "Fecal loading"),
+    ("urinary_tract_calculus", "Urinary tract calculus"),
+    ("foreign_body", "Foreign body"),
     ("hardware_or_implanted_device", "Hardware or implanted device"),
-    ("degenerative_disc_disease", "Degenerative disc disease"),
-    ("scoliosis_or_spinal_deformity", "Scoliosis or spinal deformity"),
-    ("erosive_or_inflammatory_arthropathy", "Erosive or inflammatory arthropathy"),
-    ("osteonecrosis_or_avascular_necrosis", "Osteonecrosis or avascular necrosis"),
-    ("periosteal_reaction", "Periosteal reaction"),
-    ("chondrocalcinosis", "Chondrocalcinosis"),
-    ("soft_tissue_calcification", "Soft tissue calcification"),
-    ("osteomyelitis", "Osteomyelitis"),
-    ("malalignment_or_deformity", "Malalignment or deformity"),
-    ("spondylolisthesis", "Spondylolisthesis"),
+    ("vascular_calcification", "Vascular calcification"),
+    ("pancreatic_calcification", "Pancreatic calcification"),
+    ("gallstones", "Gallstones"),
+    ("pneumatosis_or_portal_venous_gas", "Pneumatosis or portal venous gas"),
 ])
 
 NUM_CONDITIONS = len(CONDITION_NAMES)
@@ -60,8 +53,8 @@ class MultiOutputClassifierOutput(ModelOutput):
     logits: Optional[torch.FloatTensor] = None
 
 
-class MSKv2MultiOutputClassifier(PreTrainedModel):
-    """20 independent 4-class heads sharing one BERT-style encoder."""
+class AbdMultiOutputClassifier(PreTrainedModel):
+    """13 independent 4-class heads sharing one BERT-style encoder."""
 
     config_class = AutoConfig
     _keys_to_ignore_on_load_unexpected = [r"cls", r"classifier", r"score"]
@@ -105,10 +98,10 @@ class MSKv2MultiOutputClassifier(PreTrainedModel):
 # ---------------------------------------------------------------------------
 
 
-class HopprF1CheXbertMSK:
-    """Multi-output MSK finding classifier for report evaluation.
+class HopprF1CheXbertAbd:
+    """Multi-output abdomen finding classifier for report evaluation.
 
-    A single forward pass produces (batch, 20, 4) logits. Predictions are
+    A single forward pass produces (batch, 13, 4) logits. Predictions are
     collapsed to binary (classes 0-1 = negative, 2-3 = positive) and
     compared via sklearn classification_report.
     """
@@ -125,7 +118,7 @@ class HopprF1CheXbertMSK:
     ):
         if not os.path.isdir(checkpoint_dir):
             raise FileNotFoundError(
-                f"HopprF1CheXbertMSK checkpoint not found: {checkpoint_dir}")
+                f"HopprF1CheXbertAbd checkpoint not found: {checkpoint_dir}")
 
         self.batch_size = batch_size
         self.max_length = max_length
@@ -140,7 +133,7 @@ class HopprF1CheXbertMSK:
             self.tokenizer.pad_token = (
                 self.tokenizer.eos_token or self.tokenizer.unk_token)
 
-        self.model = MSKv2MultiOutputClassifier.from_pretrained(
+        self.model = AbdMultiOutputClassifier.from_pretrained(
             checkpoint_dir, trust_remote_code=True,
         ).to(self.device)
         self.model.eval()
@@ -149,10 +142,10 @@ class HopprF1CheXbertMSK:
     def _predict_label_matrix(
         self, reports: Sequence[str], on_batch_done=None,
     ) -> np.ndarray:
-        """Return binary label matrix of shape (N, 21).
+        """Return binary label matrix of shape (N, 14).
 
-        Logits (N, 20, 4) -> argmax -> binary (classes 2,3 = positive).
-        A 21st "no_finding" column is 1 when all 20 conditions are 0.
+        Logits (N, 13, 4) -> argmax -> binary (classes 2,3 = positive).
+        A 14th "no_finding" column is 1 when all 13 conditions are 0.
         """
         all_binary = []
         report_list = list(reports)
@@ -164,14 +157,14 @@ class HopprF1CheXbertMSK:
                 max_length=self.max_length, return_tensors="pt",
             )
             enc = {k: v.to(self.device) for k, v in enc.items()}
-            logits = self.model(**enc).logits  # (B, 20, 4)
-            pred_ids = logits.argmax(dim=-1)   # (B, 20)
+            logits = self.model(**enc).logits  # (B, 13, 4)
+            pred_ids = logits.argmax(dim=-1)   # (B, 13)
             binary = (pred_ids >= 2).int().cpu()
             all_binary.append(binary)
             if on_batch_done:
                 on_batch_done()
 
-        matrix = torch.cat(all_binary, dim=0)  # (N, 20)
+        matrix = torch.cat(all_binary, dim=0)  # (N, 13)
         no_finding = (~matrix.any(dim=1)).unsqueeze(1).int()
         full = torch.cat([matrix, no_finding], dim=1)
         return full.numpy()
