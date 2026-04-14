@@ -53,7 +53,7 @@ if __name__ == "__main__":
     cpu_snapshot = convert_for_json(run_tier(cpu_flags))
     cpu_path = os.path.join(outdir, "expected_scores_cpu.json")
     with open(cpu_path, "w") as f:
-        json.dump(cpu_snapshot, f, indent=2)
+        json.dump(cpu_snapshot, f, indent=4)
     print(f"Saved CPU snapshot to {cpu_path}")
 
     # GPU tier (requires GPU + model downloads)
@@ -76,5 +76,5 @@ if __name__ == "__main__":
     gpu_snapshot = convert_for_json(run_tier(gpu_flags))
     gpu_path = os.path.join(outdir, "expected_scores_gpu.json")
     with open(gpu_path, "w") as f:
-        json.dump(gpu_snapshot, f, indent=2)
+        json.dump(gpu_snapshot, f, indent=4)
     print(f"Saved GPU snapshot to {gpu_path}")

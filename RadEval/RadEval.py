@@ -120,7 +120,7 @@ def main():
     refs = ["No acute cardiopulmonary process."]
     hyps = ["No acute cardiopulmonary process."]
     results = evaluator(refs=refs, hyps=hyps)
-    print(json.dumps(results, indent=2))
+    print(json.dumps(results, indent=4))
 
 
 if __name__ == "__main__":
