@@ -7,7 +7,7 @@
 </div>
 
 <!--- BADGES: START --->
-[![PyPI](https://img.shields.io/badge/RadEval-v0.0.6-00B7EB?logo=python&logoColor=00B7EB)](https://pypi.org/project/RadEval/)
+[![PyPI](https://img.shields.io/badge/RadEval-v1.0.0-00B7EB?logo=python&logoColor=00B7EB)](https://pypi.org/project/RadEval/)
 [![Python version](https://img.shields.io/badge/python-3.11+-important?logo=python&logoColor=important)]()
 [![Expert Dataset](https://img.shields.io/badge/Expert-%20Dataset-4CAF50?logo=googlecloudstorage&logoColor=9BF0E1)](https://huggingface.co/datasets/IAMJB/RadEvalExpertDataset)
 [![Model](https://img.shields.io/badge/Model-RadEvalModernBERT-0066CC?logo=huggingface&labelColor=grey)](https://huggingface.co/IAMJB/RadEvalModernBERT)
