@@ -165,6 +165,7 @@ See [docs/hypothesis_testing.md](docs/hypothesis_testing.md) for a full walkthro
 | [docs/metrics.md](docs/metrics.md) | What each metric measures, `per_sample` / `detailed` output schemas |
 | [docs/hypothesis_testing.md](docs/hypothesis_testing.md) | Statistical background, full example, performance notes |
 | [docs/file_formats.md](docs/file_formats.md) | Loading data from .tok, .json, and Python lists |
+| [docs/trl_rewards.md](docs/trl_rewards.md) | Using RadEval metrics as RL reward functions with HuggingFace TRL |
 
 ## RadEval Expert Dataset
 
