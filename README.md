@@ -35,9 +35,7 @@ hyps = [
     "No pleural effusions or pneumothoraces.",
 ]
 
-evaluator = RadEval(
-    metrics={"radgraph": {}, "bleu": {}}
-)
+evaluator = RadEval(metrics=["radgraph", "bleu"])
 
 results = evaluator(refs=refs, hyps=hyps)
 print(json.dumps(results, indent=2))
@@ -96,13 +94,9 @@ LLM-based metrics (CRIMSON, MammoGREEN, RadFact-CT) share two **global** API key
 
 ```python
 evaluator = RadEval(
+    metrics=["crimson", "mammo_green", "radfact_ct"],
     openai_api_key="sk-...",   # used by CRIMSON (openai), MammoGREEN (openai), RadFact-CT
     gemini_api_key="AIza...",  # used by MammoGREEN (gemini)
-    metrics={
-        "crimson": {},
-        "mammo_green": {},
-        "radfact_ct": {},
-    },
 )
 ```
 
@@ -113,7 +107,7 @@ If not passed explicitly, keys fall back to the environment variables `OPENAI_AP
 Pass `per_sample=True` to get per-sample scores for every enabled metric. The output uses the **same flat keys** as the default mode, but each value is a `list[float]` of length `n_samples` instead of a single aggregate.
 
 ```python
-evaluator = RadEval(metrics={"bleu": {}, "bertscore": {}}, per_sample=True)
+evaluator = RadEval(metrics=["bleu", "bertscore"], per_sample=True)
 results = evaluator(refs=refs, hyps=hyps)
 # results["bleu"]      → [0.85, 0.40, ...]   (one per sample)
 # results["bertscore"] → [0.95, 0.89, ...]
@@ -126,7 +120,7 @@ See [docs/metrics.md](docs/metrics.md) for the full list of per-sample output ke
 Pass `detailed=True` to get additional aggregate scores beyond the defaults: per-label F1 breakdowns for classifiers, BLEU-1/2/3, standard deviations for LLM-based metrics. Same flat keys as default, no nesting.
 
 ```python
-evaluator = RadEval(metrics={"bleu": {}, "f1chexbert": {}, "crimson": {}}, detailed=True)
+evaluator = RadEval(metrics=["bleu", "f1chexbert", "crimson"], detailed=True)
 results = evaluator(refs=refs, hyps=hyps)
 # results["bleu"]       → 0.36     (same as default)
 # results["bleu_1"]     → 0.55     (extra: BLEU-1)
@@ -144,7 +138,7 @@ Use `compare_systems` to run paired approximate randomization tests between any 
 ```python
 from RadEval import RadEval, compare_systems
 
-evaluator = RadEval(metrics={"bleu": {}})
+evaluator = RadEval(metrics=["bleu"])
 signatures, scores = compare_systems(
     systems={
         'baseline': baseline_reports,

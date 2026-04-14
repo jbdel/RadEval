@@ -2,10 +2,10 @@
 # Usage: evaluator = RadEval.from_config("examples/config.yaml")
 
 metrics:
-  bleu: {}
-  rouge: {}
-  bertscore: {}
-  f1chexbert: {}
+  - bleu
+  - rouge
+  - bertscore
+  - f1chexbert
 
 output:
   mode: default    # or "per_sample" or "detailed"

@@ -82,6 +82,6 @@ Once loaded, pass the lists to RadEval:
 ```python
 from RadEval import RadEval
 
-evaluator = RadEval(metrics={"bleu": {}, "rouge": {}})
+evaluator = RadEval(metrics=["bleu", "rouge"])
 results = evaluator(refs=refs, hyps=hyps)
 ```

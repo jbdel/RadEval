@@ -11,11 +11,11 @@ def test_do_details():
         "No pleural effusions or pneumothoraces.",
     ]
 
-    evaluator = RadEval(metrics={"radgraph": {}, "bleu": {}, "rouge": {},
-                                 "bertscore": {}, "srrbert": {},
-                                 "f1chexbert": {}, "temporal": {},
-                                 "ratescore": {}, "radcliq": {},
-                                 "radeval_bertscore": {}},
+    evaluator = RadEval(metrics=["radgraph", "bleu", "rouge",
+                                 "bertscore", "srrbert",
+                                 "f1chexbert", "temporal",
+                                 "ratescore", "radcliq",
+                                 "radeval_bertscore"],
                       detailed=True)
 
     results = evaluator(refs=refs, hyps=hyps)
@@ -85,11 +85,11 @@ def test_do_per_sample():
     ]
 
     evaluator = RadEval(
-        metrics={"radgraph": {}, "bleu": {}, "rouge": {},
-                 "bertscore": {}, "srrbert": {},
-                 "f1chexbert": {}, "temporal": {},
-                 "ratescore": {}, "radcliq": {},
-                 "radeval_bertscore": {}},
+        metrics=["radgraph", "bleu", "rouge",
+                 "bertscore", "srrbert",
+                 "f1chexbert", "temporal",
+                 "ratescore", "radcliq",
+                 "radeval_bertscore"],
         per_sample=True,
     )
 

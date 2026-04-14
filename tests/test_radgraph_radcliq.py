@@ -71,7 +71,7 @@ def test_validation_errors(standalone_scorer):
 
 def test_via_radeval_interface():
     from RadEval import RadEval
-    evaluator = RadEval(metrics={"radgraph_radcliq": {}}, show_progress=False)
+    evaluator = RadEval(metrics=["radgraph_radcliq"], show_progress=False)
     results = evaluator(refs=REFS, hyps=HYPS)
     assert "radgraph_radcliq" in results
     assert isinstance(results["radgraph_radcliq"], float)
@@ -82,6 +82,6 @@ def test_via_radeval_details():
     """do_details returns same scalar as default for radgraph_radcliq."""
     from RadEval import RadEval
     evaluator = RadEval(
-        metrics={"radgraph_radcliq": {}}, detailed=True, show_progress=False)
+        metrics=["radgraph_radcliq"], detailed=True, show_progress=False)
     results = evaluator(refs=REFS, hyps=HYPS)
     assert isinstance(results["radgraph_radcliq"], float)

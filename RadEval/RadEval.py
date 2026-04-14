@@ -4,9 +4,38 @@ import warnings
 import logging
 
 
+def _normalize_metrics(metrics):
+    """Normalize metrics argument to dict[str, dict].
+
+    Accepts:
+        - list of strings:  ["bleu", "rouge"]
+        - dict:             {"bleu": {}, "crimson": {"provider": "openai"}}
+        - YAML-style list:  ["bleu", {"crimson": {"provider": "openai"}}]
+        - None:             returns {}
+    """
+    if metrics is None:
+        return {}
+    if isinstance(metrics, dict):
+        return metrics
+    if isinstance(metrics, list):
+        result = {}
+        for item in metrics:
+            if isinstance(item, str):
+                result[item] = {}
+            elif isinstance(item, dict):
+                for name, opts in item.items():
+                    result[name] = opts if isinstance(opts, dict) else {}
+            else:
+                raise TypeError(
+                    f"metrics list items must be str or dict, got {type(item)}")
+        return result
+    raise TypeError(
+        f"metrics must be a list or dict, got {type(metrics)}")
+
+
 class RadEval:
     def __init__(self,
-                 metrics: dict[str, dict] = None,
+                 metrics=None,
                  openai_api_key=None,
                  gemini_api_key=None,
                  per_sample=False,
@@ -15,7 +44,11 @@ class RadEval:
                  cache_dir=None):
         """
         Args:
-            metrics: {"bleu": {}, "crimson": {"provider": "openai"}, ...}
+            metrics: which metrics to run. accepts:
+                - a list of names:  ["bleu", "rouge", "bertscore"]
+                - a dict with per-metric config:
+                  {"crimson": {"provider": "openai"}, "bleu": {}}
+                - or use RadEval.from_config("config.yaml")
             openai_api_key: shared key for LLM metrics (CRIMSON, RadFact-CT, MammoGREEN)
             gemini_api_key: shared key for Gemini-backed metrics
             per_sample: return list[float] per metric instead of aggregate
@@ -36,7 +69,7 @@ class RadEval:
         self._active_metrics = []
         self.metric_keys = []
 
-        for name, opts in (metrics or {}).items():
+        for name, opts in _normalize_metrics(metrics).items():
             kwargs = dict(opts)
 
             cls = get_metric_class(name)
@@ -103,20 +136,31 @@ class RadEval:
 
     @classmethod
     def from_config(cls, path):
-        """Load from a YAML or JSON config file."""
+        """Load from a YAML or JSON config file.
+
+        Example config.yaml:
+            metrics:
+              - bleu
+              - rouge
+              - crimson:
+                  provider: openai
+
+            output:
+              mode: default  # or "per_sample" or "detailed"
+        """
         import yaml
         from pathlib import Path
         raw = Path(path).read_text()
         config = json.loads(raw) if path.endswith(".json") else yaml.safe_load(raw)
         return cls(
-            metrics=config.get("metrics", {}),
+            metrics=config.get("metrics", []),
             per_sample=config.get("output", {}).get("mode") == "per_sample",
             detailed=config.get("output", {}).get("mode") == "detailed",
         )
 
 
 def main():
-    evaluator = RadEval(metrics={"bleu": {}, "rouge": {}})
+    evaluator = RadEval(metrics=["bleu", "rouge"])
     refs = ["No acute cardiopulmonary process."]
     hyps = ["No acute cardiopulmonary process."]
     results = evaluator(refs=refs, hyps=hyps)

@@ -58,7 +58,7 @@ def _assert_close(actual, expected, key, rel_tol=1e-4):
 # --- CPU tier (always runs) ---
 
 def test_regression_cpu_default(cpu_expected):
-    evaluator = RadEval(metrics={"bleu": {}, "rouge": {}}, show_progress=False)
+    evaluator = RadEval(metrics=["bleu", "rouge"], show_progress=False)
     actual = evaluator(refs=REFS, hyps=HYPS)
     for key, exp_val in cpu_expected["default"].items():
         assert key in actual, f"Missing key: {key}"
@@ -66,7 +66,7 @@ def test_regression_cpu_default(cpu_expected):
 
 
 def test_regression_cpu_per_sample(cpu_expected):
-    evaluator = RadEval(metrics={"bleu": {}, "rouge": {}},
+    evaluator = RadEval(metrics=["bleu", "rouge"],
                         per_sample=True, show_progress=False)
     actual = evaluator(refs=REFS, hyps=HYPS)
     for key, exp_val in cpu_expected["per_sample"].items():
@@ -75,7 +75,7 @@ def test_regression_cpu_per_sample(cpu_expected):
 
 
 def test_regression_cpu_detailed(cpu_expected):
-    evaluator = RadEval(metrics={"bleu": {}, "rouge": {}},
+    evaluator = RadEval(metrics=["bleu", "rouge"],
                         detailed=True, show_progress=False)
     actual = evaluator(refs=REFS, hyps=HYPS)
     for key, exp_val in cpu_expected["detailed"].items():
@@ -96,12 +96,12 @@ except ImportError:
 @pytest.mark.skipif(not _HAS_GPU, reason="No GPU available")
 @pytest.mark.skipif(not GPU_FIXTURE.exists(), reason="GPU snapshot not generated")
 def test_regression_gpu_default(gpu_expected):
-    evaluator = RadEval(metrics={
-        "bleu": {}, "rouge": {}, "bertscore": {},
-        "radeval_bertscore": {}, "f1chexbert": {},
-        "srrbert": {}, "ratescore": {}, "radcliq": {},
-        "temporal": {}, "radgraph": {}, "radgraph_radcliq": {},
-    }, show_progress=False)
+    evaluator = RadEval(metrics=[
+        "bleu", "rouge", "bertscore",
+        "radeval_bertscore", "f1chexbert",
+        "srrbert", "ratescore", "radcliq",
+        "temporal", "radgraph", "radgraph_radcliq",
+    ], show_progress=False)
     actual = evaluator(refs=REFS, hyps=HYPS)
     for key, exp_val in gpu_expected["default"].items():
         assert key in actual, f"Missing key: {key}"
