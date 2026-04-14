@@ -230,6 +230,15 @@ A curated evaluation set annotated by board-certified radiologists for validatin
           <sub><b>Xi Zhang</b></sub>
         </a>
       </td>
+      <td align="center">
+        <a href="https://davevanveen.com">
+          <img src="https://davevanveen.com/assets/img/prof_pic.jpg"
+               width="100" height="100"
+               style="object-fit: cover; border-radius: 20%;" alt="Dave Van Veen"/>
+          <br />
+          <sub><b>Dave Van Veen</b></sub>
+        </a>
+      </td>
     </tr>
   </tbody>
 </table>

@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 setup(
     name='RadEval',
     version='1.0.0',
-    author='Jean-Benoit Delbrouck, Justin Xu, Xi Zhang',
+    author='Jean-Benoit Delbrouck, Justin Xu, Xi Zhang, Dave Van Veen',
     maintainer='Xi Zhang, JB Delbrouck',
     url='https://github.com/jbdel/RadEval',
     project_urls={
