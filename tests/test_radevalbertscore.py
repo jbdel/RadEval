@@ -18,7 +18,7 @@ epsilon = 1e-5
 def test_radevalbertscore():
 
     evaluator = RadEval(
-        do_radeval_bertscore=True,
+        metrics={"radeval_bertscore": {}},
     )
 
     results = evaluator(refs=refs, hyps=hyps)

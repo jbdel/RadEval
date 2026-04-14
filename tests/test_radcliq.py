@@ -30,12 +30,12 @@ EXPECTED_RADCLIQ_PER_PAIR = [0.8346, 0.0416, 0.3987]
 
 @pytest.fixture(scope="module")
 def evaluator():
-    return RadEval(do_radcliq=True, show_progress=False)
+    return RadEval(metrics={"radcliq": {}}, show_progress=False)
 
 
 @pytest.fixture(scope="module")
 def evaluator_details():
-    return RadEval(do_radcliq=True, do_details=True, show_progress=False)
+    return RadEval(metrics={"radcliq": {}}, detailed=True, show_progress=False)
 
 
 def test_radcliq_per_pair_scores(evaluator_per_sample):
@@ -71,7 +71,7 @@ def test_radcliq_default_mode(evaluator):
 
 @pytest.fixture(scope="module")
 def evaluator_per_sample():
-    return RadEval(do_radcliq=True, do_per_sample=True, show_progress=False)
+    return RadEval(metrics={"radcliq": {}}, per_sample=True, show_progress=False)
 
 
 def test_radcliq_per_sample_structure(evaluator_per_sample):

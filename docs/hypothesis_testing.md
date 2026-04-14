@@ -19,7 +19,7 @@ The procedure:
 ```python
 from RadEval import RadEval, compare_systems
 
-evaluator = RadEval(do_bleu=True)
+evaluator = RadEval(metrics={"bleu": {}})
 
 signatures, scores = compare_systems(
     systems={
@@ -74,8 +74,8 @@ systems = {
 Each metric function receives `(hyps, refs)` and must return a scalar (or a tuple/list/dict -- see below).
 
 ```python
-bleu_evaluator = RadEval(do_bleu=True)
-rouge_evaluator = RadEval(do_rouge=True)
+bleu_evaluator = RadEval(metrics={"bleu": {}})
+rouge_evaluator = RadEval(metrics={"rouge": {}})
 
 metrics = {
     'bleu': lambda hyps, refs: bleu_evaluator(refs, hyps)['bleu'],

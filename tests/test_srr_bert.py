@@ -4,12 +4,12 @@ from RadEval import RadEval
 
 @pytest.fixture(scope="module")
 def evaluator():
-    return RadEval(do_srrbert=True)
+    return RadEval(metrics={"srrbert": {}})
 
 
 @pytest.fixture(scope="module")
 def evaluator_details():
-    return RadEval(do_srrbert=True, do_details=True)
+    return RadEval(metrics={"srrbert": {}}, detailed=True)
 
 
 class TestSRRBertPerfectMatch:
@@ -161,7 +161,7 @@ class TestSRRBertDetails:
 
 @pytest.fixture(scope="module")
 def evaluator_per_sample():
-    return RadEval(do_srrbert=True, do_per_sample=True)
+    return RadEval(metrics={"srrbert": {}}, per_sample=True)
 
 
 class TestSRRBertPerSample:

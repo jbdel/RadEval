@@ -56,7 +56,7 @@ class MetricBase(ABC):
                 agg = data["aggregate"]
                 out[key] = round(agg, 4) if isinstance(agg, float) else agg
                 for dk, dv in data.get("detailed", {}).items():
-                    out[dk] = dv
+                    out[dk] = round(dv, 4) if isinstance(dv, float) else dv
             else:
                 agg = data["aggregate"]
                 out[key] = round(agg, 4) if isinstance(agg, float) else agg

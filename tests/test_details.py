@@ -11,18 +11,12 @@ def test_do_details():
         "No pleural effusions or pneumothoraces.",
     ]
 
-    evaluator = RadEval(do_radgraph=True,
-                      do_green=False,
-                      do_bleu=True,
-                      do_rouge=True,
-                      do_bertscore=True,
-                      do_srrbert=True,
-                      do_f1chexbert=True,
-                      do_temporal=True,
-                      do_ratescore=True,
-                      do_radcliq=True,
-                      do_radeval_bertscore=True,
-                      do_details=True)
+    evaluator = RadEval(metrics={"radgraph": {}, "bleu": {}, "rouge": {},
+                                 "bertscore": {}, "srrbert": {},
+                                 "f1chexbert": {}, "temporal": {},
+                                 "ratescore": {}, "radcliq": {},
+                                 "radeval_bertscore": {}},
+                      detailed=True)
 
     results = evaluator(refs=refs, hyps=hyps)
 
@@ -91,18 +85,12 @@ def test_do_per_sample():
     ]
 
     evaluator = RadEval(
-        do_radgraph=True,
-        do_green=False,
-        do_bleu=True,
-        do_rouge=True,
-        do_bertscore=True,
-        do_srrbert=True,
-        do_f1chexbert=True,
-        do_temporal=True,
-        do_ratescore=True,
-        do_radcliq=True,
-        do_radeval_bertscore=True,
-        do_per_sample=True,
+        metrics={"radgraph": {}, "bleu": {}, "rouge": {},
+                 "bertscore": {}, "srrbert": {},
+                 "f1chexbert": {}, "temporal": {},
+                 "ratescore": {}, "radcliq": {},
+                 "radeval_bertscore": {}},
+        per_sample=True,
     )
 
     results = evaluator(refs=refs, hyps=hyps)
