@@ -1,2 +1,41 @@
-plan/
+# Git ignore file for RadEval project
+# Ignore Python cache files
 __pycache__/
+.ipynb_checkpoints/
+*.egg-info/
+*.pyc
+*.pyo
+*.pyd
+*.pytest_cache/
+
+# Ignore log files
+*.log
+
+# Ignore OS generated files
+.DS_Store
+
+# Ignore run_scripts
+rrg_systems/
+
+# Ignore environment variables
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# Dev scripts and data
+cmd
+pypi
+run_main.py
+run_main_*.py
+inspect_eval_json.py
+pred_ref_*.json
+pred_ref_*.jsonl
+findings_generation_examples.csv
+
+# Planning docs (not part of the codebase)
+plan/
+
+# Test fixtures (generated JSON snapshots)
+tests/**/*.json
