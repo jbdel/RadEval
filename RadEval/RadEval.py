@@ -42,6 +42,7 @@ class RadEval():
                  crimson_model=None,
                  crimson_batch_size=1,
                  crimson_max_concurrent=50,
+                 cache_dir=None,
                  do_hoppr_crimson_ct=False,
                  hoppr_crimson_ct_api="openai",
                  hoppr_crimson_ct_model=None,
@@ -86,6 +87,7 @@ class RadEval():
         self.crimson_batch_size = crimson_batch_size
         self.crimson_max_concurrent = crimson_max_concurrent
         self.do_hoppr_crimson_ct = do_hoppr_crimson_ct
+        self.cache_dir = cache_dir
         self.hoppr_crimson_ct_api = hoppr_crimson_ct_api
         self.hoppr_crimson_ct_model = hoppr_crimson_ct_model
         self.do_radeval_bertscore = do_radeval_bertscore
@@ -236,6 +238,7 @@ class RadEval():
                     gemini_api_key=self.gemini_api_key,
                     batch_size=self.crimson_batch_size,
                     max_concurrent=self.crimson_max_concurrent,
+                    cache_dir=self.cache_dir,
                 )
             except (ImportError, EnvironmentError, OSError) as e:
                 warnings.warn(

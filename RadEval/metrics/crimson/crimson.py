@@ -21,6 +21,7 @@ import pandas as pd
 
 from .._llm_base import LLMMetricBase
 from .prompt_parts import build_prompt as _build_evaluation_prompt_fn
+from .utils import parse_json_response as _parse_json_response_robust
 
 logger = logging.getLogger(__name__)
 
@@ -113,8 +114,9 @@ class CRIMSONScore(LLMMetricBase):
 
     SUPPORTED_PROVIDERS: ClassVar[set[str]] = {"openai", "hf"}
 
-    DEFAULT_HF_MODEL = "CRIMSONScore/medgemma-4b-it-crimson"
+    DEFAULT_HF_MODEL = "rajpurkarlab/medgemma-4b-it-crimson"
     DEFAULT_OPENAI_MODEL = "gpt-5.2"
+    DEFAULT_MAX_NEW_TOKENS = 8192
 
     def __init__(
         self,
@@ -125,6 +127,7 @@ class CRIMSONScore(LLMMetricBase):
         device=None,
         batch_size=1,
         max_concurrent=50,
+        cache_dir=None,
     ):
         resolved_model = model_name or (
             self.DEFAULT_OPENAI_MODEL if provider == "openai"
@@ -140,6 +143,7 @@ class CRIMSONScore(LLMMetricBase):
         )
 
         self.batch_size = batch_size
+        self.cache_dir = cache_dir
 
         if provider in ("huggingface", "hf"):
             self._init_hf_pipeline()
@@ -160,12 +164,19 @@ class CRIMSONScore(LLMMetricBase):
         except ImportError:
             pass
 
+        if self.cache_dir:
+            model_kwargs["cache_dir"] = self.cache_dir
+
         self.pipe = transformers.pipeline(
             "text-generation",
             model=self.model_name,
             model_kwargs=model_kwargs,
             device_map="auto",
         )
+
+        if self.pipe.tokenizer.padding_side != "left":
+            self.pipe.tokenizer.padding_side = "left"
+        self._has_generation_config = not self.pipe.model.generation_config._from_model_config
         logger.info("Model loaded.")
 
     # ------------------------------------------------------------------
@@ -194,8 +205,8 @@ class CRIMSONScore(LLMMetricBase):
     def _parse_response(self, raw: str) -> dict:
         cleaned = _extract_json_str(raw)
         try:
-            evaluation = json.loads(cleaned)
-        except json.JSONDecodeError:
+            evaluation = _parse_json_response_robust(cleaned)
+        except (ValueError, json.JSONDecodeError):
             repaired = _repair_truncated_json(cleaned)
             if repaired is not None:
                 logger.warning("Repaired truncated CRIMSON JSON.")
@@ -250,14 +261,23 @@ class CRIMSONScore(LLMMetricBase):
     def _hf_generate(self, prompt: str) -> str:
         messages = [
             {"role": "system", "content": _SYSTEM_MSG},
-            {"role": "user", "content": prompt + "\nPlease respond with valid JSON only."},
+            {"role": "user", "content": prompt},
         ]
-        outputs = self.pipe(
-            messages,
-            max_new_tokens=8192,
-            do_sample=False,
-            repetition_penalty=1.1,
-        )
+
+        if self._has_generation_config:
+            outputs = self.pipe(
+                messages,
+                generation_config=self.pipe.model.generation_config,
+                repetition_penalty=1.1,
+            )
+        else:
+            outputs = self.pipe(
+                messages,
+                max_new_tokens=self.DEFAULT_MAX_NEW_TOKENS,
+                max_length=None,
+                do_sample=False,
+                repetition_penalty=1.1,
+            )
         response = outputs[0]["generated_text"][-1]["content"]
         if not response:
             logger.warning("Empty response from HF pipeline. Raw: %s", outputs)
@@ -385,6 +405,8 @@ class CRIMSONScore(LLMMetricBase):
 
     def _build_evaluation_prompt(self, reference_findings, predicted_findings,
                                  patient_context=None, include_guidelines=True):
+        if self.provider in ("huggingface", "hf") and self.model_name == self.DEFAULT_HF_MODEL:
+            include_guidelines = False
         return _build_evaluation_prompt_fn(
             reference_findings,
             predicted_findings,
@@ -414,15 +436,15 @@ class CRIMSONScore(LLMMetricBase):
 
         def calculate_weighted_count(error_list, weights=significance_weights,
                                      key="clinical_significance"):
-            return sum(weights.get(error.get(key, "benign_expected"), 0.0)
+            return sum(weights.get(error.get(key, ""), 0.25)
                        for error in error_list)
 
         ref_weight_by_id = {
-            ref["id"]: significance_weights.get(ref.get("clinical_significance", "benign_expected"), 0.0)
+            ref["id"]: significance_weights.get(ref.get("clinical_significance", ""), 0.25)
             for ref in reference_findings_list
         }
         pred_weight_by_id = {
-            pred["id"]: significance_weights.get(pred.get("clinical_significance", "benign_expected"), 0.0)
+            pred["id"]: significance_weights.get(pred.get("clinical_significance", ""), 0.25)
             for pred in predicted_findings_list
         }
 
@@ -467,7 +489,7 @@ class CRIMSONScore(LLMMetricBase):
                 correct += base_weight
             else:
                 sum_error_weights = sum(
-                    attribute_severity_weights.get(err.get("severity", "negligible"), 0.0)
+                    attribute_severity_weights.get(err.get("severity", ""), 0.25)
                     for err in finding_attr_errors)
                 denom = base_weight + sum_error_weights
                 credit_factor = base_weight / denom if denom > 0 else 0.0
