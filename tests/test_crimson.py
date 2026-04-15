@@ -304,8 +304,7 @@ class TestCrimsonRadEvalIntegration:
             mock_class.return_value = mock_client
 
             evaluator = RadEval(
-                do_crimson=True,
-                crimson_api="openai",
+                metrics={"crimson": {"provider": "openai"}},
                 openai_api_key="test-key",
                 show_progress=False,
             )
@@ -324,8 +323,7 @@ class TestCrimsonRadEvalIntegration:
         from RadEval import RadEval
 
         evaluator = RadEval(
-            do_crimson=True,
-            crimson_api="hf",
+            metrics={"crimson": {"provider": "hf"}},
             show_progress=False,
         )
         results = evaluator(refs=refs[:1], hyps=hyps[:1])
@@ -345,10 +343,9 @@ class TestCrimsonRadEvalIntegration:
             mock_class.return_value = mock_client
 
             evaluator = RadEval(
-                do_crimson=True,
-                crimson_api="openai",
+                metrics={"crimson": {"provider": "openai"}},
                 openai_api_key="test-key",
-                do_details=True,
+                detailed=True,
                 show_progress=False,
             )
             evaluator.crimson_scorer._chat_completion_async = AsyncMock(side_effect=[
@@ -377,10 +374,9 @@ class TestCrimsonRadEvalIntegration:
             mock_class.return_value = mock_client
 
             evaluator = RadEval(
-                do_crimson=True,
-                crimson_api="openai",
+                metrics={"crimson": {"provider": "openai"}},
                 openai_api_key="test-key",
-                do_per_sample=True,
+                per_sample=True,
                 show_progress=False,
             )
             evaluator.crimson_scorer._chat_completion_async = AsyncMock(side_effect=[
@@ -437,8 +433,7 @@ class TestCrimsonIntegration:
         from RadEval import RadEval
 
         evaluator = RadEval(
-            do_crimson=True,
-            crimson_api="openai",
+            metrics={"crimson": {"provider": "openai"}},
             openai_api_key=api_key,
         )
 

@@ -33,3 +33,9 @@ inspect_eval_json.py
 pred_ref_*.json
 pred_ref_*.jsonl
 findings_generation_examples.csv
+
+# Planning docs (not part of the codebase)
+plan/
+
+# Test fixtures (generated JSON snapshots)
+tests/**/*.json

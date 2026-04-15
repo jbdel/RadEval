@@ -2,19 +2,19 @@
 
 # Metrics Reference
 
-All metrics are enabled via `do_<name>=True` in the `RadEval` constructor. Three output modes:
+All metrics are enabled by name in the `RadEval` constructor. Pass a list of metric names, or use a config file for per-metric settings. Three output modes:
 
 | Mode | Flag | Output |
 |------|------|--------|
 | Default | -- | Flat dict of scalar scores |
-| Per-Sample | `do_per_sample=True` | Same flat keys, values are `list[float]` (one per report) |
-| Details | `do_details=True` | Default keys + extra aggregate scores (label breakdowns, std, bleu_1/2/3) |
+| Per-Sample | `per_sample=True` | Same flat keys, values are `list[float]` (one per report) |
+| Details | `detailed=True` | Default keys + extra aggregate scores (label breakdowns, std, bleu_1/2/3) |
 
 ---
 
 ## Lexical Metrics
 
-### BLEU (`do_bleu`)
+### BLEU (`"bleu"`)
 
 N-gram overlap between hypothesis and reference. Returns BLEU-4 (4-gram) by default.
 
@@ -27,12 +27,12 @@ N-gram overlap between hypothesis and reference. Returns BLEU-4 (4-gram) by defa
 ```python
 from RadEval import RadEval
 
-evaluator = RadEval(do_bleu=True)
+evaluator = RadEval(metrics=["bleu"])
 results = evaluator(refs=refs, hyps=hyps)
 print(results["bleu"])  # 0.3605
 ```
 
-### ROUGE (`do_rouge`)
+### ROUGE (`"rouge"`)
 
 Recall-oriented n-gram evaluation. Computes ROUGE-1, ROUGE-2, and ROUGE-L in a single pass.
 
@@ -43,7 +43,7 @@ Recall-oriented n-gram evaluation. Computes ROUGE-1, ROUGE-2, and ROUGE-L in a s
 | Details | `rouge1`, `rouge2`, `rougeL` | same as default |
 
 ```python
-evaluator = RadEval(do_rouge=True)
+evaluator = RadEval(metrics=["rouge"])
 results = evaluator(refs=refs, hyps=hyps)
 print(results["rouge1"], results["rouge2"], results["rougeL"])
 ```
@@ -52,7 +52,7 @@ print(results["rouge1"], results["rouge2"], results["rougeL"])
 
 ## Semantic Metrics
 
-### BERTScore (`do_bertscore`)
+### BERTScore (`"bertscore"`)
 
 Contextual embedding similarity using `distilbert-base-uncased` (layer 5).
 
@@ -63,12 +63,12 @@ Contextual embedding similarity using `distilbert-base-uncased` (layer 5).
 | Details | `bertscore` | same as default |
 
 ```python
-evaluator = RadEval(do_bertscore=True)
+evaluator = RadEval(metrics=["bertscore"])
 results = evaluator(refs=refs, hyps=hyps)
 print(results["bertscore"])  # 0.6327
 ```
 
-### RadEval BERTScore (`do_radeval_bertscore`)
+### RadEval BERTScore (`"radeval_bertscore"`)
 
 Same architecture as BERTScore but using [IAMJB/RadEvalModernBERT](https://huggingface.co/IAMJB/RadEvalModernBERT), a domain-adapted radiology encoder with strong zero-shot retrieval performance.
 
@@ -79,7 +79,7 @@ Same architecture as BERTScore but using [IAMJB/RadEvalModernBERT](https://huggi
 | Details | `radeval_bertscore` | same as default |
 
 ```python
-evaluator = RadEval(do_radeval_bertscore=True)
+evaluator = RadEval(metrics=["radeval_bertscore"])
 results = evaluator(refs=refs, hyps=hyps)
 print(results["radeval_bertscore"])  # 0.3462
 ```
@@ -88,7 +88,7 @@ print(results["radeval_bertscore"])  # 0.3462
 
 ## Clinical Metrics
 
-### F1CheXbert (`do_f1chexbert`)
+### F1CheXbert (`"f1chexbert"`)
 
 Classifies reports into 14 CheXpert conditions using a BERT-based labeler, then computes multi-label F1 (micro/macro) between reference and hypothesis labels.
 
@@ -99,13 +99,13 @@ Classifies reports into 14 CheXpert conditions using a BERT-based labeler, then 
 | Details | default keys + `f1chexbert_label_scores_f1` | adds per-label F1 dict |
 
 ```python
-evaluator = RadEval(do_f1chexbert=True)
+evaluator = RadEval(metrics=["f1chexbert"])
 results = evaluator(refs=refs, hyps=hyps)
 print(results["f1chexbert_5_micro_f1"])
 print(results["f1chexbert_all_micro_f1"])
 ```
 
-### F1RadBERT-CT (`do_f1radbert_ct`)
+### F1RadBERT-CT (`"f1radbert_ct"`)
 
 Multi-label classification of 18 CT-specific findings using [IAMJB/RadBERT-CT](https://huggingface.co/IAMJB/RadBERT-CT).
 
@@ -116,13 +116,13 @@ Multi-label classification of 18 CT-specific findings using [IAMJB/RadBERT-CT](h
 | Details | default keys + `f1radbert_ct_label_scores_f1` | adds per-label F1 dict |
 
 ```python
-evaluator = RadEval(do_f1radbert_ct=True)
+evaluator = RadEval(metrics=["f1radbert_ct"])
 results = evaluator(refs=refs, hyps=hyps)
 print(results["f1radbert_ct_accuracy"])
 print(results["f1radbert_ct_micro_f1"])
 ```
 
-### F1RadGraph (`do_radgraph`)
+### F1RadGraph (`"radgraph"`)
 
 Extracts clinical entities and relations as a knowledge graph using [RadGraph-XL](https://physionet.org/content/radgraph/1.0.0/), then computes entity/relation F1 at three levels: simple, partial, complete.
 
@@ -133,14 +133,14 @@ Extracts clinical entities and relations as a knowledge graph using [RadGraph-XL
 | Details | `radgraph_simple`, `radgraph_partial`, `radgraph_complete` | same as default |
 
 ```python
-evaluator = RadEval(do_radgraph=True)
+evaluator = RadEval(metrics=["radgraph"])
 results = evaluator(refs=refs, hyps=hyps)
 print(results["radgraph_simple"])    # 0.7222
 print(results["radgraph_partial"])   # 0.6111
 print(results["radgraph_complete"])  # 0.6111
 ```
 
-### RaTEScore (`do_ratescore`)
+### RaTEScore (`"ratescore"`)
 
 Entity-aware metric that extracts medical entities via NER, computes synonym-aware embeddings, and scores precision/recall using a learned affinity matrix.
 
@@ -151,7 +151,7 @@ Entity-aware metric that extracts medical entities via NER, computes synonym-awa
 | Details | `ratescore` | same as default |
 
 ```python
-evaluator = RadEval(do_ratescore=True)
+evaluator = RadEval(metrics=["ratescore"])
 results = evaluator(refs=refs, hyps=hyps)
 print(results["ratescore"])  # 0.5878
 ```
@@ -160,16 +160,16 @@ print(results["ratescore"])  # 0.5878
 
 ## Specialized Metrics
 
-### RadGraph-RadCliQ (`do_radgraph_radcliq`)
+### RadGraph-RadCliQ (`"radgraph_radcliq"`)
 
-The RadGraph sub-score as computed in the RadCliQ-v1 pipeline. Unlike the official `F1RadGraph` metric (`do_radgraph`), which uses `radgraph-xl` and entity-matching at three reward levels, this metric:
+The RadGraph sub-score as computed in the RadCliQ-v1 pipeline. Unlike the official `F1RadGraph` metric (`"radgraph"`), which uses `radgraph-xl` and entity-matching at three reward levels, this metric:
 
 - Uses the original `radgraph` model (the one RadCliQ-v1 was trained with)
 - Extracts entity **and** relation sets from each report
 - Computes per-pair `(entity_f1 + relation_f1) / 2`
 - Returns per-sample scores
 
-Use `do_radgraph` for the standard metric. Use `do_radgraph_radcliq` when you need per-pair entity+relation F1 scores or exact alignment with the RadCliQ-v1 composite.
+Use `"radgraph"` for the standard metric. Use `"radgraph_radcliq"` when you need per-pair entity+relation F1 scores or exact alignment with the RadCliQ-v1 composite.
 
 | Mode | Output key | Value |
 |------|-----------|-------|
@@ -178,12 +178,12 @@ Use `do_radgraph` for the standard metric. Use `do_radgraph_radcliq` when you ne
 | Details | `radgraph_radcliq` | same as default |
 
 ```python
-evaluator = RadEval(do_radgraph_radcliq=True)
+evaluator = RadEval(metrics=["radgraph_radcliq"])
 results = evaluator(refs=refs, hyps=hyps)
 print(results["radgraph_radcliq"])  # 0.2576
 ```
 
-### RadCliQ-v1 (`do_radcliq`)
+### RadCliQ-v1 (`"radcliq"`)
 
 Composite metric that combines BERTScore (with IDF), RadGraph, semantic embeddings, and BLEU-2 via a learned linear model. Returns `1/mean(raw_scores)` so that higher values indicate better reports. Validated against the [reference implementation](https://github.com/rajpurkarlab/CXR-Report-Metric).
 
@@ -194,12 +194,12 @@ Composite metric that combines BERTScore (with IDF), RadGraph, semantic embeddin
 | Details | `radcliq_v1` | same as default |
 
 ```python
-evaluator = RadEval(do_radcliq=True)
+evaluator = RadEval(metrics=["radcliq"])
 results = evaluator(refs=refs, hyps=hyps)
 print(results["radcliq_v1"])  # higher is better (returns 1/mean of raw scores)
 ```
 
-### SRRBert (`do_srrbert`)
+### SRRBert (`"srrbert"`)
 
 Structured Radiology Report evaluation. Parses each report into sentences, classifies each sentence into 163 finding/status labels, merges at report level, and computes weighted precision/recall/F1.
 
@@ -210,14 +210,14 @@ Structured Radiology Report evaluation. Parses each report into sentences, class
 | Details | default keys + `srrbert_label_scores` | adds per-label P/R/F1 dict |
 
 ```python
-evaluator = RadEval(do_srrbert=True)
+evaluator = RadEval(metrics=["srrbert"])
 results = evaluator(refs=refs, hyps=hyps)
 print(results["srrbert_weighted_f1"])
 print(results["srrbert_weighted_precision"])
 print(results["srrbert_weighted_recall"])
 ```
 
-### Temporal F1 (`do_temporal`)
+### Temporal F1 (`"temporal"`)
 
 Extracts temporal entities (e.g. "stable", "worsening", "new") via Stanza NER and keyword matching, then computes F1 on the entity sets.
 
@@ -228,12 +228,12 @@ Extracts temporal entities (e.g. "stable", "worsening", "new") via Stanza NER an
 | Details | `temporal_f1` | same as default |
 
 ```python
-evaluator = RadEval(do_temporal=True)
+evaluator = RadEval(metrics=["temporal"])
 results = evaluator(refs=refs, hyps=hyps)
 print(results["temporal_f1"])  # 0.5
 ```
 
-### GREEN (`do_green`)
+### GREEN (`"green"`)
 
 LLM-based evaluation using [GREEN-radllama2-7B](https://huggingface.co/StanfordAIMI/GREEN-radllama2-7b). The model generates a natural language comparison, from which a score is extracted. Supports multi-GPU inference.
 
@@ -245,12 +245,12 @@ LLM-based evaluation using [GREEN-radllama2-7B](https://huggingface.co/StanfordA
 
 ```python
 # Set CUDA_VISIBLE_DEVICES for multi-GPU inference
-evaluator = RadEval(do_green=True)
+evaluator = RadEval(metrics=["green"])
 results = evaluator(refs=refs, hyps=hyps)
 print(results["green"])  # 0.875
 ```
 
-### MammoGREEN (`do_mammo_green`)
+### MammoGREEN (`"mammo_green"`)
 
 Mammography-specific LLM-as-judge metric. Calls an OpenAI or Gemini model to count clinically significant errors (false findings, missing findings, mischaracterization, wrong location, incorrect BI-RADS, incorrect breast density).
 
@@ -264,26 +264,22 @@ Requires `pip install RadEval[api]` and an API key (`openai_api_key` or `OPENAI_
 
 ```python
 # OpenAI (default: gpt-4o-mini)
-evaluator = RadEval(do_mammo_green=True, openai_api_key="sk-...")
+evaluator = RadEval(metrics=["mammo_green"], openai_api_key="sk-...")
 
-# Gemini
-evaluator = RadEval(
-    do_mammo_green=True,
-    mammo_green_model="gemini-2.5-flash",
-    gemini_api_key="AIza...",
-)
+# Gemini (per-metric config via config file)
+evaluator = RadEval.from_config("config.yaml")  # see examples/config.yaml
 
 results = evaluator(refs=refs, hyps=hyps)
 print(results["mammo_green"])
 ```
 
-### CRIMSON (`do_crimson`)
+### CRIMSON (`"crimson"`)
 
 LLM-based clinical radiology report scoring from the [Rajpurkar Lab](https://github.com/rajpurkarlab/CRIMSON). Evaluates report quality by comparing predicted findings against reference findings, identifying errors (false findings, missing findings, attribute errors) and weighting them by clinical significance.
 
 Supports two backends:
-- **HuggingFace** (default, `crimson_api="hf"`): uses [MedGemma-CRIMSON](https://huggingface.co/CRIMSONScore/medgemma-4b-it-crimson) locally
-- **OpenAI** (`crimson_api="openai"`): uses `gpt-5.2` by default
+- **HuggingFace** (default, `"provider": "hf"`): uses [MedGemma-CRIMSON](https://huggingface.co/CRIMSONScore/medgemma-4b-it-crimson) locally
+- **OpenAI** (`"provider": "openai"`): uses `gpt-5.2` by default
 
 Requires `torch` + `transformers` for HuggingFace, or `pip install RadEval[api]` for OpenAI.
 
@@ -295,30 +291,26 @@ Requires `torch` + `transformers` for HuggingFace, or `pip install RadEval[api]`
 
 ```python
 # HuggingFace MedGemma (default, as in the original paper, runs locally on GPU)
-evaluator = RadEval(do_crimson=True)
+evaluator = RadEval(metrics=["crimson"])
 
-# OpenAI API
-evaluator = RadEval(
-    do_crimson=True,
-    crimson_api="openai",
-    openai_api_key="sk-...",
-)
+# OpenAI API (per-metric config via config file)
+evaluator = RadEval.from_config("config.yaml")  # see examples/config.yaml
 
 results = evaluator(refs=refs, hyps=hyps)
 print(results["crimson"])  # range [-1, 1]
 ```
 
-### RadFact-CT (`do_radfact_ct`)
+### RadFact-CT (`"radfact_ct"`)
 
 LLM-based factual evaluation for CT reports, ported from [microsoft/RadFact](https://github.com/microsoft/RadFact). Splits reports into atomic phrases, then runs bidirectional entailment verification (is each candidate phrase supported by the reference, and vice versa).
 
 Two modes:
 - **RadFact +/-** (default): evaluates all phrases including negatives ("no pneumothorax")
-- **RadFact +** (`radfact_ct_filter_negatives=True`): filters out negative/normal findings first
+- **RadFact +** (`"filter_negatives": True`): filters out negative/normal findings first
 
 Requires `pip install RadEval[api]` and `openai_api_key` or `OPENAI_API_KEY`. Uses `gpt-4o-mini` by default.
 
-Evaluates samples concurrently (default 10) with live cost tracking in the progress bar. Control via `radfact_ct_max_concurrent`.
+Evaluates samples concurrently (default 10) with live cost tracking in the progress bar. Control via `"max_concurrent"`.
 
 | Mode | Output keys | Value |
 |------|------------|-------|
@@ -328,13 +320,10 @@ Evaluates samples concurrently (default 10) with live cost tracking in the progr
 
 ```python
 # RadFact +/- (default, 10 concurrent samples)
-evaluator = RadEval(do_radfact_ct=True, openai_api_key="sk-...")
+evaluator = RadEval(metrics=["radfact_ct"], openai_api_key="sk-...")
 
-# RadFact + (filter negatives)
-evaluator = RadEval(do_radfact_ct=True, radfact_ct_filter_negatives=True)
-
-# Custom concurrency (higher for Tier 2+ accounts)
-evaluator = RadEval(do_radfact_ct=True, radfact_ct_max_concurrent=20)
+# RadFact + (filter negatives) or custom concurrency — use a config file:
+evaluator = RadEval.from_config("config.yaml")  # see examples/config.yaml
 
 results = evaluator(refs=refs, hyps=hyps)
 print(results["radfact_ct_precision"])  # 66.67
