@@ -1,11 +1,5 @@
 # RadEval
 
-<div align="center">
-
-**All-in-one metrics for evaluating AI-generated radiology text**
-
-</div>
-
 <!--- BADGES: START --->
 [![PyPI](https://img.shields.io/badge/RadEval-v1.0.0-00B7EB?logo=python&logoColor=00B7EB)](https://pypi.org/project/RadEval/)
 [![Python version](https://img.shields.io/badge/python-3.11+-important?logo=python&logoColor=important)]()
@@ -17,36 +11,34 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?)](https://github.com/jbdel/RadEval/main/LICENSE)
 <!--- BADGES: END --->
 
+RadEval is a Python framework for evaluating AI-generated radiology reports. It provides 16 metrics spanning lexical, semantic, clinical, and LLM-based evaluation — all behind a single interface with lazy loading, config-file support, and compatibility with HuggingFace TRL for reinforcement learning.
 
-### TL;DR
+## Table of Contents
+
+- [TL;DR](#tldr)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Basic](#basic)
+  - [Config file](#config-file)
+  - [Output modes](#output-modes)
+  - [Comparing systems](#comparing-systems)
+  - [RL rewards](#rl-rewards)
+- [Supported Metrics](#supported-metrics)
+- [API Keys for LLM Metrics](#api-keys-for-llm-metrics)
+- [Documentation](#documentation)
+- [Expert Dataset](#radeval-expert-dataset)
+- [Contributing](#contributing)
+- [Citation](#citation)
+
+## TL;DR
+
 ```
 pip install -e .
 ```
 ```python
 from RadEval import RadEval
-import json
-
-refs = [
-    "Mild cardiomegaly with small bilateral pleural effusions and basilar atelectasis.",
-    "No pleural effusions or pneumothoraces.",
-]
-hyps = [
-    "Mildly enlarged cardiac silhouette with small pleural effusions and dependent bibasilar atelectasis.",
-    "No pleural effusions or pneumothoraces.",
-]
-
-evaluator = RadEval(metrics=["radgraph", "bleu"])
-
-results = evaluator(refs=refs, hyps=hyps)
-print(json.dumps(results, indent=2))
-```
-```json
-{
-  "radgraph_simple": 0.72,
-  "radgraph_partial": 0.61,
-  "radgraph_complete": 0.61,
-  "bleu": 0.36
-}
+evaluator = RadEval(metrics=["bleu", "rouge"])
+results = evaluator(refs=["No acute findings."], hyps=["Normal chest."])
 ```
 
 ## Installation
@@ -62,6 +54,123 @@ git clone https://github.com/jbdel/RadEval.git && cd RadEval
 conda create -n radeval python=3.11 -y && conda activate radeval
 pip install -e '.[api]'
 ```
+
+## Usage
+
+### Basic
+
+Pass a list of metric names. Each metric is loaded lazily — only the ones you enable import their dependencies.
+
+```python
+from RadEval import RadEval
+import json
+
+refs = [
+    "Mild cardiomegaly with small bilateral pleural effusions and basilar atelectasis.",
+    "No pleural effusions or pneumothoraces.",
+]
+hyps = [
+    "Mildly enlarged cardiac silhouette with small pleural effusions and dependent bibasilar atelectasis.",
+    "No pleural effusions or pneumothoraces.",
+]
+
+evaluator = RadEval(metrics=["radgraph", "bleu"])
+results = evaluator(refs=refs, hyps=hyps)
+print(json.dumps(results, indent=4))
+```
+```json
+{
+    "radgraph_simple": 0.72,
+    "radgraph_partial": 0.61,
+    "radgraph_complete": 0.61,
+    "bleu": 0.36
+}
+```
+
+### Config file
+
+For per-metric settings (model, provider, concurrency) or reproducible evaluation configs, use a YAML file:
+
+```yaml
+# config.yaml
+metrics:
+  - bleu
+  - rouge
+  - crimson:
+      provider: openai
+      model_name: gpt-4o-mini
+  - radfact_ct:
+      filter_negatives: true
+
+output:
+  mode: per_sample    # or "default" or "detailed"
+```
+
+```python
+evaluator = RadEval.from_config("config.yaml")
+results = evaluator(refs=refs, hyps=hyps)
+```
+
+See [`examples/config.yaml`](examples/config.yaml) for a complete example.
+
+### Output modes
+
+| Mode | Flag | Values |
+|------|------|--------|
+| Default | — | `float` per metric |
+| Per-sample | `per_sample=True` | `list[float]` per metric (one per report) |
+| Detailed | `detailed=True` | Extra keys: label breakdowns, BLEU-1/2/3, std |
+
+```python
+# Per-sample scores
+evaluator = RadEval(metrics=["bleu", "bertscore"], per_sample=True)
+results = evaluator(refs=refs, hyps=hyps)
+# results["bleu"]      → [0.85, 0.40, ...]   (one per sample)
+# results["bertscore"] → [0.95, 0.89, ...]
+
+# Detailed output (label F1s, sub-scores, std)
+evaluator = RadEval(metrics=["bleu", "f1chexbert"], detailed=True)
+results = evaluator(refs=refs, hyps=hyps)
+# results["bleu_1"]    → 0.55   (extra: BLEU-1)
+# results["bleu_2"]    → 0.42   (extra: BLEU-2)
+```
+
+See [docs/metrics.md](docs/metrics.md) for the full output schema of each metric.
+
+### Comparing systems
+
+Use `compare_systems` to run paired approximate randomization tests between any number of systems:
+
+```python
+from RadEval import RadEval, compare_systems
+
+evaluator = RadEval(metrics=["bleu"])
+signatures, scores = compare_systems(
+    systems={'baseline': baseline_reports, 'improved': improved_reports},
+    metrics={'bleu': lambda hyps, refs: evaluator(refs, hyps)['bleu']},
+    references=reference_reports,
+    n_samples=10000,
+)
+```
+
+See [docs/hypothesis_testing.md](docs/hypothesis_testing.md) for a full walkthrough and interpretation guide.
+
+### RL rewards
+
+Wrap any metric as a [TRL](https://github.com/huggingface/trl)-compatible reward function for reinforcement learning:
+
+```python
+from RadEval.rewards import make_reward_fn
+from trl import GRPOTrainer
+
+trainer = GRPOTrainer(
+    model=model,
+    reward_funcs=[make_reward_fn("bertscore")],
+    train_dataset=dataset,   # must have a "ground_truth" column
+)
+```
+
+See [docs/trl_rewards.md](docs/trl_rewards.md) for recommended metrics, score transforms, and a runnable demo.
 
 ## Supported Metrics
 
@@ -86,7 +195,7 @@ pip install -e '.[api]'
 
 > **Modality:** CXR = Chest X-Ray, CT = Computed Tomography, Mammo = Mammography, -- = modality-agnostic.
 
-Enable only the metrics you need -- each one is loaded lazily.
+Enable only the metrics you need; each one is loaded lazily.
 
 ## API Keys for LLM Metrics
 
@@ -101,56 +210,6 @@ evaluator = RadEval(
 ```
 
 If not passed explicitly, keys fall back to the environment variables `OPENAI_API_KEY`, `GEMINI_API_KEY`, or `GOOGLE_API_KEY`. An error is raised if the chosen provider requires a key that is neither passed nor in the environment.
-
-## Per-Sample Output
-
-Pass `per_sample=True` to get per-sample scores for every enabled metric. The output uses the **same flat keys** as the default mode, but each value is a `list[float]` of length `n_samples` instead of a single aggregate.
-
-```python
-evaluator = RadEval(metrics=["bleu", "bertscore"], per_sample=True)
-results = evaluator(refs=refs, hyps=hyps)
-# results["bleu"]      → [0.85, 0.40, ...]   (one per sample)
-# results["bertscore"] → [0.95, 0.89, ...]
-```
-
-See [docs/metrics.md](docs/metrics.md) for the full list of per-sample output keys for each metric.
-
-## Detailed Output
-
-Pass `detailed=True` to get additional aggregate scores beyond the defaults: per-label F1 breakdowns for classifiers, BLEU-1/2/3, standard deviations for LLM-based metrics. Same flat keys as default, no nesting.
-
-```python
-evaluator = RadEval(metrics=["bleu", "f1chexbert", "crimson"], detailed=True)
-results = evaluator(refs=refs, hyps=hyps)
-# results["bleu"]       → 0.36     (same as default)
-# results["bleu_1"]     → 0.55     (extra: BLEU-1)
-# results["bleu_2"]     → 0.42     (extra: BLEU-2)
-# results["crimson_std"] → 0.15    (extra: std)
-# results["f1chexbert_label_scores_f1"] → {"f1chexbert_5": {"Cardiomegaly": 0.59, ...}, ...}
-```
-
-See [docs/metrics.md](docs/metrics.md) for the full output schema of each metric.
-
-## Comparing Systems
-
-Use `compare_systems` to run paired approximate randomization tests between any number of systems:
-
-```python
-from RadEval import RadEval, compare_systems
-
-evaluator = RadEval(metrics=["bleu"])
-signatures, scores = compare_systems(
-    systems={
-        'baseline': baseline_reports,
-        'improved': improved_reports,
-    },
-    metrics={'bleu': lambda hyps, refs: evaluator(refs, hyps)['bleu']},
-    references=reference_reports,
-    n_samples=10000,
-)
-```
-
-See [docs/hypothesis_testing.md](docs/hypothesis_testing.md) for a full walkthrough and interpretation guide.
 
 ## Documentation
 
@@ -237,11 +296,15 @@ A curated evaluation set annotated by board-certified radiologists for validatin
   </tbody>
 </table>
 
+## Contributing
+
+RadEval is open source and we welcome contributions from the community. Whether it's a new metric, a bug fix, or improved documentation — feel free to open an issue or submit a pull request on [GitHub](https://github.com/jbdel/RadEval).
+
 ## Acknowledgments
 
 Built on the work of the radiology AI community: [CheXbert](https://github.com/stanfordmlgroup/CheXbert), [RadGraph](https://github.com/jbdel/RadGraph), [BERTScore](https://github.com/Tiiiger/bert_score), [RaTEScore](https://github.com/MAGIC-AI4Med/RaTEScore), [SRR-BERT](https://github.com/StanfordAIMI/SRR-BERT), [GREEN](https://github.com/Stanford-AIMI/GREEN), [CRIMSON](https://github.com/rajpurkarlab/CRIMSON), and datasets like [MIMIC-CXR](https://physionet.org/content/mimic-cxr/2.0.0/).
 
 ---
 <div align="center">
-  <p>If you find RadEval useful, please give us a star!</p>
+  <p>Please give us a star if you find RadEval useful! ⭐</p>
 </div>
