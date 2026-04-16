@@ -1,11 +1,5 @@
 # RadEval
 
-<div align="center">
-
-**All-in-one metrics for evaluating AI-generated radiology text**
-
-</div>
-
 <!--- BADGES: START --->
 [![PyPI](https://img.shields.io/badge/RadEval-v1.0.0-00B7EB?logo=python&logoColor=00B7EB)](https://pypi.org/project/RadEval/)
 [![Python version](https://img.shields.io/badge/python-3.11+-important?logo=python&logoColor=important)]()
@@ -16,6 +10,8 @@
 [![EMNLP](https://img.shields.io/badge/paper-EMNLP-red)](https://aclanthology.org/2025.emnlp-demos.40/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?)](https://github.com/jbdel/RadEval/main/LICENSE)
 <!--- BADGES: END --->
+
+RadEval is a Python framework for evaluating AI-generated radiology reports. It provides 16 metrics spanning lexical, semantic, clinical, and LLM-based evaluation — all behind a single interface with lazy loading, config-file support, and compatibility with HuggingFace TRL for reinforcement learning.
 
 ## Table of Contents
 
@@ -31,6 +27,7 @@
 - [API Keys for LLM Metrics](#api-keys-for-llm-metrics)
 - [Documentation](#documentation)
 - [Expert Dataset](#radeval-expert-dataset)
+- [Contributing](#contributing)
 - [Citation](#citation)
 
 ## TL;DR
@@ -198,7 +195,7 @@ See [docs/trl_rewards.md](docs/trl_rewards.md) for recommended metrics, score tr
 
 > **Modality:** CXR = Chest X-Ray, CT = Computed Tomography, Mammo = Mammography, -- = modality-agnostic.
 
-Enable only the metrics you need -- each one is loaded lazily.
+Enable only the metrics you need; each one is loaded lazily.
 
 ## API Keys for LLM Metrics
 
@@ -299,11 +296,15 @@ A curated evaluation set annotated by board-certified radiologists for validatin
   </tbody>
 </table>
 
+## Contributing
+
+RadEval is open source and we welcome contributions from the community. Whether it's a new metric, a bug fix, or improved documentation — feel free to open an issue or submit a pull request on [GitHub](https://github.com/jbdel/RadEval).
+
 ## Acknowledgments
 
 Built on the work of the radiology AI community: [CheXbert](https://github.com/stanfordmlgroup/CheXbert), [RadGraph](https://github.com/jbdel/RadGraph), [BERTScore](https://github.com/Tiiiger/bert_score), [RaTEScore](https://github.com/MAGIC-AI4Med/RaTEScore), [SRR-BERT](https://github.com/StanfordAIMI/SRR-BERT), [GREEN](https://github.com/Stanford-AIMI/GREEN), [CRIMSON](https://github.com/rajpurkarlab/CRIMSON), and datasets like [MIMIC-CXR](https://physionet.org/content/mimic-cxr/2.0.0/).
 
 ---
 <div align="center">
-  <p>If you find RadEval useful, please give us a star!</p>
+  <p>Please give us a star if you find RadEval useful! ⭐</p>
 </div>
