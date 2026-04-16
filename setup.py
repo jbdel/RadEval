@@ -33,7 +33,9 @@ setup(
         'bioNLP',
         'chexbert',
         'radgraph',
-        'medical AI'
+        'medical AI',
+        'reinforcement learning',
+        'reward model',
     ],
     python_requires='>=3.11',
     install_requires=[
