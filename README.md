@@ -15,7 +15,6 @@ RadEval is a Python framework for evaluating AI-generated radiology reports. It 
 
 ## Table of Contents
 
-- [TL;DR](#tldr)
 - [Installation](#installation)
 - [Usage](#usage)
   - [Basic](#basic)
@@ -29,17 +28,6 @@ RadEval is a Python framework for evaluating AI-generated radiology reports. It 
 - [Expert Dataset](#radeval-expert-dataset)
 - [Contributing](#contributing)
 - [Citation](#citation)
-
-## TL;DR
-
-```
-pip install -e .
-```
-```python
-from RadEval import RadEval
-evaluator = RadEval(metrics=["bleu", "rouge"])
-results = evaluator(refs=["No acute findings."], hyps=["Normal chest."])
-```
 
 ## Installation
 
