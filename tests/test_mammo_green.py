@@ -414,9 +414,8 @@ class TestMammoGreenIntegration:
         test_hyps = hyps
 
         evaluator = RadEval(
-            do_mammo_green=True,
+            metrics={"mammo_green": {"model_name": "gpt-4o"}},
             openai_api_key=api_key,
-            mammo_green_model="gpt-4o",
         )
 
         results = evaluator(refs=test_refs, hyps=test_hyps)

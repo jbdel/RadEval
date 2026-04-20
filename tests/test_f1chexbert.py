@@ -97,7 +97,7 @@ def test_f1chexbert_per_sample():
     from tests.conftest import CHEXBERT_HYPS, CHEXBERT_REFS
 
     evaluator = RadEval(
-        do_f1chexbert=True, do_per_sample=True, show_progress=False)
+        metrics=["f1chexbert"], per_sample=True, show_progress=False)
     results = evaluator(refs=CHEXBERT_REFS, hyps=CHEXBERT_HYPS)
 
     assert "f1chexbert_sample_acc_5" in results

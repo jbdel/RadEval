@@ -24,18 +24,10 @@ def test_radeval():
     ]
 
     # Instantiate RadEval with desired configurations
-    evaluator = RadEval(do_radgraph=True,
-                        do_green=False,
-                        do_bleu=True,
-                        do_rouge=True,
-                        do_bertscore=True,
-                        do_f1chexbert=True,
-                        do_ratescore=True,
-                        do_radcliq=True,
-                        do_temporal=True,
-                        do_srrbert=False,
-                        do_radeval_bertscore=False,
-                        )
+    evaluator = RadEval(metrics=["radgraph", "bleu", "rouge",
+                                 "bertscore", "f1chexbert",
+                                 "ratescore", "radcliq",
+                                 "temporal"])
 
     # Compute scores
     results = evaluator(refs=refs, hyps=hyps)
