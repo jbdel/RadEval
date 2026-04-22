@@ -152,7 +152,7 @@ class TestHopprCrimsonCTUnit:
                 openai_api_key="test-key",
                 show_progress=False,
             )
-            evaluator.hoppr_crimson_ct_scorer._chat_completion_async = AsyncMock(
+            evaluator.hoppr_crimson_ct_scorer.scorer._chat_completion_async = AsyncMock(
                 return_value=json.dumps(mock_eval_identical))
             results = evaluator(refs=REFS_IDENTICAL, hyps=HYPS_IDENTICAL)
             assert "hoppr_crimson_ct" in results
@@ -173,7 +173,7 @@ class TestHopprCrimsonCTUnit:
                 per_sample=True,
                 show_progress=False,
             )
-            evaluator.hoppr_crimson_ct_scorer._chat_completion_async = AsyncMock(
+            evaluator.hoppr_crimson_ct_scorer.scorer._chat_completion_async = AsyncMock(
                 return_value=json.dumps(mock_eval_identical))
             results = evaluator(refs=REFS_IDENTICAL, hyps=HYPS_IDENTICAL)
             assert isinstance(results["hoppr_crimson_ct"], list)
@@ -194,7 +194,7 @@ class TestHopprCrimsonCTUnit:
                 detailed=True,
                 show_progress=False,
             )
-            evaluator.hoppr_crimson_ct_scorer._chat_completion_async = AsyncMock(
+            evaluator.hoppr_crimson_ct_scorer.scorer._chat_completion_async = AsyncMock(
                 return_value=json.dumps(mock_eval_identical))
             results = evaluator(refs=REFS_IDENTICAL, hyps=HYPS_IDENTICAL)
             assert isinstance(results["hoppr_crimson_ct"], float)
