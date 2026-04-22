@@ -42,7 +42,7 @@ PRIVATE_METRICS = [
     "hoppr_crimson_ct",
 ]
 
-PRIVATE_DIRS = ["scripts", ".cursor"]
+PRIVATE_DIRS = ["scripts", ".cursor", "docs/changelog"]
 
 PRIVATE_FILES = [
     "findings_generation_examples.csv",
@@ -212,11 +212,21 @@ def main():
                 item.unlink()
 
         print("\n=== Copying private repo files ===")
-        ignore = shutil.ignore_patterns(
-            ".git", "__pycache__", "*.pyc", ".pytest_cache",
-            "*.egg-info", "dist", "build",
-        )
-        shutil.copytree(src, dest, dirs_exist_ok=True, ignore=ignore)
+        # Use `git ls-files` so only tracked files flow to public.
+        # Untracked/gitignored files (plan/, tmp_pr_msg.md, data jsonls,
+        # etc.) are never considered — no chance of accidental leak from
+        # a working-tree file that happens to sit next to the repo.
+        tracked = subprocess.run(
+            "git ls-files", shell=True, cwd=src,
+            capture_output=True, text=True, check=True,
+        ).stdout.splitlines()
+        for rel in tracked:
+            src_path = src / rel
+            if not src_path.is_file():
+                continue
+            dst_path = dest / rel
+            dst_path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src_path, dst_path)
 
         print("\n=== Stripping private metric packages and tests ===")
         for name in PRIVATE_METRICS:

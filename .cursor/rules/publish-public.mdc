@@ -34,7 +34,7 @@ private repo state, then:
    from `RadEval/metrics/_registry.py`. **Fails fast** with a non-zero exit if
    either marker is missing or if stripping produced no change — this prevents
    silent drift from leaking private metrics into the public registry.
-3. Removes `PRIVATE_DIRS` (`scripts/`, `.cursor/`) and `PRIVATE_FILES`.
+3. Removes `PRIVATE_DIRS` (`scripts/`, `.cursor/`, `docs/changelog/`) and `PRIVATE_FILES`.
 4. Runs a leak-scan grep of the stripped tree against `LEAK_PATTERNS`
    (`f1hopprchexbert`, `hoppr_crimson_ct`, `HopprF1CheXbert`, `HopprCrimsonCT`,
    `CRIMSON_CT`). Any hit aborts before commit/push. The scan is scoped strictly
@@ -87,3 +87,15 @@ The metric must also degrade gracefully when missing. Pattern:
 3. Test file checks `if Cls is None or not <checkpoint>: pytest.skip(..., allow_module_level=True)`.
 4. Register in `RadEval/metrics/_registry.py` **inside** the
    `# --- PRIVATE METRICS ---` / `# --- END PRIVATE METRICS ---` marker block.
+
+## Internal changelog convention
+
+`docs/changelog/` is a private-only directory for per-PR changelog notes that
+should not be visible in the public repo (detailed rationale, env state,
+investigation notes, etc.). It's listed in `PRIVATE_DIRS` so the publish
+script strips it. PR descriptions stay concise and reference the changelog
+file by path (e.g., `See docs/changelog/YYMMDD.md`).
+
+File naming: `docs/changelog/YYMMDD.md` (UTC date of the branch's first
+commit). One file per PR/branch — don't amend existing changelog files,
+just add a new one.
