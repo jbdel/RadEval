@@ -160,13 +160,17 @@ class BaseCheXbertEvaluator(nn.Module):
 
         accuracy = accuracy_score(refs5, hyps5)
 
-        _, y_true5, y_pred5, _ = _check_targets(refs5, hyps5)
+        # sklearn >=1.8 returns (y_type, y_true, y_pred, indicator);
+        # earlier releases return (y_type, y_true, y_pred). Tolerate both.
+        _ct5 = _check_targets(refs5, hyps5)
+        y_true5, y_pred5 = _ct5[1], _ct5[2]
         pe_accuracy = (count_nonzero(y_true5 - y_pred5, axis=1) == 0).astype(float)
 
         sample_label_acc_5 = np.asarray(
             (y_true5 == y_pred5).mean(axis=1)).astype(float).ravel().tolist()
 
-        _, y_true_full, y_pred_full, _ = _check_targets(refs_chexbert, hyps_chexbert)
+        _ct_full = _check_targets(refs_chexbert, hyps_chexbert)
+        y_true_full, y_pred_full = _ct_full[1], _ct_full[2]
         sample_label_acc_full = np.asarray(
             (y_true_full == y_pred_full).mean(axis=1)).astype(float).ravel().tolist()
 

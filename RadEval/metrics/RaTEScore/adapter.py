@@ -6,7 +6,7 @@ class RaTEScoreMetric(MetricBase):
     display_name = "RaTEScore"
 
     def __init__(self):
-        from .score import RaTEScore
+        from .scorer import RaTEScore
         self._scorer = RaTEScore()
 
     def metric_keys(self, detailed=False):
