@@ -158,7 +158,7 @@ class TestHopprF1CheXbertCTViaRadEval:
 
     def test_basic_output(self):
         from RadEval import RadEval
-        evaluator = RadEval(do_f1hopprchexbert_ct=True, show_progress=False)
+        evaluator = RadEval(metrics=["f1hopprchexbert_ct"], show_progress=False)
         results = evaluator(refs=REAL_REFS, hyps=REAL_REFS)
         assert "f1hopprchexbert_ct_accuracy" in results
         assert results["f1hopprchexbert_ct_accuracy"] == 1.0
@@ -166,7 +166,7 @@ class TestHopprF1CheXbertCTViaRadEval:
     def test_details_output(self):
         from RadEval import RadEval
         evaluator = RadEval(
-            do_f1hopprchexbert_ct=True, do_details=True, show_progress=False)
+            metrics=["f1hopprchexbert_ct"], detailed=True, show_progress=False)
         results = evaluator(refs=REAL_REFS, hyps=REAL_REFS)
         assert "f1hopprchexbert_ct_accuracy" in results
         assert "f1hopprchexbert_ct_label_scores_f1" in results
@@ -175,7 +175,7 @@ class TestHopprF1CheXbertCTViaRadEval:
     def test_per_sample_output(self):
         from RadEval import RadEval
         evaluator = RadEval(
-            do_f1hopprchexbert_ct=True, do_per_sample=True, show_progress=False)
+            metrics=["f1hopprchexbert_ct"], per_sample=True, show_progress=False)
         results = evaluator(refs=REAL_REFS, hyps=REAL_REFS)
 
         assert "f1hopprchexbert_ct_sample_acc" in results

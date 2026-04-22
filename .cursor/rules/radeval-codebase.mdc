@@ -13,10 +13,16 @@ RadEval is a unified evaluation framework for AI-generated radiology text. Two r
 
 ```
 RadEval/
-  RadEval.py              # Main orchestrator: __init__ (lazy imports), compute_scores() (progress bars)
-  __init__.py             # Exports RadEval, compare_systems
+  RadEval.py              # Main orchestrator: __init__ (registry lookup), compute_scores() (progress bars)
+  __init__.py             # Exports RadEval, compare_systems, make_reward_fn
+  rewards.py              # TRL-style reward adapter (make_reward_fn)
   utils.py                # PairedTest (hypothesis testing), multilabel_prf_per_sample, clean_numbered_list
   metrics/
+    _base.py              # MetricBase ABC — name, display_name, metric_keys(), compute(), _compute_raw(), _format_output()
+    _registry.py          # METRIC_REGISTRY: name -> (module, class). Lazy-imported in RadEval.__init__.
+                          # Private metrics sit inside a `# --- PRIVATE METRICS ---` marker block
+                          # that publish_public.py strips (fails fast if markers missing).
+    _radgraph_adapter.py  # Adapter for the external radgraph package
     _llm.py               # Shared LLM factory: CostTracker, call_openai/async, call_gemini/async
     _chexbert_base.py     # Shared base for F1CheXbert / F1HopprCheXbert
     bertscore/            # BERTScore (also base class BertScoreBase used by RadEvalBERTScorer)
@@ -51,23 +57,31 @@ tests/
 ## Conventions
 
 ### Adding a new metric
-1. Create `RadEval/metrics/<name>/` with `__init__.py` and `<name>.py`
+1. Create `RadEval/metrics/<name>/` with `__init__.py`, `<name>.py`, and `adapter.py`
 2. `__init__.py` must have try/except: `try: from .<name> import Class; except: Class = None`
-3. Add `do_<name>=False` flag to `RadEval.__init__()` (before `do_per_sample`/`do_details`/`show_progress`)
-4. Lazy import inside `if self.do_<name>:` block with try/except for graceful degradation
-5. Add metric_keys, enabled list entry, and scoring block in `compute_scores()`
-6. Scoring block must have progress bar (metric-level, optionally batch/sample-level via callbacks)
-   - Include `if self.do_details: ... elif self.do_per_sample: ... else: ...` for output modes
-   - `do_details`: flat keys (same as default) + extra aggregate scores (label breakdowns, std, etc.) — no per-sample lists, no annotations
-   - `do_per_sample`: flat keys, values are `list[float]`
-7. Add tests, update docs/metrics.md, README.md
-8. If private: register in `scripts/publish_public.py` PRIVATE_METRICS list
+3. `adapter.py`: define `<Name>Metric(MetricBase)` with class attrs `name`, `display_name`,
+   optional `is_api_based = True` (for LLM-backed metrics; the framework will inject
+   `openai_api_key` / `gemini_api_key` / `cache_dir` kwargs when set). The adapter's
+   `__init__` should None-guard the underlying class (`if Class is None: raise ImportError(...)`)
+   to avoid cryptic `NoneType` tracebacks for users on machines missing the checkpoint.
+4. Simple metrics: override `_compute_raw()` returning
+   `{"<name>": {"aggregate": float, "per_sample": list, "detailed": dict}}`.
+   Complex metrics (mode-dependent output keys): override `compute()` directly (see
+   `F1CheXbertMetric`, `F1RadbertCTMetric` for templates).
+5. Register in `RadEval/metrics/_registry.py` — `"<name>": ("RadEval.metrics.<name>.adapter", "<Name>Metric")`.
+6. Private metrics must live inside the `# --- PRIVATE METRICS ---` / `# --- END PRIVATE METRICS ---`
+   marker block in `_registry.py`. `scripts/publish_public.py` strips everything between the
+   markers and fails fast if either marker is missing.
+7. Add tests, update `docs/metrics.md`, `README.md`.
+8. Private metrics also need their test file (`tests/test_<name>.py`) and metric folder
+   listed in `scripts/publish_public.py::PRIVATE_METRICS` (a flat list of names).
 
 ### Naming rules
-- Flags: `do_<snake_case>` — e.g. `do_f1chexbert`, `do_srrbert`, `do_radfact_ct`
+- Metric names (registry keys, folder names): `<snake_case>` — e.g. `f1chexbert`, `srrbert`, `radfact_ct`
 - Output keys: **snake_case only** — no spaces, no hyphens
 - F1-based classifiers get `f1` prefix: `f1chexbert`, `f1hopprchexbert`, `f1radbert_ct`
 - Compound proper nouns stay as one word: `srrbert`, `bertscore`, `ratescore`
+- Output mode args on `RadEval.__init__`: `per_sample` and `detailed` (booleans)
 
 ### Progress bars
 - Use `rich.progress` via `self._make_progress()` context manager
@@ -85,8 +99,14 @@ cd radeval_pypi && python -m build --sdist
 TWINE_USERNAME=__token__ TWINE_PASSWORD="<token from scripts/pypi>" twine upload dist/*
 ```
 Bump version in `setup.py` before each PyPI upload.
-The publish script clones the public repo, copies private files in, strips private metrics,
-and pushes normally. Private code never enters public history.
+The publish script clones the public repo, copies private files in, strips private metrics
+(whole folder + test file + registry marker block), scans the stripped tree for private
+symbol names, and pushes normally. Marker-block stripping and the leak scan both fail fast
+if a private reference would leak. Private code never enters public history.
+
+Regression snapshot drift: the public regression snapshot under `tests/fixtures/` is
+generated on hopprai and published as-is. As public metrics evolve, the snapshot must be
+regenerated and kept in sync.
 
 ### Testing
 - `python -m pytest tests/ -v -m "not integration"` — runs all non-API tests

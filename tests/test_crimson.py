@@ -279,16 +279,21 @@ class TestCrimsonRadEvalIntegration:
     """Test CRIMSON integration with RadEval main class."""
 
     def test_radeval_initialization(self):
-        """Test that RadEval has CRIMSON constructor parameters."""
+        """CRIMSON is registered and accepts per-metric config kwargs."""
         from RadEval import RadEval
+        from RadEval.metrics._registry import METRIC_REGISTRY, get_metric_class
 
-        sig = inspect.signature(RadEval.__init__)
-        assert "do_crimson" in sig.parameters
-        assert "crimson_api" in sig.parameters
-        assert "openai_api_key" in sig.parameters
-        assert "gemini_api_key" in sig.parameters
-        assert "crimson_batch_size" in sig.parameters
-        assert "crimson_max_concurrent" in sig.parameters
+        assert "crimson" in METRIC_REGISTRY
+        cls = get_metric_class("crimson")
+        sig = inspect.signature(cls.__init__)
+        assert "provider" in sig.parameters
+        assert "model_name" in sig.parameters
+        assert "batch_size" in sig.parameters
+        assert "max_concurrent" in sig.parameters
+        # shared LLM-key kwargs are injected by RadEval.__init__ for api-based
+        sig_re = inspect.signature(RadEval.__init__)
+        assert "openai_api_key" in sig_re.parameters
+        assert "gemini_api_key" in sig_re.parameters
 
     def test_radeval_with_crimson_openai(self):
         """Test RadEval with CRIMSON using mocked OpenAI backend."""
@@ -304,8 +309,7 @@ class TestCrimsonRadEvalIntegration:
             mock_class.return_value = mock_client
 
             evaluator = RadEval(
-                do_crimson=True,
-                crimson_api="openai",
+                metrics={"crimson": {"provider": "openai"}},
                 openai_api_key="test-key",
                 show_progress=False,
             )
@@ -324,8 +328,7 @@ class TestCrimsonRadEvalIntegration:
         from RadEval import RadEval
 
         evaluator = RadEval(
-            do_crimson=True,
-            crimson_api="hf",
+            metrics={"crimson": {"provider": "hf"}},
             show_progress=False,
         )
         results = evaluator(refs=refs[:1], hyps=hyps[:1])
@@ -345,10 +348,9 @@ class TestCrimsonRadEvalIntegration:
             mock_class.return_value = mock_client
 
             evaluator = RadEval(
-                do_crimson=True,
-                crimson_api="openai",
+                metrics={"crimson": {"provider": "openai"}},
                 openai_api_key="test-key",
-                do_details=True,
+                detailed=True,
                 show_progress=False,
             )
             evaluator.crimson_scorer._chat_completion_async = AsyncMock(side_effect=[
@@ -377,10 +379,9 @@ class TestCrimsonRadEvalIntegration:
             mock_class.return_value = mock_client
 
             evaluator = RadEval(
-                do_crimson=True,
-                crimson_api="openai",
+                metrics={"crimson": {"provider": "openai"}},
                 openai_api_key="test-key",
-                do_per_sample=True,
+                per_sample=True,
                 show_progress=False,
             )
             evaluator.crimson_scorer._chat_completion_async = AsyncMock(side_effect=[
@@ -437,8 +438,7 @@ class TestCrimsonIntegration:
         from RadEval import RadEval
 
         evaluator = RadEval(
-            do_crimson=True,
-            crimson_api="openai",
+            metrics={"crimson": {"provider": "openai"}},
             openai_api_key=api_key,
         )
 

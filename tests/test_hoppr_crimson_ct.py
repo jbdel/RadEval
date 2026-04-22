@@ -148,8 +148,7 @@ class TestHopprCrimsonCTUnit:
             mock_class.return_value = mock_client
 
             evaluator = RadEval(
-                do_hoppr_crimson_ct=True,
-                hoppr_crimson_ct_api="openai",
+                metrics={"hoppr_crimson_ct": {"provider": "openai"}},
                 openai_api_key="test-key",
                 show_progress=False,
             )
@@ -169,10 +168,9 @@ class TestHopprCrimsonCTUnit:
             mock_class.return_value = mock_client
 
             evaluator = RadEval(
-                do_hoppr_crimson_ct=True,
-                hoppr_crimson_ct_api="openai",
+                metrics={"hoppr_crimson_ct": {"provider": "openai"}},
                 openai_api_key="test-key",
-                do_per_sample=True,
+                per_sample=True,
                 show_progress=False,
             )
             evaluator.hoppr_crimson_ct_scorer.scorer._chat_completion_async = AsyncMock(
@@ -191,10 +189,9 @@ class TestHopprCrimsonCTUnit:
             mock_class.return_value = mock_client
 
             evaluator = RadEval(
-                do_hoppr_crimson_ct=True,
-                hoppr_crimson_ct_api="openai",
+                metrics={"hoppr_crimson_ct": {"provider": "openai"}},
                 openai_api_key="test-key",
-                do_details=True,
+                detailed=True,
                 show_progress=False,
             )
             evaluator.hoppr_crimson_ct_scorer.scorer._chat_completion_async = AsyncMock(

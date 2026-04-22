@@ -171,7 +171,7 @@ class TestRadFactCTIntegration:
         if not _HAS_API_KEY:
             pytest.skip("No OPENAI_API_KEY")
         from RadEval import RadEval
-        evaluator = RadEval(do_radfact_ct=True, show_progress=False)
+        evaluator = RadEval(metrics=["radfact_ct"], show_progress=False)
         results = evaluator(
             refs=["The lungs are clear. Heart size is normal."],
             hyps=["The lungs are clear. Heart size is normal."],
@@ -185,7 +185,7 @@ class TestRadFactCTIntegration:
             pytest.skip("No OPENAI_API_KEY")
         from RadEval import RadEval
         evaluator = RadEval(
-            do_radfact_ct=True, do_details=True, show_progress=False)
+            metrics=["radfact_ct"], detailed=True, show_progress=False)
         results = evaluator(
             refs=["Mild cardiomegaly."],
             hyps=["Heart is mildly enlarged."],

@@ -340,16 +340,20 @@ class TestMammoGreenRadEvalIntegration:
     """Test MammoGREEN integration with RadEval main class."""
 
     def test_radeval_initialization(self):
-        """Test that RadEval can be initialized with do_mammo_green."""
+        """MammoGREEN is registered and accepts per-metric config kwargs."""
         from RadEval import RadEval
-
+        from RadEval.metrics._registry import METRIC_REGISTRY, get_metric_class
         import inspect
-        sig = inspect.signature(RadEval.__init__)
-        assert "do_mammo_green" in sig.parameters
-        assert "mammo_green_model" in sig.parameters
-        assert "openai_api_key" in sig.parameters
-        assert "gemini_api_key" in sig.parameters
-        assert "mammo_green_max_concurrent" in sig.parameters
+
+        assert "mammo_green" in METRIC_REGISTRY
+        cls = get_metric_class("mammo_green")
+        sig = inspect.signature(cls.__init__)
+        assert "model_name" in sig.parameters
+        assert "max_concurrent" in sig.parameters
+        # shared LLM-key kwargs are injected by RadEval.__init__ for api-based
+        sig_re = inspect.signature(RadEval.__init__)
+        assert "openai_api_key" in sig_re.parameters
+        assert "gemini_api_key" in sig_re.parameters
 
 
 @pytest.mark.integration
@@ -414,9 +418,8 @@ class TestMammoGreenIntegration:
         test_hyps = hyps
 
         evaluator = RadEval(
-            do_mammo_green=True,
+            metrics={"mammo_green": {"model_name": "gpt-4o"}},
             openai_api_key=api_key,
-            mammo_green_model="gpt-4o",
         )
 
         results = evaluator(refs=test_refs, hyps=test_hyps)

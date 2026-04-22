@@ -26,8 +26,22 @@ python scripts/publish_public.py --push -m "v0.X.Y: description"
 ```
 
 The script clones the **public** repo, replaces its working tree with the current
-private repo state (minus private metrics/dirs/files), commits with the provided
-message, and pushes normally. Private files never enter the public repo's history.
+private repo state, then:
+
+1. Deletes each private metric's folder (`RadEval/metrics/<name>/`, which implicitly
+   removes the adapter) and its test file (`tests/test_<name>.py`).
+2. Strips the `# --- PRIVATE METRICS ---` / `# --- END PRIVATE METRICS ---` block
+   from `RadEval/metrics/_registry.py`. **Fails fast** with a non-zero exit if
+   either marker is missing or if stripping produced no change — this prevents
+   silent drift from leaking private metrics into the public registry.
+3. Removes `PRIVATE_DIRS` (`scripts/`, `.cursor/`, `docs/changelog/`) and `PRIVATE_FILES`.
+4. Runs a leak-scan grep of the stripped tree against `LEAK_PATTERNS`
+   (`f1hopprchexbert`, `hoppr_crimson_ct`, `HopprF1CheXbert`, `HopprCrimsonCT`,
+   `CRIMSON_CT`). Any hit aborts before commit/push. The scan is scoped strictly
+   to the stripped staging directory and excludes `.git/`.
+5. Commits with the provided message and pushes.
+
+Private files never enter the public repo's history.
 
 ## PyPI workflow
 
@@ -45,50 +59,43 @@ Bump `version` in `setup.py` before each PyPI upload.
 
 ## Adding a new private metric
 
-Edit `PRIVATE_METRICS` in `scripts/publish_public.py`:
+`PRIVATE_METRICS` in `scripts/publish_public.py` is now a flat list of names:
 
 ```python
 PRIVATE_METRICS = [
-    {
-        "name": "f1hopprchexbert",
-        "metric_dir": "RadEval/metrics/f1hopprchexbert",
-        "test_file": "tests/test_f1hopprchexbert.py",
-        "flag": "do_f1hopprchexbert",
-        "display_name": "F1HopprCheXbert",
-    },
-    {
-        "name": "f1hopprchexbert_ct",
-        "metric_dir": "RadEval/metrics/f1hopprchexbert_ct",
-        "test_file": "tests/test_f1hopprchexbert_ct.py",
-        "flag": "do_f1hopprchexbert_ct",
-        "display_name": "F1HopprCheXbertCT",
-    },
-    {
-        "name": "hoppr_crimson_ct",
-        "metric_dir": "RadEval/metrics/hoppr_crimson_ct",
-        "test_file": "tests/test_hoppr_crimson_ct.py",
-        "flag": "do_hoppr_crimson_ct",
-        "display_name": "HopprCrimsonCT",
-    },
-    {
-        "name": "f1hopprchexbert_msk",
-        "metric_dir": "RadEval/metrics/f1hopprchexbert_msk",
-        "test_file": "tests/test_f1hopprchexbert_msk.py",
-        "flag": "do_f1hopprchexbert_msk",
-        "display_name": "F1HopprCheXbertMSK",
-    },
-    {
-        "name": "f1hopprchexbert_abd",
-        "metric_dir": "RadEval/metrics/f1hopprchexbert_abd",
-        "test_file": "tests/test_f1hopprchexbert_abd.py",
-        "flag": "do_f1hopprchexbert_abd",
-        "display_name": "F1HopprCheXbertAbd",
-    },
+    "f1hopprchexbert",
+    "f1hopprchexbert_ct",
+    "f1hopprchexbert_msk",
+    "f1hopprchexbert_abd",
+    "hoppr_crimson_ct",
 ]
 ```
+
+For each name, the script deletes `RadEval/metrics/<name>/` and `tests/test_<name>.py`,
+and strips the metric's entry from the registry marker block.
+
+If the symbol name of the new private metric is **not** a substring of one of the
+existing `LEAK_PATTERNS` entries, add it there as well so the post-strip leak scan
+catches any accidental public reference.
 
 The metric must also degrade gracefully when missing. Pattern:
 
 1. `__init__.py` catches import errors: `try: from .mod import Cls; except: Cls = None`
-2. `RadEval.py` wraps the init block in try/except and disables the flag on failure
-3. Test file checks `if Cls is None: pytest.skip(...)`
+2. The adapter `__init__` raises `ImportError(...)` with a descriptive message if the
+   underlying class is `None` (prevents cryptic `TypeError: 'NoneType' is not callable`
+   at instantiation time).
+3. Test file checks `if Cls is None or not <checkpoint>: pytest.skip(..., allow_module_level=True)`.
+4. Register in `RadEval/metrics/_registry.py` **inside** the
+   `# --- PRIVATE METRICS ---` / `# --- END PRIVATE METRICS ---` marker block.
+
+## Internal changelog convention
+
+`docs/changelog/` is a private-only directory for per-PR changelog notes that
+should not be visible in the public repo (detailed rationale, env state,
+investigation notes, etc.). It's listed in `PRIVATE_DIRS` so the publish
+script strips it. PR descriptions stay concise and reference the changelog
+file by path (e.g., `See docs/changelog/YYMMDD.md`).
+
+File naming: `docs/changelog/YYMMDD.md` (UTC date of the branch's first
+commit). One file per PR/branch — don't amend existing changelog files,
+just add a new one.
