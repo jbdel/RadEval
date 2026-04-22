@@ -197,14 +197,12 @@ def test_f1chexbert():
 
 
 def test_f1hopprchexbert_per_sample():
-    """do_per_sample returns flat per-sample accuracy lists via RadEval."""
+    """per_sample returns flat per-sample accuracy lists via RadEval."""
     from RadEval import RadEval
     from tests.conftest import CHEXBERT_HYPS, CHEXBERT_REFS
 
     evaluator = RadEval(
-        do_f1hopprchexbert=True, do_per_sample=True, show_progress=False)
-    if not evaluator.do_f1hopprchexbert:
-        pytest.skip("HopprF1CheXbert was disabled during init")
+        metrics=["f1hopprchexbert"], per_sample=True, show_progress=False)
 
     results = evaluator(refs=CHEXBERT_REFS, hyps=CHEXBERT_HYPS)
 

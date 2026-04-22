@@ -4,23 +4,28 @@
 This script:
   1. Clones the PUBLIC repo (jbdel/RadEval)
   2. Replaces its working tree with the current private repo state
-  3. Strips private metrics (files, imports, tests, references)
-  4. Commits with a real message and pushes normally
+  3. Strips private metric packages, tests, and registry entries
+  4. Verifies no private symbols leak, then commits and pushes
 
 Private files never enter any commit in the public repo's history.
 
-Private metrics are defined in PRIVATE_METRICS below. Each entry specifies
-the metric folder to delete, the flag name in RadEval.__init__, the test
-file, and any other files that reference it.
+Private metrics are listed in PRIVATE_METRICS. Each name corresponds to:
+  - RadEval/metrics/<name>/         (whole directory deleted)
+  - tests/test_<name>.py            (deleted)
+  - an entry inside the
+    `# --- PRIVATE METRICS ---` / `# --- END PRIVATE METRICS ---`
+    marker block in RadEval/metrics/_registry.py (stripped).
+
+The script fails fast if the marker block is missing (refusing to publish
+anything without registry stripping), and fails fast if any private symbol
+name survives in the stripped tree.
 
 Usage:
-    python scripts/publish_public.py -m "v0.1.5: description"       # dry-run
-    python scripts/publish_public.py --push -m "v0.1.5: description" # push
+    python scripts/publish_public.py -m "1.0.0: description"       # dry-run
+    python scripts/publish_public.py --push -m "1.0.0: description" # push
     python scripts/publish_public.py --push -m "msg" --branch main
 """
 import argparse
-import os
-import re
 import shutil
 import subprocess
 import sys
@@ -30,41 +35,11 @@ from pathlib import Path
 PUBLIC_REMOTE = "https://github.com/jbdel/RadEval.git"
 
 PRIVATE_METRICS = [
-    {
-        "name": "f1hopprchexbert",
-        "metric_dir": "RadEval/metrics/f1hopprchexbert",
-        "test_file": "tests/test_f1hopprchexbert.py",
-        "flag": "do_f1hopprchexbert",
-        "display_name": "F1HopprCheXbert",
-    },
-    {
-        "name": "f1hopprchexbert_ct",
-        "metric_dir": "RadEval/metrics/f1hopprchexbert_ct",
-        "test_file": "tests/test_f1hopprchexbert_ct.py",
-        "flag": "do_f1hopprchexbert_ct",
-        "display_name": "F1HopprCheXbertCT",
-    },
-    {
-        "name": "hoppr_crimson_ct",
-        "metric_dir": "RadEval/metrics/hoppr_crimson_ct",
-        "test_file": "tests/test_hoppr_crimson_ct.py",
-        "flag": "do_hoppr_crimson_ct",
-        "display_name": "HopprCrimsonCT",
-    },
-    {
-        "name": "f1hopprchexbert_msk",
-        "metric_dir": "RadEval/metrics/f1hopprchexbert_msk",
-        "test_file": "tests/test_f1hopprchexbert_msk.py",
-        "flag": "do_f1hopprchexbert_msk",
-        "display_name": "F1HopprCheXbertMSK",
-    },
-    {
-        "name": "f1hopprchexbert_abd",
-        "metric_dir": "RadEval/metrics/f1hopprchexbert_abd",
-        "test_file": "tests/test_f1hopprchexbert_abd.py",
-        "flag": "do_f1hopprchexbert_abd",
-        "display_name": "F1HopprCheXbertAbd",
-    },
+    "f1hopprchexbert",
+    "f1hopprchexbert_ct",
+    "f1hopprchexbert_msk",
+    "f1hopprchexbert_abd",
+    "hoppr_crimson_ct",
 ]
 
 PRIVATE_DIRS = ["scripts", ".cursor"]
@@ -78,6 +53,30 @@ PRIVATE_FILES = [
     "cmd",
 ]
 
+# Strings that must not appear anywhere in the stripped tree.
+LEAK_PATTERNS = [
+    "f1hopprchexbert",
+    "hoppr_crimson_ct",
+    "HopprF1CheXbert",
+    "HopprCrimsonCT",
+    "CRIMSON_CT",
+]
+
+# Files on the PUBLIC repo that legitimately mention private metric class names
+# in docstrings/comments (e.g. the shared CheXbert base class predates the
+# split; CRIMSON prose documents that CRIMSON_CT inherits its JSON helpers).
+# These references are already on jbdel/RadEval from upstream and are not
+# leaks — they describe sibling relationships, not importable code. Scoped to
+# EXACT paths so any *new* accidental mention elsewhere still aborts.
+LEAK_SCAN_ALLOWLIST = {
+    "./RadEval/metrics/_chexbert_base.py",
+    "./RadEval/metrics/crimson/crimson.py",
+}
+
+REGISTRY_PATH = "RadEval/metrics/_registry.py"
+REGISTRY_MARKER_START = "# --- PRIVATE METRICS"
+REGISTRY_MARKER_END = "# --- END PRIVATE METRICS"
+
 
 def run(cmd, cwd=None, check=True):
     print(f"  $ {cmd}")
@@ -85,57 +84,100 @@ def run(cmd, cwd=None, check=True):
                           capture_output=True, text=True)
 
 
-def strip_flag_from_init(radeval_py: Path, flag: str, display_name: str):
-    """Remove all references to a private metric flag from RadEval.py."""
-    text = radeval_py.read_text()
-
-    # Remove constructor parameter line:  do_<flag>=False,
-    text = re.sub(rf'\s*{flag}=False,\n', '\n', text)
-
-    # Remove self.do_X = do_X assignment
-    text = re.sub(rf'\s*self\.{flag} = {flag}\n', '\n', text)
-
-    # Remove the init block: if self.do_X: ... (try/except or simple)
-    text = re.sub(
-        rf'\n        if self\.{flag}:.*?(?=\n        if self\.|(?=\n        self\.metric_keys))',
-        '\n', text, flags=re.DOTALL)
-
-    # Remove metric_keys block
-    text = re.sub(
-        rf'\n        if self\.{flag}:\n.*?(?=\n        if self\.|(?=\n\n))',
-        '', text, flags=re.DOTALL)
-
-    # Remove from enabled list
-    text = re.sub(rf'.*if self\.{flag}:.*enabled.*\n', '', text)
-
-    # Remove from compute_scores
-    text = re.sub(
-        rf'\n            # -+\n            if self\.{flag}:.*?(?=\n            # -+|\n\n        return scores)',
-        '', text, flags=re.DOTALL)
-
-    # Remove from main() example
-    text = re.sub(rf'\s*{flag}=True,\n', '\n', text)
-
-    radeval_py.write_text(text)
-
-
-def strip_private_metric(repo_dir: Path, metric: dict):
-    name = metric["name"]
-    print(f"\n--- Stripping private metric: {name} ---")
-
-    metric_dir = repo_dir / metric["metric_dir"]
+def strip_private_metric_files(repo_dir: Path, name: str):
+    metric_dir = repo_dir / "RadEval" / "metrics" / name
     if metric_dir.exists():
         shutil.rmtree(metric_dir)
-        print(f"  Removed {metric['metric_dir']}/")
+        print(f"  Removed RadEval/metrics/{name}/")
 
-    test_file = repo_dir / metric["test_file"]
+    test_file = repo_dir / "tests" / f"test_{name}.py"
     if test_file.exists():
         test_file.unlink()
-        print(f"  Removed {metric['test_file']}")
+        print(f"  Removed tests/test_{name}.py")
 
-    radeval_py = repo_dir / "RadEval" / "RadEval.py"
-    strip_flag_from_init(radeval_py, metric["flag"], metric["display_name"])
-    print(f"  Stripped {metric['flag']} from RadEval.py")
+
+def strip_registry_marker_block(repo_dir: Path):
+    """Remove the private-metrics block from _registry.py.
+
+    Fails fast if either marker is missing or if the file is unchanged
+    after the edit — both conditions indicate a possible leak.
+    """
+    registry = repo_dir / REGISTRY_PATH
+    original = registry.read_text()
+
+    if REGISTRY_MARKER_START not in original:
+        raise RuntimeError(
+            f"{REGISTRY_PATH} missing start marker "
+            f"'{REGISTRY_MARKER_START}'; refusing to publish — private "
+            "metrics may leak into the public registry.")
+    if REGISTRY_MARKER_END not in original:
+        raise RuntimeError(
+            f"{REGISTRY_PATH} missing end marker "
+            f"'{REGISTRY_MARKER_END}'; refusing to publish — private "
+            "metrics may leak into the public registry.")
+
+    lines = original.splitlines(keepends=True)
+    out = []
+    inside = False
+    for line in lines:
+        if REGISTRY_MARKER_START in line:
+            inside = True
+            continue
+        if REGISTRY_MARKER_END in line:
+            inside = False
+            continue
+        if not inside:
+            out.append(line)
+    stripped = "".join(out)
+
+    if stripped == original:
+        raise RuntimeError(
+            f"{REGISTRY_PATH} marker block stripping made no changes; "
+            "refusing to publish — private metrics may leak.")
+
+    registry.write_text(stripped)
+    print(f"  Stripped marker block from {REGISTRY_PATH}")
+
+
+def scan_for_leaks(repo_dir: Path):
+    """Grep the stripped tree for private symbol names.
+
+    Scoped strictly to repo_dir (not the active worktree) and excludes
+    .git/ to avoid matching pre-merge commit history. Known-benign
+    prose mentions in public files are allowed via LEAK_SCAN_ALLOWLIST.
+    Any hit outside the allowlist aborts.
+    """
+    print("\n=== Scanning stripped tree for private symbol leaks ===")
+    patterns = "|".join(LEAK_PATTERNS)
+    cmd = (
+        f"grep -rnIE --exclude-dir=.git --exclude-dir=__pycache__ "
+        f"'{patterns}' ."
+    )
+    result = subprocess.run(
+        cmd, shell=True, cwd=repo_dir,
+        capture_output=True, text=True, check=False,
+    )
+    hits = [line for line in result.stdout.splitlines() if line]
+    offending = []
+    for hit in hits:
+        # grep line format: ./path/to/file:NN:matched-content
+        path = hit.split(":", 1)[0]
+        if path in LEAK_SCAN_ALLOWLIST:
+            continue
+        offending.append(hit)
+
+    if offending:
+        print("\n".join(offending))
+        raise RuntimeError(
+            "Private symbol(s) leaked into stripped tree (outside the "
+            "allowlist); aborting before commit/push. Investigate the "
+            "matches above.")
+
+    if hits:
+        print(f"  Leak scan: {len(hits) - len(offending)} allowlisted "
+              "prose reference(s) ignored; 0 unexpected hits.")
+    else:
+        print("  No private symbol leaks detected.")
 
 
 def main():
@@ -157,11 +199,9 @@ def main():
         dest = Path(tmp) / "RadEval"
         print(f"Working copy: {dest}\n")
 
-        # 1. Clone the PUBLIC repo (keeps its own clean history)
         print("=== Cloning public repo ===")
         run(f"git clone {PUBLIC_REMOTE} {dest}")
 
-        # 2. Clear working tree (keep .git/)
         print("\n=== Clearing public working tree ===")
         for item in dest.iterdir():
             if item.name == ".git":
@@ -171,7 +211,6 @@ def main():
             else:
                 item.unlink()
 
-        # 3. Copy private repo state (minus .git and untracked data files)
         print("\n=== Copying private repo files ===")
         ignore = shutil.ignore_patterns(
             ".git", "__pycache__", "*.pyc", ".pytest_cache",
@@ -179,12 +218,13 @@ def main():
         )
         shutil.copytree(src, dest, dirs_exist_ok=True, ignore=ignore)
 
-        # 4. Strip private metrics
-        print("\n=== Stripping private metrics ===")
-        for metric in PRIVATE_METRICS:
-            strip_private_metric(dest, metric)
+        print("\n=== Stripping private metric packages and tests ===")
+        for name in PRIVATE_METRICS:
+            strip_private_metric_files(dest, name)
 
-        # 5. Remove private directories and files
+        print("\n=== Stripping private registry entries ===")
+        strip_registry_marker_block(dest)
+
         print("\n=== Removing private directories/files ===")
         for private_dir in PRIVATE_DIRS:
             d = dest / private_dir
@@ -198,7 +238,8 @@ def main():
                 f.unlink()
                 print(f"  Removed {private_file}")
 
-        # 6. Stage and commit
+        scan_for_leaks(dest)
+
         print("\n=== Committing ===")
         run("git add -A", cwd=dest)
         result = run("git diff --cached --quiet", cwd=dest, check=False)
@@ -208,7 +249,6 @@ def main():
         else:
             print("\nNo changes to commit (public repo already up to date).")
 
-        # 7. Push
         if args.push:
             run(f"git push origin HEAD:{args.branch}", cwd=dest)
             print(f"\nPushed to {PUBLIC_REMOTE} branch {args.branch}")
@@ -216,10 +256,13 @@ def main():
             print(f"\n[DRY RUN] Would push to {PUBLIC_REMOTE} branch {args.branch}")
             print("Run with --push to actually push.")
 
-        # Show what the public repo looks like
         print("\n--- Public repo metrics listing ---")
         run("find RadEval/metrics -type d | sort", cwd=dest)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except RuntimeError as e:
+        print(f"\nERROR: {e}", file=sys.stderr)
+        sys.exit(1)

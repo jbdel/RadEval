@@ -163,7 +163,6 @@ class CRIMSONScore(LLMMetricBase):
                 logger.info("Using Flash Attention 2.")
         except ImportError:
             pass
-
         if self.cache_dir:
             model_kwargs["cache_dir"] = self.cache_dir
 
@@ -173,9 +172,11 @@ class CRIMSONScore(LLMMetricBase):
             model_kwargs=model_kwargs,
             device_map="auto",
         )
-
+        # Left-pad for efficient batch generation with decoder-only models
         if self.pipe.tokenizer.padding_side != "left":
             self.pipe.tokenizer.padding_side = "left"
+        # If the model has a generation_config.json, use it instead of
+        # injecting our own generation kwargs at inference time.
         self._has_generation_config = not self.pipe.model.generation_config._from_model_config
         logger.info("Model loaded.")
 
@@ -405,6 +406,7 @@ class CRIMSONScore(LLMMetricBase):
 
     def _build_evaluation_prompt(self, reference_findings, predicted_findings,
                                  patient_context=None, include_guidelines=True):
+        # For the MedGemmaCRIMSON, exclude guidelines. The model was trained without them.
         if self.provider in ("huggingface", "hf") and self.model_name == self.DEFAULT_HF_MODEL:
             include_guidelines = False
         return _build_evaluation_prompt_fn(
