@@ -39,3 +39,7 @@ plan/
 
 # Test fixtures (generated JSON snapshots)
 tests/**/*.json
+
+# Outreach
+outreach/
+email_outreach.html

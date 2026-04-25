@@ -233,13 +233,13 @@ class GREEN:
                 self.tokenizer.clean_up_tokenization_spaces = True
                 assert self.tokenizer.padding_side == "left"
 
-    def __call__(self, refs, hyps):
+    def __call__(self, refs, hyps, on_sample_done=None):
         dataset = Dataset.from_dict({"reference": refs, "prediction": hyps})
         dataset = self.process_data(dataset)
 
         self.dataset = dataset
         start = time.time()
-        mean, std, green_scores, results_df = self.infer()
+        mean, std, green_scores, results_df = self.infer(on_sample_done=on_sample_done)
         elapsed = time.time() - start
 
         return mean, std, green_scores, results_df
@@ -256,7 +256,7 @@ class GREEN:
         return dataset.map(prompting, batched=True)
 
     @torch.inference_mode()
-    def infer(self):
+    def infer(self, on_sample_done=None):
         assert self.model_id is not None, "You must pass a model_name to GREEN(...)"
 
         prompts = list(self.dataset["prompt"])
@@ -278,24 +278,22 @@ class GREEN:
             q = mgr.Queue()
 
             # start the monitor thread
-            import sys
             import threading
-            from tqdm import tqdm
 
-            def _progress_monitor(q_, total_):
-                disable_bar = not sys.stdout.isatty()
-                with tqdm(total=total_, desc="Generating", unit="ex", smoothing=0.1, disable=disable_bar) as pbar:
-                    done = 0
-                    while True:
-                        msg = q_.get()
-                        if msg is None:  # sentinel
-                            break
-                        done += int(msg)
-                        pbar.n = done
-                        pbar.refresh()
+            def _progress_monitor(q_, total_, callback):
+                done = 0
+                while True:
+                    msg = q_.get()
+                    if msg is None:  # sentinel
+                        break
+                    count = int(msg)
+                    done += count
+                    if callback:
+                        for _ in range(count):
+                            callback()
 
             monitor = threading.Thread(
-                target=_progress_monitor, args=(q, n), daemon=True)
+                target=_progress_monitor, args=(q, n, on_sample_done), daemon=True)
             monitor.start()
             # ----------------------------------------------------------
 
@@ -335,17 +333,14 @@ class GREEN:
             local_completions = []
             local_references = []
 
-            # Optional single-device progress bar
-            import sys
-            from tqdm import tqdm
-            disable_bar = not sys.stdout.isatty()
-            with tqdm(total=n, desc="Generating", unit="ex", disable=disable_bar) as pbar:
-                for i in range(0, n, self.batch_size):
-                    batch_prompts = prompts[i: i + self.batch_size]
-                    batch = {"prompt": batch_prompts}
-                    local_references.extend(batch["prompt"])
-                    local_completions.extend(self.get_response(batch))
-                    pbar.update(len(batch_prompts))
+            for i in range(0, n, self.batch_size):
+                batch_prompts = prompts[i: i + self.batch_size]
+                batch = {"prompt": batch_prompts}
+                local_references.extend(batch["prompt"])
+                local_completions.extend(self.get_response(batch))
+                if on_sample_done:
+                    for _ in range(len(batch_prompts)):
+                        on_sample_done()
 
             self.prompts = local_references
             self.completions = local_completions

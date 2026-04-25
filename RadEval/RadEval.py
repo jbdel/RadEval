@@ -83,6 +83,10 @@ class RadEval:
 
             metric = cls(**kwargs)
             self._active_metrics.append(metric)
+            # Expose the underlying scorer (adapter._scorer for most metrics)
+            # as `<name>_scorer` for tests that monkey-patch e.g. async clients.
+            underlying = getattr(metric, "_scorer", metric)
+            setattr(self, f"{name}_scorer", underlying)
             self.metric_keys.extend(metric.metric_keys(detailed=detailed))
 
     def __call__(self, refs, hyps):
