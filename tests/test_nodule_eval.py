@@ -21,6 +21,11 @@ import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
+from RadEval.metrics.nodule_eval import NoduleEvalScore
+
+if NoduleEvalScore is None:
+    pytest.skip("NoduleEvalScore not available", allow_module_level=True)
+
 
 # Clean-findings fragments used in the tests. Must start with PULMONARY NODULES:
 # per our schema (lv004/lv005).

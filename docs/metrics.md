@@ -331,74 +331,6 @@ print(results["radfact_ct_recall"])     # 83.33
 print(results["radfact_ct_f1"])         # 74.07
 ```
 
-### NoduleEval (`"nodule_eval"`)
-
-LLM-as-judge metric focused on the `PULMONARY NODULES:` section of CT clean_findings strings. Extracts the nodule segment from each report, sends ref and hyp to a judge LLM which parses both into structured nodule objects, matches them, and flags attribute errors. Deterministic Python scoring is then computed from the LLM's JSON output.
-
-Designed for CT report-generation evaluation where nodules are the primary clinical focus. Does NOT evaluate other anatomy — pair with RadFact-CT or CRIMSON for full-report evaluation.
-
-Supports two providers:
-- **Gemini** (default, `"provider": "gemini"`): uses `gemini-2.5-flash`. Passed self-consistency test with composite=1.0.
-- **OpenAI** (`"provider": "openai"`): uses `gpt-4o-mini` by default. Has a known self-consistency defect (composite=0.80 on identical inputs) — provided as a fallback only.
-
-Requires `pip install RadEval[api]` and `gemini_api_key` / `GEMINI_API_KEY` (or `openai_api_key` / `OPENAI_API_KEY` for the OpenAI backend).
-
-Metric expects inputs to be full clean_findings strings. Rows where neither side has a `PULMONARY NODULES:` section are short-circuited (no LLM call) and score composite=1.0 (perfect agreement on no nodules).
-
-| Mode | Output keys | Value |
-|------|------------|-------|
-| Default | `nodule_eval_detection_f1`, `nodule_eval_detection_precision`, `nodule_eval_detection_recall`, `nodule_eval_size_accuracy`, `nodule_eval_size_exact_match`, `nodule_eval_size_mae_mm`, `nodule_eval_size_mape`, `nodule_eval_type_accuracy`, `nodule_eval_location_accuracy`, `nodule_eval_noun_accuracy`, `nodule_eval_uncertainty_accuracy`, `nodule_eval_composite` | float each (None if no rows produce the metric) |
-| Per-Sample | same keys | list[float or None] each |
-| Details | default keys + `_std` variants | adds standard deviation for each |
-
-**What each metric measures:**
-
-- `nodule_eval_detection_f1` — harmonic mean of detection precision/recall. **Primary aggregate.**
-- `nodule_eval_size_accuracy` — fraction of matched pairs where the size difference is within clinical tolerance (<6 mm: ± 2 mm; >=6 mm: ± 4 mm; masses: ± 20%).
-- `nodule_eval_size_exact_match` — fraction of matched pairs where pred_size_mm == ref_size_mm exactly. The gap between `accuracy` and `exact_match` reveals "ballpark right" vs "spot on".
-- `nodule_eval_size_mae_mm` — mean absolute error in mm across matched pairs. Interpretable; lower = better.
-- `nodule_eval_size_mape` — mean absolute percentage error. Normalizes for nodule size.
-- `nodule_eval_type_accuracy` — fraction of matched pairs with matching type slot (solid / part-solid / ground-glass / calcified).
-- `nodule_eval_location_accuracy` — fraction with matching lobe (or hierarchy-compatible location).
-- `nodule_eval_noun_accuracy` — fraction where both use "nodule" or both use "mass".
-- `nodule_eval_uncertainty_accuracy` — fraction with matching existence-uncertainty flag.
-- `nodule_eval_composite` — CRIMSON-style composite in [-1, 1]: `(correct - penalty) / N_G` with attribute-error credit reduction.
-
-```python
-# Gemini (default)
-evaluator = RadEval(metrics=["nodule_eval"], gemini_api_key="...")
-
-# OpenAI fallback (per-metric config via config file)
-evaluator = RadEval.from_config("config.yaml")
-
-refs = [
-    "LUNGS AND AIRWAYS: Clear. "
-    "PULMONARY NODULES: There is an 8 mm solid nodule in the right upper lobe. "
-    "MEDIASTINUM: No adenopathy.",
-]
-hyps = [
-    "LUNGS AND AIRWAYS: Clear. "
-    "PULMONARY NODULES: There is a 9 mm solid nodule in the right upper lobe. "
-    "MEDIASTINUM: No adenopathy.",
-]
-
-results = evaluator(refs=refs, hyps=hyps)
-print(results["nodule_eval_detection_f1"])  # 1.0
-print(results["nodule_eval_size_mae_mm"])   # 1.0 (8 vs 9)
-print(results["nodule_eval_size_accuracy"]) # 1.0 (within 4 mm tolerance)
-print(results["nodule_eval_composite"])     # 1.0 (size within tolerance, no attr errors)
-```
-
-Example config file entry:
-
-```yaml
-metrics:
-  - nodule_eval:
-      provider: gemini
-      model_name: gemini-2.5-flash
-      max_concurrent: 50
-```
-
 ---
 
 ## Provider Support Matrix
@@ -409,4 +341,3 @@ metrics:
 | MammoGREEN | yes | yes | -- |
 | RadFact-CT | yes | -- | -- |
 | GREEN | -- | -- | yes |
-| NoduleEval | yes | yes (default) | -- |

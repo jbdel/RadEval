@@ -40,6 +40,7 @@ PRIVATE_METRICS = [
     "f1hopprchexbert_msk",
     "f1hopprchexbert_abd",
     "hoppr_crimson_ct",
+    "nodule_eval",
 ]
 
 PRIVATE_DIRS = ["scripts", ".cursor", "docs/changelog"]
@@ -60,6 +61,8 @@ LEAK_PATTERNS = [
     "HopprF1CheXbert",
     "HopprCrimsonCT",
     "CRIMSON_CT",
+    "nodule_eval",
+    "NoduleEval",
 ]
 
 # Files on the PUBLIC repo that legitimately mention private metric class names
