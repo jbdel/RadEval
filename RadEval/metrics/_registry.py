@@ -21,6 +21,7 @@ METRIC_REGISTRY: dict[str, tuple[str, str]] = {
     "mammo_green":       ("RadEval.metrics.green_score.adapter",        "MammoGreenMetric"),
     "crimson":           ("RadEval.metrics.crimson.adapter",            "CrimsonMetric"),
     "radfact_ct":        ("RadEval.metrics.radfact_ct.adapter",         "RadFactCTMetric"),
+    "nodule_eval":       ("RadEval.metrics.nodule_eval.adapter",        "NoduleEvalMetric"),
     # --- PRIVATE METRICS (stripped by scripts/publish_public.py) ---
     "f1hopprchexbert":     ("RadEval.metrics.f1hopprchexbert.adapter",     "F1HopprCheXbertMetric"),
     "f1hopprchexbert_ct":  ("RadEval.metrics.f1hopprchexbert_ct.adapter",  "F1HopprCheXbertCTMetric"),
