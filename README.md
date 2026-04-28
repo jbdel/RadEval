@@ -1,7 +1,7 @@
 # RadEval
 
 <!--- BADGES: START --->
-[![PyPI](https://img.shields.io/badge/RadEval-v2.1.0-00B7EB?logo=python&logoColor=00B7EB)](https://pypi.org/project/RadEval/)
+[![PyPI](https://img.shields.io/badge/RadEval-v2.2.0-00B7EB?logo=python&logoColor=00B7EB)](https://pypi.org/project/RadEval/)
 [![Python version](https://img.shields.io/badge/python-3.11+-important?logo=python&logoColor=important)]()
 [![Expert Dataset](https://img.shields.io/badge/Expert-%20Dataset-4CAF50?logo=googlecloudstorage&logoColor=9BF0E1)](https://huggingface.co/datasets/IAMJB/RadEvalExpertDataset)
 [![Model](https://img.shields.io/badge/Model-RadEvalModernBERT-0066CC?logo=huggingface&labelColor=grey)](https://huggingface.co/IAMJB/RadEvalModernBERT)
@@ -47,8 +47,8 @@ pip install -e '.[api]'
 ```
 > **Known-good stack (for RadEval 2.1+):** Python 3.11, `torch==2.9.1+cu128`,
 > `transformers==5.6.2`, `tokenizers==0.22.2`, `huggingface_hub>=1.0`,
-> `accelerate>=1.1`, `numpy<3`. All 187 tests (170 local + 17 integration)
-> pass on this configuration.
+> `accelerate>=1.1`, `numpy<3`. Full test suite passes on this configuration.
+> For the `[rl]` extras, add `trl>=1.3.0,<2`.
 
 ## Usage
 
@@ -152,7 +152,11 @@ See [docs/hypothesis_testing.md](docs/hypothesis_testing.md) for a full walkthro
 
 ### RL rewards
 
-Wrap any metric as a [TRL](https://github.com/huggingface/trl)-compatible reward function for reinforcement learning:
+Wrap any metric as a [TRL](https://github.com/huggingface/trl)-compatible reward function for reinforcement learning. GRPO is the flagship, tested path; RLOO and other TRL trainers that consume a reward-function callable use the same interface.
+
+```bash
+pip install RadEval[rl]    # adds trl>=1.3.0,<2
+```
 
 ```python
 from RadEval.rewards import make_reward_fn
@@ -160,12 +164,13 @@ from trl import GRPOTrainer
 
 trainer = GRPOTrainer(
     model=model,
-    reward_funcs=[make_reward_fn("bertscore")],
-    train_dataset=dataset,   # must have a "ground_truth" column
+    processing_class=tokenizer,
+    reward_funcs=[make_reward_fn("bleu")],   # or bertscore, radgraph (key=...), radcliq, ...
+    train_dataset=dataset,                    # must have a "ground_truth" column
 )
 ```
 
-See [docs/trl_rewards.md](docs/trl_rewards.md) for recommended metrics, score transforms, and a runnable demo.
+Run the quickstart end-to-end: `python examples/trl_grpo_quickstart.py`. See [docs/trl_rewards.md](docs/trl_rewards.md) for the reward-callable contract, metric speed table, multi-metric composition, VLM pointer, and known limitations.
 
 ## Supported Metrics
 
