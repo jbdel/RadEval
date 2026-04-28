@@ -35,7 +35,7 @@ pred_ref_*.jsonl
 findings_generation_examples.csv
 
 # Planning docs (not part of the codebase)
-plan/
+# plan/ # temporarily deactivated while on trl branch
 
 # Test fixtures (generated JSON snapshots)
 tests/**/*.json
