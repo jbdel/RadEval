@@ -45,15 +45,7 @@ pip install -e '.[api]'
 # not match your local NVIDIA driver, install a matching build first, e.g.:
 # pip install --index-url https://download.pytorch.org/whl/cu128 torch==2.9.1 torchvision==0.24.1
 ```
-
-> **Requirements.** RadEval 2.1+ requires `transformers>=5.0` (the v5 line
-> shipped Dec 2025). All 16 metrics work on transformers 5.x, including the
-> RadGraph-family (`radgraph`, `radgraph_radcliq`, `radcliq`) which are powered
-> by a patched, vendored copy of Stanford-AIMI/radgraph 0.1.18 bundled inside
-> RadEval (see `RadEval/metrics/radgraph/_vendor/`). No external `radgraph`
-> pip install is required.
->
-> **Known-good stack (for RadEval 2.1.0):** Python 3.11, `torch==2.9.1+cu128`,
+> **Known-good stack (for RadEval 2.1+):** Python 3.11, `torch==2.9.1+cu128`,
 > `transformers==5.6.2`, `tokenizers==0.22.2`, `huggingface_hub>=1.0`,
 > `accelerate>=1.1`, `numpy<3`. All 187 tests (170 local + 17 integration)
 > pass on this configuration.
