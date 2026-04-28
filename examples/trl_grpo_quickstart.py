@@ -40,6 +40,24 @@ def load_dataset() -> Dataset:
     return Dataset.from_list(rows)
 
 
+def build_config(output_dir: str = "out/grpo_quickstart") -> GRPOConfig:
+    """Build the quickstart's GRPOConfig. Extracted so
+    tests/test_trl_integration.py can exercise the exact
+    config-kwarg surface against the pinned TRL version."""
+    return GRPOConfig(
+        output_dir=output_dir,
+        max_steps=5,
+        per_device_train_batch_size=2,
+        num_generations=2,
+        max_completion_length=32,
+        learning_rate=1e-6,
+        logging_steps=1,
+        save_strategy="no",
+        report_to=[],
+        use_cpu=not torch.cuda.is_available(),
+    )
+
+
 def main() -> None:
     model_id = "Qwen/Qwen2.5-0.5B"
     tokenizer = AutoTokenizer.from_pretrained(model_id)
@@ -53,18 +71,7 @@ def main() -> None:
     # Swap in: make_reward_fn("bertscore") -- heavier but richer signal.
     # See docs/trl_rewards.md.
 
-    config = GRPOConfig(
-        output_dir="out/grpo_quickstart",
-        max_steps=5,
-        per_device_train_batch_size=2,
-        num_generations=2,
-        max_completion_length=32,
-        learning_rate=1e-6,
-        logging_steps=1,
-        save_strategy="no",
-        report_to=[],
-        use_cpu=not torch.cuda.is_available(),
-    )
+    config = build_config()
 
     trainer = GRPOTrainer(
         model=model,

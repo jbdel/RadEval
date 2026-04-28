@@ -143,6 +143,14 @@ RadEval abstraction is needed.
 > in v2.2.0. Plan VRAM accordingly, or use a single reward function and
 > have it compute multiple keys.
 
+## Operational notes
+
+- **NCCL bind warning on stderr.** On multi-GPU hosts, TRL /
+  accelerate may print `NCCL WARN Call to bind failed: Address already
+  in use` to stderr at startup. This is a benign environment artifact
+  — training proceeds normally. If your wrapper script treats non-empty
+  stderr as failure, redirect stderr or filter that line.
+
 ## Known limitations
 
 - **Conversational completion format is heuristic-based.** TRL may pass
