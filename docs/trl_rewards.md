@@ -16,8 +16,11 @@ pip install RadEval[rl]          # installs trl>=1.3.0,<2
 
 `datasets` is already a core dependency.
 
-Tested against TRL 1.3.0 / transformers 5.6.2 / torch 2.9.1. Nearby TRL
-versions may work but are not separately validated.
+**Validated stack** (smoke-tested in CI): TRL 1.3.0, transformers 5.6.2,
+torch 2.9.1, Python 3.11. The `trl>=1.3.0,<2` pin is a compatibility
+ceiling, not a validated-range claim — other 1.x versions are expected
+to work but are not separately tested in this release. For
+strictest reproducibility, pin to `trl==1.3.0`.
 
 ## Primary path (tested): GRPO with a single RadEval reward
 
@@ -168,16 +171,25 @@ RadEval abstraction is needed.
   RadGraph). It's accurate for final-tune / evaluation, but may
   bottleneck per-step GRPO — benchmark before adopting as primary.
 
-- **Integration test is narrow.** The shipped smoke test runs one
+- **Integration tests are narrow.** The shipped smoke tests run one
   step of GRPO on a tiny random model (see
-  `tests/test_trl_integration.py`). It verifies that
-  `make_reward_fn` is a drop-in reward callable — not full algorithmic
-  behavior, long-run stability, or cross-trainer compatibility.
+  `tests/test_trl_integration.py`) across a prompt-only and a
+  conversational dataset. They verify `make_reward_fn` is a drop-in
+  reward callable and that the `list[list[dict]]` heuristic matches
+  TRL 1.3.0's actual payload shape — **not** full algorithmic
+  behavior, long-run stability, cross-trainer compatibility, or
+  schema variations outside the standard OpenAI-style
+  `{role, content}` message dict.
+  `tests/test_trl_integration.py::test_quickstart_config_surface`
+  exercises the quickstart's config-construction surface against the
+  pinned TRL version but is a partial regression guard — it does not
+  run the full trainer end-to-end.
 
-## Adjacent / untested uses
+## Adjacent / untested uses (guidance-only)
 
 These paths use the **same** reward-function signature and are expected
-to work, but are not separately validated in this release:
+to work by construction, but **none are validated in this release** —
+the snippets below are orientation, not verified recipes:
 
 - **[RLOO](https://huggingface.co/docs/trl/main/en/rloo_trainer)** —
   REINFORCE-style online RL; same `reward_funcs=[...]` surface.
