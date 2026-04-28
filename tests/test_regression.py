@@ -93,16 +93,42 @@ except ImportError:
     pass
 
 
+_GPU_METRICS = [
+    "bleu", "rouge", "bertscore",
+    "radeval_bertscore", "f1chexbert",
+    "srrbert", "ratescore",
+    "temporal",
+    "radgraph", "radgraph_radcliq", "radcliq",
+]
+
+
 @pytest.mark.skipif(not _HAS_GPU, reason="No GPU available")
 @pytest.mark.skipif(not GPU_FIXTURE.exists(), reason="GPU snapshot not generated")
 def test_regression_gpu_default(gpu_expected):
-    evaluator = RadEval(metrics=[
-        "bleu", "rouge", "bertscore",
-        "radeval_bertscore", "f1chexbert",
-        "srrbert", "ratescore", "radcliq",
-        "temporal", "radgraph", "radgraph_radcliq",
-    ], show_progress=False)
+    evaluator = RadEval(metrics=_GPU_METRICS, show_progress=False)
     actual = evaluator(refs=REFS, hyps=HYPS)
     for key, exp_val in gpu_expected["default"].items():
+        assert key in actual, f"Missing key: {key}"
+        _assert_close(actual[key], exp_val, key)
+
+
+@pytest.mark.skipif(not _HAS_GPU, reason="No GPU available")
+@pytest.mark.skipif(not GPU_FIXTURE.exists(), reason="GPU snapshot not generated")
+def test_regression_gpu_per_sample(gpu_expected):
+    evaluator = RadEval(metrics=_GPU_METRICS, per_sample=True,
+                        show_progress=False)
+    actual = evaluator(refs=REFS, hyps=HYPS)
+    for key, exp_val in gpu_expected["per_sample"].items():
+        assert key in actual, f"Missing key: {key}"
+        _assert_close(actual[key], exp_val, key)
+
+
+@pytest.mark.skipif(not _HAS_GPU, reason="No GPU available")
+@pytest.mark.skipif(not GPU_FIXTURE.exists(), reason="GPU snapshot not generated")
+def test_regression_gpu_detailed(gpu_expected):
+    evaluator = RadEval(metrics=_GPU_METRICS, detailed=True,
+                        show_progress=False)
+    actual = evaluator(refs=REFS, hyps=HYPS)
+    for key, exp_val in gpu_expected["detailed"].items():
         assert key in actual, f"Missing key: {key}"
         _assert_close(actual[key], exp_val, key)

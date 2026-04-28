@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from radgraph import RadGraph
+from ..radgraph import RadGraph
 from RadEval.metrics.f1chexbert import F1CheXbert
 from sklearn.preprocessing import StandardScaler
 from RadEval.metrics.bleu.bleu import Bleu
@@ -67,9 +67,13 @@ class CompositeMetric:
         """Return a BERTScorer with IDF computed from *refs*."""
         cache_key = id(refs)
         if self._bert_scorer is None or self._bertscore_cache_key != cache_key:
-            from bert_score import BERTScorer
+            from RadEval.metrics.bertscore._vendor import BERTScorer
             self._bert_scorer = BERTScorer(
                 model_type='distilroberta-base',
+                # num_layers=5 matches upstream bert-score's model2layers
+                # default for distilroberta-base; we pass it explicitly because
+                # RadEval's vendored BERTScorer dropped the default-lookup table.
+                num_layers=5,
                 rescale_with_baseline=True,
                 idf=True,
                 idf_sents=refs,

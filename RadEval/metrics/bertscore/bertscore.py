@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from bert_score import BERTScorer
+from ._vendor import BERTScorer
 
 
 class BertScoreBase(nn.Module):

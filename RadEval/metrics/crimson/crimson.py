@@ -177,7 +177,12 @@ class CRIMSONScore(LLMMetricBase):
             self.pipe.tokenizer.padding_side = "left"
         # If the model has a generation_config.json, use it instead of
         # injecting our own generation kwargs at inference time.
-        self._has_generation_config = not self.pipe.model.generation_config._from_model_config
+        _from_mc = getattr(
+            self.pipe.model.generation_config, "_from_model_config", None
+        )
+        # In transformers v5, `_from_model_config` may be None instead of bool.
+        # Treat any falsy value (None/False) as "no custom generation config".
+        self._has_generation_config = bool(_from_mc is False)
         logger.info("Model loaded.")
 
     # ------------------------------------------------------------------

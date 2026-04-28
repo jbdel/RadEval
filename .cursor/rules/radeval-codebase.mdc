@@ -22,7 +22,7 @@ RadEval/
     _registry.py          # METRIC_REGISTRY: name -> (module, class). Lazy-imported in RadEval.__init__.
                           # Private metrics sit inside a `# --- PRIVATE METRICS ---` marker block
                           # that publish_public.py strips (fails fast if markers missing).
-    _radgraph_adapter.py  # Adapter for the external radgraph package
+    _radgraph_adapter.py  # Adapter for vendored radgraph (see radgraph/_vendor/)
     _llm.py               # Shared LLM factory: CostTracker, call_openai/async, call_gemini/async
     _chexbert_base.py     # Shared base for F1CheXbert / F1HopprCheXbert
     bertscore/            # BERTScore (also base class BertScoreBase used by RadEvalBERTScorer)
@@ -41,6 +41,7 @@ RadEval/
     radfact_ct/           # RadFact-CT (LLM-based, ported from microsoft/RadFact)
     RaTEScore/
     RadCliQv1/            # RadCliQ-v1 composite (BERTScore+IDF, RadGraph, SemEmb, BLEU-2)
+    radgraph/             # Top-level package + _vendor/ (patched radgraph 0.1.18 for transformers v5)
     radgraph_radcliq/     # Isolated RadGraph sub-score from RadCliQ pipeline
     SRRBert/              # Structured radiology report evaluation
     f1temporal/           # Temporal entity F1

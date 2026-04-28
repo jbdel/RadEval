@@ -6,7 +6,7 @@ class RadGraphMetric(MetricBase):
     display_name = "RadGraph"
 
     def __init__(self):
-        from radgraph import F1RadGraph
+        from .radgraph import F1RadGraph
         self._scorer = F1RadGraph(reward_level="all", model_type="radgraph-xl")
 
     def metric_keys(self, detailed=False):

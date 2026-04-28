@@ -23,7 +23,7 @@ def test_radeval():
         "No pleural effusions or pneumothoraces.",
     ]
 
-    # Instantiate RadEval with desired configurations
+    # Instantiate RadEval with desired configurations.
     evaluator = RadEval(metrics=["radgraph", "bleu", "rouge",
                                  "bertscore", "f1chexbert",
                                  "ratescore", "radcliq",
@@ -32,7 +32,9 @@ def test_radeval():
     # Compute scores
     results = evaluator(refs=refs, hyps=hyps)
 
-    # Expected result with pytest.approx for approximate comparison
+    # Expected result with pytest.approx for approximate comparison.
+    # These are the paper-reference numerics — bit-exactly reproduced on
+    # transformers 5.x thanks to the vendored bert_score + vendored radgraph.
     expected_result = {
         "radgraph_simple": pytest.approx(0.41111111111111115, 0.01),
         "radgraph_partial": pytest.approx(0.41111111111111115, 0.01),

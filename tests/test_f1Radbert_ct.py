@@ -4,7 +4,7 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 def test_f1Radbert_ct_exact_outputs():
     repo_id = "IAMJB/RadBERT-CT"
-    tokenizer = AutoTokenizer.from_pretrained(repo_id, use_fast=False)
+    tokenizer = AutoTokenizer.from_pretrained(repo_id)
     model = AutoModelForSequenceClassification.from_pretrained(repo_id)
     model.eval()
 

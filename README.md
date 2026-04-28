@@ -1,7 +1,7 @@
 # RadEval
 
 <!--- BADGES: START --->
-[![PyPI](https://img.shields.io/badge/RadEval-v1.0.0-00B7EB?logo=python&logoColor=00B7EB)](https://pypi.org/project/RadEval/)
+[![PyPI](https://img.shields.io/badge/RadEval-v2.1.0-00B7EB?logo=python&logoColor=00B7EB)](https://pypi.org/project/RadEval/)
 [![Python version](https://img.shields.io/badge/python-3.11+-important?logo=python&logoColor=important)]()
 [![Expert Dataset](https://img.shields.io/badge/Expert-%20Dataset-4CAF50?logo=googlecloudstorage&logoColor=9BF0E1)](https://huggingface.co/datasets/IAMJB/RadEvalExpertDataset)
 [![Model](https://img.shields.io/badge/Model-RadEvalModernBERT-0066CC?logo=huggingface&labelColor=grey)](https://huggingface.co/IAMJB/RadEvalModernBERT)
@@ -41,7 +41,22 @@ Or install from source:
 git clone https://github.com/jbdel/RadEval.git && cd RadEval
 conda create -n radeval python=3.11 -y && conda activate radeval
 pip install -e '.[api]'
+# Torch wheels are CUDA-version specific. If the default wheel from PyPI does
+# not match your local NVIDIA driver, install a matching build first, e.g.:
+# pip install --index-url https://download.pytorch.org/whl/cu128 torch==2.9.1 torchvision==0.24.1
 ```
+
+> **Requirements.** RadEval 2.1+ requires `transformers>=5.0` (the v5 line
+> shipped Dec 2025). All 16 metrics work on transformers 5.x, including the
+> RadGraph-family (`radgraph`, `radgraph_radcliq`, `radcliq`) which are powered
+> by a patched, vendored copy of Stanford-AIMI/radgraph 0.1.18 bundled inside
+> RadEval (see `RadEval/metrics/radgraph/_vendor/`). No external `radgraph`
+> pip install is required.
+>
+> **Known-good stack (for RadEval 2.1.0):** Python 3.11, `torch==2.9.1+cu128`,
+> `transformers==5.6.2`, `tokenizers==0.22.2`, `huggingface_hub>=1.0`,
+> `accelerate>=1.1`, `numpy<3`. All 187 tests (170 local + 17 integration)
+> pass on this configuration.
 
 ## Usage
 

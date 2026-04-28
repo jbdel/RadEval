@@ -23,7 +23,7 @@ from __future__ import annotations
 from typing import List, Sequence, Tuple
 
 import numpy as np
-from radgraph import RadGraph
+from ..radgraph import RadGraph
 
 
 def _compute_f1(test_set: set, retrieved_set: set) -> float:

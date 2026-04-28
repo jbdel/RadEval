@@ -46,7 +46,7 @@ class F1RadbertCT:
         if self.device.type == "cuda" and not torch.cuda.is_available():
             warnings.warn("CUDA requested but unavailable; falling back to CPU.")
             self.device = torch.device("cpu")
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_id, use_fast=False)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)
         self.model = AutoModelForSequenceClassification.from_pretrained(self.model_id).to(
             self.device
         )

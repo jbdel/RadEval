@@ -2,6 +2,15 @@
 
 # Metrics Reference
 
+> **Bundled RadGraph inference.** RadEval 2.1+ ships a patched, vendored copy
+> of Stanford-AIMI/radgraph 0.1.18 inside `RadEval/metrics/radgraph/_vendor/`.
+> The three RadGraph-family metrics (`radgraph`, `radgraph_radcliq`, `radcliq`)
+> run on transformers 5.x without any external `radgraph` install. The
+> bundled model types are `radgraph` (PubMedBERT), `radgraph-xl`
+> (BiomedVLP-CXR-BERT), `modern-radgraph-xl` (ModernBERT), and `echograph`.
+> Weights are still downloaded once on first use from the Hugging Face repo
+> `StanfordAIMI/RRG_scorers` into `~/.cache/radgraph/0.1.18/<model_type>/`.
+
 All metrics are enabled by name in the `RadEval` constructor. Pass a list of metric names, or use a config file for per-metric settings. Three output modes:
 
 | Mode | Flag | Output |
