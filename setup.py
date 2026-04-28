@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='RadEval',
-    version='2.1.0',
+    version='2.2.0',
     author='Jean-Benoit Delbrouck, Justin Xu, Xi Zhang, Dave Van Veen',
     maintainer='Xi Zhang, JB Delbrouck',
     url='https://github.com/jbdel/RadEval',
@@ -77,6 +77,9 @@ setup(
             'google-genai',
             'openai',
             'tenacity',
+        ],
+        'rl': [
+            'trl>=1.3.0,<2',
         ],
     },
     packages=find_packages(),
