@@ -323,7 +323,23 @@ def _score_one_pair(
 # ---------- main orchestration ----------
 
 
-def run_benchmark(output_path: Path) -> None:
+def _fake_speed_record(metric: str, key: str | None) -> dict[str, Any]:
+    """Dummy speed record used by --dry-run. Exercises the pipeline without
+    actually loading any models. Numbers are placeholders."""
+    return speed_record(
+        metric=metric, key=key,
+        cached_init_s=0.01, warm_batch_s_median=0.001,
+        warm_per_sample_ms=0.05,
+        peak_vram_mb_approx=0.0 if torch.cuda.is_available() else None,
+    )
+
+
+def _fake_score(metric: str) -> float:
+    """Dummy per-sample score used by --dry-run."""
+    return 0.5
+
+
+def run_benchmark(output_path: Path, dry_run: bool = False) -> None:
     # Load fixtures.
     bench_dir = Path(__file__).resolve().parent.parent / "docs" / "benchmarks" / "fixtures"
     speed_rows = load_fixture(bench_dir / "speed_workload.json")
@@ -334,7 +350,7 @@ def run_benchmark(output_path: Path) -> None:
 
     snapshot = {
         "run_ts": time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime()),
-        "env": env_block(),
+        "env": env_block() if not dry_run else {"dry_run": True},
         "workload": {
             "n_samples": len(speed_rows),
             "fixture": "docs/benchmarks/fixtures/speed_workload.json",
@@ -348,7 +364,10 @@ def run_benchmark(output_path: Path) -> None:
     for metric, key in METRIC_PLAN:
         sys.stderr.write(f"[speed] {metric}\n")
         sys.stderr.flush()
-        row = _time_metric(metric, key, refs, hyps)
+        if dry_run:
+            row = _fake_speed_record(metric, key)
+        else:
+            row = _time_metric(metric, key, refs, hyps)
         snapshot["speed"].append(row)
 
     # E2: divergence. Score each pair with each gallery metric.
@@ -357,7 +376,10 @@ def run_benchmark(output_path: Path) -> None:
         for metric, key in GALLERY_METRICS:
             sys.stderr.write(f"[divergence row {entry['id']}] {metric}\n")
             sys.stderr.flush()
-            scores[metric] = _score_one_pair(metric, key, entry["ref"], entry["hyp"])
+            if dry_run:
+                scores[metric] = _fake_score(metric)
+            else:
+                scores[metric] = _score_one_pair(metric, key, entry["ref"], entry["hyp"])
         snapshot["divergence"].append(divergence_row(entry, scores))
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -371,9 +393,15 @@ def main() -> None:
         "--output", required=True, type=Path,
         help="Path to write the JSON snapshot.",
     )
+    parser.add_argument(
+        "--dry-run", action="store_true",
+        help="Bypass model loading and scoring; emit a snapshot with "
+             "placeholder numbers. Exercises the data-loading / iteration / "
+             "JSON-writing path only. Used by tests.",
+    )
     args = parser.parse_args()
     try:
-        run_benchmark(args.output)
+        run_benchmark(args.output, dry_run=args.dry_run)
     except Exception:
         traceback.print_exc()
         sys.exit(1)

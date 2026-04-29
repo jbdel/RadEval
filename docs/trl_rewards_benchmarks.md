@@ -35,13 +35,19 @@ style.
 
 *`cached init` is `cls()` wall time after HF models are already on
 disk — i.e., what the second invocation of the script sees. Peak
-VRAM is `torch.cuda.max_memory_allocated` delta — **approximate,
-directional guidance for GPU budgeting**: only counts torch
-allocations, and in-process measurement is sensitive to allocator
-caching. All metrics run in-process with explicit teardown between
-them; `radcliq` runs last so its composite footprint can't leak
-into adjacent rows. First-download time is not reported (it's
-network-dependent).*
+VRAM is `torch.cuda.max_memory_allocated` delta and is
+**approximate and metric-order-sensitive** — read it as
+**directional** guidance for GPU budgeting, not a metric-vs-metric
+comparison: it only counts torch allocations, and in-process
+measurement is biased by PyTorch's caching allocator (earlier
+metrics' allocations can inflate later readings despite the
+explicit `del`, `gc.collect()`, `torch.cuda.empty_cache()` teardown
+the script performs between every metric). All metrics run
+in-process with that teardown; `radcliq` is ordered last so its
+composite footprint can't leak into adjacent rows. If you need a
+trustworthy absolute number for one metric, isolate that metric in
+its own Python process. First-download time is not reported
+(network-dependent).*
 
 **Takeaways:**
 
@@ -152,10 +158,15 @@ A compressed decision guide. Speed numbers from the table above.
   negation flips**. If you use it as the sole reward, expect the
   policy to learn that inverting negations is fine.
 - **Clinical-finding accuracy (CXR)**: `f1chexbert` with
-  `key="f1chexbert_sample_acc_5"`. 1.71 ms/sample. Catches label
-  flips (row 2: 0.80 vs 1.00); does NOT catch severity changes
-  (row 7: stays at 1.00). Good primary reward for label-centric
-  tasks.
+  `key="f1chexbert_sample_acc_5"`. 1.71 ms/sample. **What this
+  metric actually returns**: per-sample *agreement rate across
+  14 CheXpert labels* (a single-number-per-sample compressed
+  multi-label accuracy), not a per-finding F1. A single-label flip
+  between ref and hyp drops the score by ~1/14 ≈ 0.07 at most.
+  Catches label flips (row 2: 0.80 vs 1.00); does NOT catch
+  severity changes (row 7: stays at 1.00 because "mild" and
+  "severe" edema map to the same CheXpert label). Good primary
+  reward for label-centric tasks; not sensitive to severity.
 - **Entity / relation grounding (CXR)**: `radgraph` with
   `key="radgraph_partial"`. ~158 ms/sample. Catches
   omissions (row 3: 0.50), hallucinations (row 4: 0.57), severity

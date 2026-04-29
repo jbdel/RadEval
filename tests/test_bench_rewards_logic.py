@@ -109,3 +109,80 @@ def test_gallery_metrics_structure(bench):
     assert "f1chexbert" in names
     assert "radgraph" in names
     assert "radcliq" in names
+
+
+# ---------- Integration-style: --dry-run structural check ----------
+
+
+def test_dry_run_produces_expected_snapshot_structure(bench, tmp_path):
+    """Drive the full orchestrator via `run_benchmark(dry_run=True)`.
+    Exercises fixture loading, metric iteration, divergence row
+    building, JSON writing. Skips every expensive step — no model
+    loads, no real scoring. Protects against future script bit-rot
+    (e.g., fixture path changes, JSON schema drift)."""
+    import json
+
+    out = tmp_path / "dry.json"
+    bench.run_benchmark(out, dry_run=True)
+
+    data = json.loads(out.read_text())
+
+    # Top-level required keys.
+    for field in ("run_ts", "env", "workload", "speed",
+                  "divergence_fixture", "divergence"):
+        assert field in data, f"missing top-level key: {field}"
+
+    # Workload metadata.
+    assert data["workload"]["n_samples"] == 20
+    assert data["workload"]["fixture"].endswith("speed_workload.json")
+
+    # Speed rows: one per metric in METRIC_PLAN, in declared order.
+    expected_metrics = [m for m, _ in bench.METRIC_PLAN]
+    observed_metrics = [r["metric"] for r in data["speed"]]
+    assert observed_metrics == expected_metrics, (
+        "speed rows must preserve METRIC_PLAN order (radcliq last)"
+    )
+    for row in data["speed"]:
+        # In dry-run, every row is a successful record, not a skip.
+        assert "skipped" not in row
+        for field in ("metric", "key", "cached_init_s",
+                      "warm_batch_s_median", "warm_per_sample_ms",
+                      "peak_vram_mb_approx"):
+            assert field in row, f"row {row['metric']} missing {field}"
+
+    # Divergence rows: one per fixture entry, each scored by every
+    # GALLERY_METRICS metric.
+    assert len(data["divergence"]) == 8, "divergence fixture has 8 rows"
+    gallery_names = [m for m, _ in bench.GALLERY_METRICS]
+    for row in data["divergence"]:
+        for field in ("id", "ref", "hyp", "narrative", "scores"):
+            assert field in row
+        assert set(row["scores"].keys()) == set(gallery_names)
+
+
+def test_dry_run_skip_accounting_path(bench, tmp_path, monkeypatch):
+    """Force a metric to fail during dry-run-adjacent pipeline by
+    pointing `_fake_speed_record` at a `skip_record` for one named
+    metric, and assert the JSON records it as skipped while the
+    others continue."""
+    import json
+
+    real_fake = bench._fake_speed_record
+
+    def _mocked(metric, key):
+        if metric == "bertscore":
+            return bench.skip_record(metric, key, "load-error:synthetic")
+        return real_fake(metric, key)
+
+    monkeypatch.setattr(bench, "_fake_speed_record", _mocked)
+
+    out = tmp_path / "dry_with_skip.json"
+    bench.run_benchmark(out, dry_run=True)
+    data = json.loads(out.read_text())
+
+    skipped = [r for r in data["speed"] if "skipped" in r]
+    assert len(skipped) == 1 and skipped[0]["metric"] == "bertscore"
+    assert "load-error:synthetic" in skipped[0]["skipped"]
+    # Remaining rows are still successful, full set still present.
+    names = [r["metric"] for r in data["speed"]]
+    assert names == [m for m, _ in bench.METRIC_PLAN]
