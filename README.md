@@ -11,7 +11,10 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?)](https://github.com/jbdel/RadEval/main/LICENSE)
 <!--- BADGES: END --->
 
-RadEval is a Python framework for evaluating AI-generated radiology reports. It provides 16 metrics spanning lexical, semantic, clinical, and LLM-based evaluation — all behind a single interface with lazy loading, config-file support, and compatibility with HuggingFace TRL for reinforcement learning.
+RadEval is a Python framework for evaluating AI-generated radiology reports. It serves two use cases under one package:
+
+1. **Evaluator** — 16 metrics spanning lexical, semantic, clinical, and LLM-based evaluation, all behind a single interface with lazy loading and config-file support.
+2. **Reinforcement-learning reward provider** — every RL-eligible metric exposed as a drop-in HuggingFace TRL reward function for GRPO (and other trainers that accept a reward callable). Runnable quickstart, benchmarked per-sample cost, and a gallery showing how reward choice shapes what the policy learns.
 
 ## Table of Contents
 
@@ -21,7 +24,10 @@ RadEval is a Python framework for evaluating AI-generated radiology reports. It 
   - [Config file](#config-file)
   - [Output modes](#output-modes)
   - [Comparing systems](#comparing-systems)
-  - [RL rewards](#rl-rewards)
+- [Reinforcement learning with RadEval rewards](#reinforcement-learning-with-radeval-rewards)
+  - [Quickstart](#rl-quickstart)
+  - [Benchmarks: cost & divergence](#rl-benchmarks-cost--divergence)
+  - [Reward API & docs](#rl-reward-api--docs)
 - [Supported Metrics](#supported-metrics)
 - [API Keys for LLM Metrics](#api-keys-for-llm-metrics)
 - [Documentation](#documentation)
@@ -150,9 +156,13 @@ signatures, scores = compare_systems(
 
 See [docs/hypothesis_testing.md](docs/hypothesis_testing.md) for a full walkthrough and interpretation guide.
 
-### RL rewards
+## Reinforcement learning with RadEval rewards
 
-Wrap any metric as a [TRL](https://github.com/huggingface/trl)-compatible reward function for reinforcement learning. GRPO is the flagship, tested path; RLOO and other TRL trainers that consume a reward-function callable use the same interface.
+RadEval metrics aren't just for offline evaluation — every RL-eligible metric is a drop-in [HuggingFace TRL](https://github.com/huggingface/trl) reward function. GRPO is the flagship, tested path; RLOO and other TRL trainers that consume a reward-function callable use the same interface.
+
+Three things to look at, in increasing depth:
+
+### RL quickstart
 
 ```bash
 pip install RadEval[rl]    # adds trl>=1.3.0,<2
@@ -166,11 +176,24 @@ trainer = GRPOTrainer(
     model=model,
     processing_class=tokenizer,
     reward_funcs=[make_reward_fn("bleu")],   # or bertscore, radgraph (key=...), radcliq, ...
-    train_dataset=dataset,                    # must have a "ground_truth" column
+    train_dataset=dataset,                   # must have a "ground_truth" column
 )
+trainer.train()
 ```
 
-Run the quickstart end-to-end: `python examples/trl_grpo_quickstart.py`. See [docs/trl_rewards.md](docs/trl_rewards.md) for the reward-callable contract, multi-metric composition, VLM pointer, and known limitations. See [docs/trl_rewards_benchmarks.md](docs/trl_rewards_benchmarks.md) for measured per-sample cost of every reward-eligible metric and a divergence gallery showing how reward choice changes the GRPO training signal.
+Runnable end-to-end: `python examples/trl_grpo_quickstart.py` (5 GRPO steps on `Qwen/Qwen2.5-0.5B` using a 20-sample synthetic fixture; completes in minutes on a single modest GPU).
+
+### RL benchmarks: cost & divergence
+
+How expensive is each metric when used as a per-step reward, and does reward choice actually change what the model learns? **Yes, dramatically.** See **[docs/trl_rewards_benchmarks.md](docs/trl_rewards_benchmarks.md)** for:
+
+- A **speed table** covering all 16 public metrics, from **0.09 ms/sample** (BLEU, CPU) to **~2 200 ms/sample** (GREEN, 7B local LLM). RadCliQ — the metric with the best correlation to radiologist preferences — comes in at **~161 ms/sample**.
+- A **reward-divergence gallery**: same rollouts, scored by five metrics side-by-side. **Headline finding**: on a negation flip ("No pleural effusion." → "Pleural effusion."), **BERTScore gives a reward of 0.893 — nearly exact-match ceiling** — while F1CheXbert and RadGraph correctly penalize. Using BERTScore as an RL reward in radiology is dangerous; the page shows exactly why.
+
+### RL reward API & docs
+
+- **[docs/trl_rewards.md](docs/trl_rewards.md)** — `make_reward_fn` contract, required `key=` for multi-key metrics, conversational-completion handling, multi-metric composition, VLM pointer, known limitations.
+- **RadCliQ direction caveat** — RadCliQ is a *distance* (lower = better); for RL use the safe inversion `make_reward_fn("radcliq", score_transform=lambda x: -x)`.
 
 ## Supported Metrics
 
