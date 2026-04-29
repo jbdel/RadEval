@@ -16,7 +16,7 @@ pip install RadEval[rl]          # installs trl>=1.3.0,<2
 
 `datasets` is already a core dependency.
 
-**Validated stack** (smoke-tested in CI): TRL 1.3.0, transformers 5.6.2,
+**Validated stack**: TRL 1.3.0, transformers 5.6.2,
 torch 2.9.1, Python 3.11. The `trl>=1.3.0,<2` pin is a compatibility
 ceiling, not a validated-range claim — other 1.x versions are expected
 to work but are not separately tested in this release. For
@@ -108,26 +108,16 @@ reward_fn(completions, **kwargs) -> list[float | None]
 
 ## Choosing a metric
 
-Qualitative tiering:
+Reward choice is a real tradeoff; cost and signal quality pull in
+opposite directions. See
+[docs/trl_rewards_benchmarks.md](./trl_rewards_benchmarks.md) for:
 
-| Speed | Metrics | Notes |
-|---|---|---|
-| Fast (recommended) | `bleu`, `rouge`, `bertscore`, `radeval_bertscore` | No or tiny GPU footprint; milliseconds per batch. |
-| Medium | `f1chexbert`, `f1radbert_ct`, `srrbert`, `ratescore`, `temporal`, `radgraph` | GPU transformer inference; seconds per batch. |
-| Slow (local LLM) | `green` | 7B local model inference per sample — treat as **unusable per-step** without a dedicated GPU. |
-| Very slow (API) | `crimson`, `mammo_green`, `radfact_ct` | One API call per sample — **not practical for online RL**. A `UserWarning` fires when you wrap them. |
+- **Measured per-sample cost** across every reward-eligible metric,
+  from sub-ms BLEU to seconds-per-sample GREEN.
+- **A divergence gallery** showing how reward choice changes the GRPO
+  training signal on plausible rollouts.
 
-For **measured** per-sample cost across every reward-eligible metric
-plus a divergence gallery showing how reward choice changes the GRPO
-training signal, see
-[docs/trl_rewards_benchmarks.md](./trl_rewards_benchmarks.md).
-
-Paper-`radcliq` is available as `make_reward_fn("radcliq")` and is
-recommended for **evaluation / final-tune reward**. Benchmarked
-per-sample cost is ~160 ms/sample (composite of BERTScore + SembScore
-+ RadGraph) — see the benchmarks page for the measured numbers and a
-recommendation on when it's practical as an online reward. RadCliQ is
-a **distance** (lower = better), so for RL training use
+RadCliQ is a **distance** (lower = better), so for RL training use
 `make_reward_fn("radcliq", score_transform=lambda x: -x)`.
 
 ## Combining metrics (native TRL)
@@ -156,30 +146,23 @@ RadEval abstraction is needed.
 > in v2.2.0. Plan VRAM accordingly, or use a single reward function and
 > have it compute multiple keys.
 
-## Operational notes
-
-- **NCCL bind warning on stderr.** On multi-GPU hosts, TRL /
-  accelerate may print `NCCL WARN Call to bind failed: Address already
-  in use` to stderr at startup. This is a benign environment artifact
-  — training proceeds normally. If your wrapper script treats non-empty
-  stderr as failure, redirect stderr or filter that line.
-
-## Known limitations
+## Notes & limitations
 
 - **Conversational completion format is heuristic-based.** TRL may pass
   completions as `list[str]` or as `list[list[dict]]` (OpenAI-style
   message format) depending on the dataset shape, tokenizer template,
   and TRL version. For the message-list case we extract `content` from
-  the last assistant turn and fire a `UserWarning`. Unrecognized
-  shapes and missing `role`/`content` keys raise `TypeError`. If your
-  dataset uses a different message layout, preprocess completion text
-  upstream in your dataset/collator pipeline (not via `score_transform`,
-  which operates on scores).
+  the last assistant turn and fire a `UserWarning`. Unrecognized shapes
+  and missing `role`/`content` keys raise `TypeError`. If your dataset
+  uses a different message layout, preprocess completion text upstream
+  in your dataset/collator pipeline (not via `score_transform`, which
+  operates on scores).
 
-- **`radcliq` per-sample cost.** Paper-RadCliQ composes three
-  transformer-based sub-metrics (BERTScore, semantic-similarity,
-  RadGraph). It's accurate for final-tune / evaluation, but may
-  bottleneck per-step GRPO — benchmark before adopting as primary.
+- **NCCL bind warning on stderr.** On multi-GPU hosts, TRL / accelerate
+  may print `NCCL WARN Call to bind failed: Address already in use` to
+  stderr at startup. This is a benign environment artifact; training
+  proceeds normally. If your wrapper script treats non-empty stderr as
+  failure, redirect stderr or filter that line.
 
 - **Integration tests are narrow.** The shipped smoke tests run one
   step of GRPO on a tiny random model (see
@@ -193,7 +176,7 @@ RadEval abstraction is needed.
   `tests/test_trl_integration.py::test_quickstart_config_surface`
   exercises the quickstart's config-construction surface against the
   pinned TRL version but is a partial regression guard — it does not
-  run the full trainer end-to-end.
+  run the full trainer end-to-end. [todo: this makes us seem like we haven't done our homework. remove]
 
 ## Adjacent / untested uses (guidance-only)
 
