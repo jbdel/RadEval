@@ -101,90 +101,94 @@ What they're measuring varies with:
 
 Same setup you're imagining: a GRPO trainer samples a candidate
 completion for each prompt, the reward function scores each sample,
-the score becomes the training signal. Below: 8 curated `(reference,
-candidate rollout)` pairs scored by five metrics
-. Each row answers "which reward would push the policy
-toward or away from this rollout?"
+the score becomes the training signal. Below: 5 curated `(reference,
+candidate rollout)` pairs scored by five metrics (BLEU, BERTScore,
+RadGraph, RadCliQ, CRIMSON). Each row answers "which reward would
+push the policy toward or away from this rollout?"
 
 Reward direction: ↑ = higher is better reward signal, ↓ = lower is
 better (RadCliQ only). For RL training with RadCliQ, see the
-inversion recipe in "Picking a reward" below.
+inversion recipe in "Considerations" below.
 
 Row 1 is an **exact-match sanity row**; it fixes the ceiling for each
-metric so the rest of the table is read relative to it (BLEU / BERTScore
-/ F1CheXbert / RadGraph all max at 1.0; RadCliQ's floor is ~9.37 since
-it's a distance, lower = better).
+metric so the rest of the table is read relative to it (BLEU /
+BERTScore / RadGraph / CRIMSON all max at 1.0; RadCliQ's floor is
+~9.37 since it's a distance, lower = better).
 
-| # | Reference | Candidate rollout | BLEU↑ | BERTScore↑ | F1CheXbert↑ | RadGraph↑ | RadCliQ↓ |
+| # | Reference | Candidate rollout | BLEU↑ | BERTScore↑ | RadGraph↑ | RadCliQ↓ | CRIMSON↑ |
 |---|---|---|---:|---:|---:|---:|---:|
-| 1 | No acute cardiopulmonary process. | No acute cardiopulmonary process. | 1.00 | 1.00 | 1.00 | 1.00 | 9.37 |
-| 2 | Mild cardiomegaly. | The cardiac silhouette is mildly enlarged. | 0.00 | 0.215 | 1.00 | 0.00 | 10.67 |
-| 3 | **No pleural effusion.** | **Pleural effusion.** | 0.00 | **0.893** | 0.80 | 0.50 | 11.06 |
-| 4 | Mild cardiomegaly. Small bilateral pleural effusions. | Mild cardiomegaly. | 0.00 | 0.718 | 0.80 | 0.50 | 10.52 |
-| 5 | No acute findings. | No acute findings. Small right pneumothorax. | 0.00 | 0.604 | 1.00 | 0.57 | 10.43 |
-| 6 | Left lower lobe consolidation consistent with pneumonia. | Right upper lobe mass. | 0.00 | 0.579 | 0.80 | 0.22 | 10.93 |
-| 7 | Mild pulmonary edema. | Severe pulmonary edema. | 0.00 | 0.955 | 1.00 | 0.67 | 10.20 |
-| 8 | Stable bibasilar atelectasis without consolidation. | New right lower lobe consolidation. | 0.00 | 0.355 | 0.60 | 0.00 | 11.12 |
+| 1 | No acute cardiopulmonary process. | No acute cardiopulmonary process. | 1.00 | 1.00 | 1.00 | 9.37 | 1.00 |
+| 2 | Mild cardiomegaly. | The cardiac silhouette is mildly enlarged. | 0.00 | 0.215 | 0.00 | 10.67 | 1.00 |
+| 3 | **No pleural effusion.** | **Pleural effusion.** | 0.00 | **0.893** | 0.50 | 11.06 | **−0.333** |
+| 4 | Mild pulmonary edema. | Severe pulmonary edema. | 0.00 | 0.955 | 0.67 | 10.20 | 0.50 |
+| 5 | Stable bibasilar atelectasis without consolidation. | New right lower lobe consolidation. | 0.00 | 0.355 | 0.00 | 11.12 | −0.333 |
 
 > **Note on method.** This gallery is a hand-picked set of illustrative
-> examples, not a representative sample.
+> examples, not a representative sample. We selected columns (from a
+> run that scored 7 metrics) and rows (from a run that scored 8
+> rollouts) to keep the table readable while preserving the sharpest
+> contrasts. F1CheXbert was dropped because its per-sample output has
+> narrow dynamic range (three unique values across the set); GREEN was
+> dropped because its signal on this gallery closely tracked CRIMSON's
+> at roughly double the compute cost.
 
 ### Three rollouts worth zooming in on
 
 The headline is **row 3**. If you skim only one row, make it that one.
 
-1. **Row 2 — clinically correct paraphrase.** "Mild cardiomegaly." →
+1. **Row 2: clinically correct paraphrase.** "Mild cardiomegaly." →
    "The cardiac silhouette is mildly enlarged." Same finding, totally
-   different wording. BLEU scores this at zero; a BLEU-reward GRPO run
-   would push the policy *away* from the paraphrase. F1CheXbert scores
-   1.0 (both reports map to the same CheXpert label); a clinical-reward
-   run would push the policy *toward* it. **Same rollout, opposite
-   gradient under the two rewards.** (BERTScore here scores only 0.22
-   because it's vocabulary-sensitive and doesn't recover the clinical
-   paraphrase as cleanly as readers might expect.)
+   different wording. BLEU scores this at zero and RadGraph at zero
+   (entity tokens don't match); a BLEU- or RadGraph-reward GRPO run
+   would push the policy *away* from the paraphrase. BERTScore 0.22
+   (vocabulary-sensitive; doesn't recover the clinical paraphrase as
+   cleanly as readers might expect). CRIMSON scores 1.0 — the only
+   metric that correctly rewards the clinically-equivalent rewording.
+   **Same rollout, opposite gradient across rewards.**
 
-2. **Row 3 — headline: flipped negation.** "No pleural effusion." →
+2. **Row 3: flipped negation (headline).** "No pleural effusion." →
    "Pleural effusion." Three of four tokens overlap, and BERTScore's
-   embeddings are nearly identical between them, so **BERTScore scores
-   0.893, only slightly below the exact-match ceiling of 1.0.** Under a
-   BERTScore reward, GRPO would **partially reward flipping a negation**,
-   corrupting the clinical meaning while keeping the text "looking
-   right." F1CheXbert drops to 0.80 (13/14 labels still match; only the
-   effusion label flips), RadGraph drops to 0.50, and RadCliQ rises to
-   11.06 (higher distance = worse). Clinical metrics flag the flip;
-   BERTScore does not. **Even the strongest drop-in NLP reward is
-   actively dangerous here.**
+   embeddings are nearly identical between them, so **BERTScore
+   scores 0.893, only slightly below the exact-match ceiling of 1.0.**
+   Under a BERTScore reward, GRPO would **partially reward flipping a
+   negation**, corrupting the clinical meaning while keeping the text
+   "looking right." Clinical metrics flag the flip: RadGraph drops to
+   0.50, RadCliQ rises to 11.06 (higher distance = worse), and
+   **CRIMSON returns −0.333** (the only metric that assigns a negative
+   reward, sharply contradicting BERTScore's positive signal). **Even
+   the strongest drop-in NLP reward is actively dangerous here.**
 
-3. **Row 7 — severity flip.** "Mild pulmonary edema." → "Severe
-   pulmonary edema." BERTScore 0.955 (one token differs), F1CheXbert
-   1.00 (edema is still edema; severity isn't a separate label),
-   RadGraph 0.67, RadCliQ 10.20. Here *even F1CheXbert is fooled*: a
-   label-classifier reward can't distinguish mild from severe. RadGraph
-   and RadCliQ register the change; F1CheXbert doesn't. For
-   severity-sensitive RL, the cheaper clinical metrics aren't enough.
+3. **Row 4: severity flip.** "Mild pulmonary edema." → "Severe
+   pulmonary edema." BERTScore 0.955 (one token differs). RadGraph
+   0.67 and CRIMSON 0.5 both partially penalize but don't bottom
+   out — severity is real but the finding category (edema) is
+   correct. RadCliQ registers the change at 10.20 (midway between
+   exact-match 9.37 and full mismatch ~11). For severity-sensitive
+   RL, lexical and semantic rewards aren't enough; clinical metrics
+   and CRIMSON catch the gradient.
 
 ### Considerations when picking a reward
 
-Tradeoffs observed above, in descending order of per-sample cost:
+Tradeoffs observed above, in ascending order of per-sample cost:
 
 - **Cheap sanity baseline or auxiliary signal:** `bleu` or `rouge`.
   Sub-ms, CPU. Do not use as the sole reward; row 2 shows why.
 - **Semantic default, still cheap:** `bertscore` (0.64 ms/sample).
   Better than BLEU at paraphrase, but **row 3 shows it over-rewards
-  negation flips**. If you use it as the sole reward, expect the policy
-  to learn that inverting negations is fine.
+  negation flips**. If you use it as the sole reward, expect the
+  policy to learn that inverting negations is fine.
 - **Clinical-finding accuracy (CXR):** `f1chexbert` with
-  `key="f1chexbert_sample_acc_5"` at 1.75 ms/sample. **What this
-  metric actually returns:** per-sample agreement rate across 14
-  CheXpert labels (compressed multi-label accuracy), not per-finding
-  F1. A single-label flip drops the score by ~1/14 ≈ 0.07 at most.
-  Catches label flips (row 3: 0.80 vs 1.00); does NOT catch severity
-  changes (row 7: stays at 1.00). Good primary reward for
-  label-centric tasks.
+  `key="f1chexbert_sample_acc_5"` at 1.75 ms/sample. Returns per-
+  sample agreement rate across 14 CheXpert labels (compressed
+  multi-label accuracy), not per-finding F1; a single-label flip
+  drops the score by ~1/14 ≈ 0.07 at most. Catches label flips but
+  not severity changes. Good primary reward for label-centric tasks;
+  dropped from the gallery because its narrow dynamic range is less
+  illustrative than RadGraph on the same rollouts.
 - **Entity / relation grounding (CXR):** `radgraph` with
-  `key="radgraph_partial"` at ~158 ms/sample. Catches omissions
-  (row 4: 0.50), hallucinations (row 5: 0.57), severity changes
-  (row 7: 0.67). Heavier but richer.
+  `key="radgraph_partial"` at ~158 ms/sample. Catches omissions,
+  hallucinations, and severity changes. Heavier but richer than
+  F1CheXbert.
 - **Best correlation with radiologist preferences (eval or
   final-tune):** `radcliq` at ~161 ms/sample. A distance, so
   **lower = better**. For RL, invert with
@@ -193,13 +197,18 @@ Tradeoffs observed above, in descending order of per-sample cost:
   from RadEval.rewards import make_reward_fn
   reward = make_reward_fn("radcliq", score_transform=lambda x: -x)
   ```
-  Negation is universally safe; bounded inversions like `1/(1+x)` are
-  unsafe because RadCliQ's range isn't strictly non-negative.
-- **Eval-only (not practical for online RL):** `green` (2.2 s/sample,
-  7B local LLM) and the API metrics (`crimson` / `mammo_green` /
-  `radfact_ct`, hundreds of ms each, network-bound). Fine for
-  final-run evaluation; a `UserWarning` fires if you wrap an API
-  metric as a reward.
+  Negation is universally safe; bounded inversions like `1/(1+x)`
+  are unsafe because RadCliQ's range isn't strictly non-negative.
+- **LLM judge with signed output:** `crimson` via OpenAI
+  (~380 ms/sample, API-bound). Returns a signed score where
+  clinically-wrong rollouts land *negative* (see rows 3 and 5 above);
+  the sharpest "this is wrong" signal in the gallery. Eval-only: a
+  `UserWarning` fires when you wrap it as a reward, and network-
+  bound per-sample cost makes it impractical for online RL.
+- **Other LLM-backed / eval-only:** `green` (2.2 s/sample, 7B
+  local LLM; redundant with CRIMSON on this gallery),
+  `mammo_green` and `radfact_ct` (hundreds of ms each, network-
+  bound). Fine for final-run evaluation.
 
 ---
 
