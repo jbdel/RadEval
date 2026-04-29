@@ -2,7 +2,7 @@ from pathlib import Path
 from setuptools import setup, find_packages
 
 setup(
-    name='RadEval',
+    name='radeval',
     version='2.2.0',
     author='Jean-Benoit Delbrouck, Justin Xu, Xi Zhang, Dave Van Veen',
     maintainer='Xi Zhang, JB Delbrouck',
@@ -42,11 +42,11 @@ setup(
         'torch>=2.3',
         'torchvision',
         'transformers>=5.0',
-        # Vendored BERTScore (RadEval/metrics/bertscore/_vendor/) replaces
+        # Vendored BERTScore (radeval/metrics/bertscore/_vendor/) replaces
         # the `bert-score` PyPI package; no dependency required.
-        # Vendored RadGraph inference (RadEval/metrics/radgraph/_vendor/) —
+        # Vendored RadGraph inference (radeval/metrics/radgraph/_vendor/) —
         # a patched subset of Stanford-AIMI/radgraph 0.1.18 that runs on
-        # transformers 5.x. See RadEval/metrics/radgraph/_vendor/__init__.py
+        # transformers 5.x. See radeval/metrics/radgraph/_vendor/__init__.py
         # for details. No external `radgraph` PyPI dependency is required.
         'rouge_score',
         'scikit-learn>=1.8.0',
@@ -85,8 +85,8 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     package_data={
-        "RadEval.metrics.SRRBert": ["*.json"],
-        "RadEval.metrics.bertscore._vendor": [
+        "radeval.metrics.SRRBert": ["*.json"],
+        "radeval.metrics.bertscore._vendor": [
             "rescale_baseline/*/*.tsv",
         ],
     },

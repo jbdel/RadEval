@@ -192,7 +192,7 @@ def test_gallery_extra_kwargs_propagation(bench, monkeypatch):
         return _FakeMetric
 
     monkeypatch.setattr(
-        "RadEval.metrics._registry.get_metric_class",
+        "radeval.metrics._registry.get_metric_class",
         _fake_get_metric_class,
     )
 

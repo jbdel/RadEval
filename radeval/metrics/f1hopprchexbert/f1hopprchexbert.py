@@ -8,7 +8,7 @@ from typing import Union
 import torch
 from transformers import ModernBertModel, AutoTokenizer
 
-from RadEval.metrics._chexbert_base import BaseBertLabeler, BaseCheXbertEvaluator
+from radeval.metrics._chexbert_base import BaseBertLabeler, BaseCheXbertEvaluator
 
 _DEFAULT_HOPPR_CKPT = "/fss/pranta_das/CheXbert/expermints_folder/25507/checkpoint_2.pth"
 

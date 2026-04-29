@@ -1,4 +1,4 @@
-from RadEval.metrics.bertscore.bertscore import BertScore
+from radeval.metrics.bertscore.bertscore import BertScore
 
 def radcliq_bertscore(refs, hyps):
     bertscore_scorer = BertScore(model_type='distilroberta-base',

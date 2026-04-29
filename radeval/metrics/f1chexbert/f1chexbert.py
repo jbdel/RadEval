@@ -8,7 +8,7 @@ from transformers import AutoConfig, BertModel, BertTokenizer
 from huggingface_hub import hf_hub_download
 from appdirs import user_cache_dir
 
-from RadEval.metrics._chexbert_base import BaseBertLabeler, BaseCheXbertEvaluator
+from radeval.metrics._chexbert_base import BaseBertLabeler, BaseCheXbertEvaluator
 
 CACHE_DIR = user_cache_dir("chexbert")
 

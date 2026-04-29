@@ -3,7 +3,7 @@
 Run with the `radeval-t5` env (Python 3.11, transformers 5.6.2, torch
 2.9.1, trl 1.3.0):
 
-    pip install RadEval[rl]
+    pip install radeval[rl]
     python examples/trl_grpo_quickstart.py
 
 BLEU is deliberate for the first-run experience: no extra model download
@@ -31,7 +31,7 @@ from datasets import Dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from trl import GRPOConfig, GRPOTrainer
 
-from RadEval.rewards import make_reward_fn
+from radeval.rewards import make_reward_fn
 
 
 def load_dataset() -> Dataset:

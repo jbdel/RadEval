@@ -7,7 +7,7 @@ Binary mapping: {0,1} -> negative, {2,3} -> positive.
 import os
 import pytest
 
-from RadEval.metrics.f1hopprchexbert_ct import HopprF1CheXbertCT
+from radeval.metrics.f1hopprchexbert_ct import HopprF1CheXbertCT
 
 _CKPT_DIR = (
     "/nfs/cluster/hoppr_vlm_ressources/radeval_checkpoints/hoppr_f1chexbert_ct"
@@ -157,14 +157,14 @@ class TestHopprF1CheXbertCTPredictions:
 class TestHopprF1CheXbertCTViaRadEval:
 
     def test_basic_output(self):
-        from RadEval import RadEval
+        from radeval import RadEval
         evaluator = RadEval(metrics=["f1hopprchexbert_ct"], show_progress=False)
         results = evaluator(refs=REAL_REFS, hyps=REAL_REFS)
         assert "f1hopprchexbert_ct_accuracy" in results
         assert results["f1hopprchexbert_ct_accuracy"] == 1.0
 
     def test_details_output(self):
-        from RadEval import RadEval
+        from radeval import RadEval
         evaluator = RadEval(
             metrics=["f1hopprchexbert_ct"], detailed=True, show_progress=False)
         results = evaluator(refs=REAL_REFS, hyps=REAL_REFS)
@@ -173,7 +173,7 @@ class TestHopprF1CheXbertCTViaRadEval:
         assert isinstance(results["f1hopprchexbert_ct_label_scores_f1"], dict)
 
     def test_per_sample_output(self):
-        from RadEval import RadEval
+        from radeval import RadEval
         evaluator = RadEval(
             metrics=["f1hopprchexbert_ct"], per_sample=True, show_progress=False)
         results = evaluator(refs=REAL_REFS, hyps=REAL_REFS)

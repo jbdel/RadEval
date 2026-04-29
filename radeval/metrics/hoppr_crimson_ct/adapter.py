@@ -16,7 +16,7 @@ class HopprCrimsonCTMetric(MetricBase):
         if CRIMSON_CT is None:
             raise ImportError(
                 "HopprCrimsonCT failed to import — missing dependency. "
-                "See RadEval/metrics/hoppr_crimson_ct/__init__.py.")
+                "See radeval/metrics/hoppr_crimson_ct/__init__.py.")
         self._scorer = CRIMSON_CT(
             provider=provider, model_name=model_name,
             openai_api_key=openai_api_key, gemini_api_key=gemini_api_key,

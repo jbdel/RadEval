@@ -24,7 +24,7 @@ except RuntimeError:
     # start method already set in this interpreter; ignore
     pass
 
-from RadEval.metrics.green_score.utils import (
+from radeval.metrics.green_score.utils import (
     make_prompt,
     clean_responses,
 )

@@ -85,7 +85,7 @@ class NoduleEvalMetric(MetricBase):
         if NoduleEvalScore is None:
             raise ImportError(
                 "NoduleEval failed to import — missing dependency. "
-                "See RadEval/metrics/nodule_eval/__init__.py.")
+                "See radeval/metrics/nodule_eval/__init__.py.")
         self._scorer = NoduleEvalScore(
             provider=provider,
             model_name=model_name,

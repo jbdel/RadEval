@@ -33,7 +33,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
 from fixtures.regression_samples import REFS, HYPS
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from RadEval import RadEval
+from radeval import RadEval
 
 
 def _convert_for_json(obj):
@@ -67,7 +67,7 @@ def _run_tier(metrics: list[str]) -> dict:
 
 
 # Public metrics on RadEval 2.1 + transformers 5.x. The vendored radgraph
-# (RadEval/metrics/radgraph/_vendor/) enables the radgraph-family metrics
+# (radeval/metrics/radgraph/_vendor/) enables the radgraph-family metrics
 # again on transformers 5.x.
 CPU_METRICS = ["bleu", "rouge"]
 GPU_METRICS = [

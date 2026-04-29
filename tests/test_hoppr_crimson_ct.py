@@ -12,7 +12,7 @@ import warnings
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-from RadEval.metrics.hoppr_crimson_ct import CRIMSON_CT
+from radeval.metrics.hoppr_crimson_ct import CRIMSON_CT
 
 if CRIMSON_CT is None:
     pytest.skip("CRIMSON_CT not available", allow_module_level=True)
@@ -98,13 +98,13 @@ class TestHopprCrimsonCTUnit:
         assert CRIMSON_CT is not None
 
     def test_prompt_uses_ct_objective(self):
-        from RadEval.metrics.hoppr_crimson_ct.prompt_parts_ct import build_prompt_ct
+        from radeval.metrics.hoppr_crimson_ct.prompt_parts_ct import build_prompt_ct
         prompt = build_prompt_ct("ref findings", "pred findings")
         assert "CT findings" in prompt
         assert "chest X-ray" not in prompt
 
     def test_prompt_has_ct_examples(self):
-        from RadEval.metrics.hoppr_crimson_ct.prompt_parts_ct import build_prompt_ct
+        from radeval.metrics.hoppr_crimson_ct.prompt_parts_ct import build_prompt_ct
         prompt = build_prompt_ct("ref", "pred")
         assert "Pulmonary embolism" in prompt
         assert "Bowel ischemia" in prompt
@@ -139,7 +139,7 @@ class TestHopprCrimsonCTUnit:
             assert mean <= 0
 
     def test_radeval_integration_mock(self):
-        from RadEval import RadEval
+        from radeval import RadEval
         with patch("openai.OpenAI") as mock_class, \
              patch("openai.AsyncOpenAI"):
             mock_client = MagicMock()
@@ -159,7 +159,7 @@ class TestHopprCrimsonCTUnit:
             assert results["hoppr_crimson_ct"] == 1.0
 
     def test_radeval_per_sample_mock(self):
-        from RadEval import RadEval
+        from radeval import RadEval
         with patch("openai.OpenAI") as mock_class, \
              patch("openai.AsyncOpenAI"):
             mock_client = MagicMock()
@@ -180,7 +180,7 @@ class TestHopprCrimsonCTUnit:
             assert len(results["hoppr_crimson_ct"]) == 1
 
     def test_radeval_details_mock(self):
-        from RadEval import RadEval
+        from radeval import RadEval
         with patch("openai.OpenAI") as mock_class, \
              patch("openai.AsyncOpenAI"):
             mock_client = MagicMock()

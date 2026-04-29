@@ -95,17 +95,17 @@ class TestMammoGreenUnit:
 
     def test_import(self):
         """Test that MammoGREEN can be imported."""
-        from RadEval.metrics.green_score import MammoGREEN
+        from radeval.metrics.green_score import MammoGREEN
         assert MammoGREEN is not None
 
     def test_import_from_factual(self):
         """Test that MammoGREEN can be imported from factual."""
-        from RadEval.metrics.green_score import MammoGREEN
+        from radeval.metrics.green_score import MammoGREEN
         assert MammoGREEN is not None
 
     def test_initialization_without_api_key(self):
         """Test that initialization fails without API key."""
-        from RadEval.metrics.green_score import MammoGREEN
+        from radeval.metrics.green_score import MammoGREEN
 
         old_key = os.environ.pop("OPENAI_API_KEY", None)
         try:
@@ -117,8 +117,8 @@ class TestMammoGreenUnit:
 
     def test_gemini_initialization_without_api_key(self):
         """Test that Gemini initialization fails without API key (or ImportError if not installed)."""
-        from RadEval.metrics.green_score import MammoGREEN
-        from RadEval.metrics.green_score.mammo_green import GEMINI_TYPES_AVAILABLE
+        from radeval.metrics.green_score import MammoGREEN
+        from radeval.metrics.green_score.mammo_green import GEMINI_TYPES_AVAILABLE
 
         old_gemini_key = os.environ.pop("GEMINI_API_KEY", None)
         old_google_key = os.environ.pop("GOOGLE_API_KEY", None)
@@ -133,7 +133,7 @@ class TestMammoGreenUnit:
 
     def test_provider_detection(self):
         """Test that provider is correctly detected based on model name."""
-        from RadEval.metrics.green_score.mammo_green import _detect_provider
+        from radeval.metrics.green_score.mammo_green import _detect_provider
 
         assert _detect_provider("gpt-4o") == "openai"
         assert _detect_provider("gpt-4o-mini") == "openai"
@@ -147,7 +147,7 @@ class TestMammoGreenUnit:
 
     def test_explicit_provider_parameter(self, mock_openai_client):
         """Test that explicit provider parameter overrides auto-detection."""
-        from RadEval.metrics.green_score import MammoGREEN
+        from radeval.metrics.green_score import MammoGREEN
 
         scorer = MammoGREEN(model_name="custom-model", provider="openai",
                             openai_api_key="test-key")
@@ -155,7 +155,7 @@ class TestMammoGreenUnit:
 
     def test_invalid_provider(self):
         """Test that invalid provider raises error."""
-        from RadEval.metrics.green_score import MammoGREEN
+        from radeval.metrics.green_score import MammoGREEN
 
         with pytest.raises(NotImplementedError, match="does not support"):
             MammoGREEN(model_name="gpt-4o", provider="invalid",
@@ -163,7 +163,7 @@ class TestMammoGreenUnit:
 
     def test_initialization_with_api_key(self, mock_openai_client):
         """Test that initialization succeeds with API key."""
-        from RadEval.metrics.green_score import MammoGREEN
+        from radeval.metrics.green_score import MammoGREEN
 
         scorer = MammoGREEN(model_name="gpt-4o", openai_api_key="test-key")
         assert scorer is not None
@@ -171,7 +171,7 @@ class TestMammoGreenUnit:
 
     def test_score_computation(self):
         """Test the mammo_green_score function."""
-        from RadEval.metrics.green_score.mammo_green import mammo_green_score
+        from radeval.metrics.green_score.mammo_green import mammo_green_score
 
         matched = 1
         errors = {
@@ -193,7 +193,7 @@ class TestMammoGreenUnit:
 
     def test_json_extraction(self):
         """Test the JSON extraction helper."""
-        from RadEval.metrics.green_score.mammo_green import _extract_json_str
+        from radeval.metrics.green_score.mammo_green import _extract_json_str
 
         clean = '{"matched_findings": 1}'
         assert _extract_json_str(clean) == clean
@@ -210,7 +210,7 @@ class TestMammoGreenUnit:
 
     def test_output_schema_validation(self):
         """Test the MammoGreenOutput schema validation."""
-        from RadEval.metrics.green_score.mammo_green import MammoGreenOutput
+        from radeval.metrics.green_score.mammo_green import MammoGreenOutput
 
         valid_data = {
             "matched_findings": 2,
@@ -241,7 +241,7 @@ class TestMammoGreenUnit:
 
     def test_call_interface(self, mock_openai_client):
         """Test the __call__ interface returns correct format."""
-        from RadEval.metrics.green_score import MammoGREEN
+        from radeval.metrics.green_score import MammoGREEN
 
         scorer = MammoGREEN(model_name="gpt-4o", openai_api_key="test-key")
         scorer._chat_completion_async = AsyncMock(side_effect=[
@@ -268,7 +268,7 @@ class TestMammoGreenUnit:
 
     def test_score_method_interface(self, mock_openai_client):
         """Test the .score() method returns dict format."""
-        from RadEval.metrics.green_score import MammoGREEN
+        from radeval.metrics.green_score import MammoGREEN
 
         scorer = MammoGREEN(model_name="gpt-4o", openai_api_key="test-key")
         scorer._chat_completion_async = AsyncMock(side_effect=[
@@ -290,7 +290,7 @@ class TestMammoGreenUnit:
 
     def test_computed_scores(self, mock_openai_client):
         """Test that computed scores match expected values."""
-        from RadEval.metrics.green_score import MammoGREEN
+        from radeval.metrics.green_score import MammoGREEN
 
         scorer = MammoGREEN(model_name="gpt-4o", openai_api_key="test-key")
         scorer._chat_completion_async = AsyncMock(side_effect=[
@@ -307,7 +307,7 @@ class TestMammoGreenUnit:
 
     def test_mismatched_lengths(self, mock_openai_client):
         """Test that mismatched refs/hyps lengths raise error."""
-        from RadEval.metrics.green_score import MammoGREEN
+        from radeval.metrics.green_score import MammoGREEN
 
         scorer = MammoGREEN(model_name="gpt-4o", openai_api_key="test-key")
 
@@ -316,7 +316,7 @@ class TestMammoGreenUnit:
 
     def test_significant_error_keys_constant(self):
         """Test that SIGNIFICANT_ERROR_KEYS contains all 6 error types."""
-        from RadEval.metrics.green_score.mammo_green import SIGNIFICANT_ERROR_KEYS
+        from radeval.metrics.green_score.mammo_green import SIGNIFICANT_ERROR_KEYS
 
         expected_keys = {
             "false_finding",
@@ -330,7 +330,7 @@ class TestMammoGreenUnit:
 
     def test_unsupported_provider_raises(self):
         """Test that unsupported provider raises NotImplementedError."""
-        from RadEval.metrics.green_score import MammoGREEN
+        from radeval.metrics.green_score import MammoGREEN
         with pytest.raises(NotImplementedError, match="does not support"):
             MammoGREEN(model_name="gpt-4o", provider="hf",
                        openai_api_key="test-key")
@@ -341,8 +341,8 @@ class TestMammoGreenRadEvalIntegration:
 
     def test_radeval_initialization(self):
         """MammoGREEN is registered and accepts per-metric config kwargs."""
-        from RadEval import RadEval
-        from RadEval.metrics._registry import METRIC_REGISTRY, get_metric_class
+        from radeval import RadEval
+        from radeval.metrics._registry import METRIC_REGISTRY, get_metric_class
         import inspect
 
         assert "mammo_green" in METRIC_REGISTRY
@@ -373,7 +373,7 @@ class TestMammoGreenIntegration:
 
     def test_real_api_call(self, api_key):
         """Test with real OpenAI API call."""
-        from RadEval.metrics.green_score import MammoGREEN
+        from radeval.metrics.green_score import MammoGREEN
 
         test_refs = refs
         test_hyps = hyps
@@ -412,7 +412,7 @@ class TestMammoGreenIntegration:
 
     def test_radeval_with_mammo_green(self, api_key):
         """Test MammoGREEN through RadEval interface."""
-        from RadEval import RadEval
+        from radeval import RadEval
 
         test_refs = refs
         test_hyps = hyps
@@ -434,7 +434,7 @@ class TestMammoGreenIntegration:
 
     def test_real_gemini_api_call(self):
         """Test with real Gemini API call."""
-        from RadEval.metrics.green_score import MammoGREEN
+        from radeval.metrics.green_score import MammoGREEN
 
         key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")
         if not key:

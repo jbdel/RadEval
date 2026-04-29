@@ -1,4 +1,4 @@
-from .RadEval import RadEval
+from .radeval import RadEval
 from .utils import compare_systems
 from .rewards import make_reward_fn, validate_rewards
 

@@ -64,7 +64,7 @@ def test_grpo_smoke_with_make_reward_fn(tmp_path):
     from transformers import AutoModelForCausalLM, AutoTokenizer
     from trl import GRPOConfig, GRPOTrainer
 
-    from RadEval.rewards import make_reward_fn
+    from radeval.rewards import make_reward_fn
 
     fixture_path = (
         Path(__file__).parent / "fixtures" / "synthetic_reports.json"
@@ -127,7 +127,7 @@ def test_grpo_smoke_conversational(tmp_path):
     from transformers import AutoModelForCausalLM, AutoTokenizer
     from trl import GRPOConfig, GRPOTrainer
 
-    from RadEval.rewards import make_reward_fn
+    from radeval.rewards import make_reward_fn
 
     tokenizer = AutoTokenizer.from_pretrained(TINY_MODEL_ID)
     if tokenizer.pad_token is None:

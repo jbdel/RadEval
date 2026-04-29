@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check and update LLM API pricing in RadEval/metrics/_llm.py.
+"""Check and update LLM API pricing in radeval/metrics/_llm.py.
 
 Usage:
     python scripts/update_pricing.py          # show current vs reference prices
@@ -9,7 +9,7 @@ import argparse
 import re
 from pathlib import Path
 
-LLM_PY = Path(__file__).resolve().parent.parent / "RadEval" / "metrics" / "_llm.py"
+LLM_PY = Path(__file__).resolve().parent.parent / "radeval" / "metrics" / "_llm.py"
 
 # Reference prices (per 1M tokens: input, output).
 # Update these from the provider pricing pages:

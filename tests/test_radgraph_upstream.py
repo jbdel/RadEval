@@ -2,17 +2,17 @@
 
 Imported verbatim from https://github.com/Stanford-AIMI/radgraph
 (tests/radgraph_test.py) with only the top-level imports rewritten from
-`radgraph` to `RadEval.metrics.radgraph`. The expected-value dicts are
+`radgraph` to `radeval.metrics.radgraph`. The expected-value dicts are
 unmodified — these are the reference outputs the radgraph author pins
 against. If our three transformers-v5 patches (see
-RadEval/metrics/radgraph/_vendor/__init__.py) preserved semantics, our
+radeval/metrics/radgraph/_vendor/__init__.py) preserved semantics, our
 vendored package produces exactly these values on transformers 5.x.
 
 Source:
 https://raw.githubusercontent.com/Stanford-AIMI/radgraph/master/tests/radgraph_test.py
 (as of commit adbf1c0 on branch master, 2025-10-31).
 """
-from RadEval.metrics.radgraph import RadGraph, F1RadGraph
+from radeval.metrics.radgraph import RadGraph, F1RadGraph
 
 
 def test_radgraph():

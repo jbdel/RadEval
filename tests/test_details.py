@@ -1,4 +1,4 @@
-from RadEval import RadEval
+from radeval import RadEval
 import pytest
 
 def test_do_details():

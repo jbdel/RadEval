@@ -23,7 +23,7 @@ HYPS = [
 @pytest.fixture(scope="module")
 def radcliq_radgraph_scores():
     """Get the radgraph sub-scores from RadCliQ-v1 as the ground truth."""
-    from RadEval.metrics.RadCliQv1.radcliq import CompositeMetric
+    from radeval.metrics.RadCliQv1.radcliq import CompositeMetric
     composite = CompositeMetric()
     sub = composite._compute_sub_metrics(REFS, HYPS)
     return sub["radgraph"].tolist()
@@ -31,7 +31,7 @@ def radcliq_radgraph_scores():
 
 @pytest.fixture(scope="module")
 def standalone_scorer():
-    from RadEval.metrics.radgraph_radcliq import RadGraphRadCliQ
+    from radeval.metrics.radgraph_radcliq import RadGraphRadCliQ
     return RadGraphRadCliQ()
 
 
@@ -70,7 +70,7 @@ def test_validation_errors(standalone_scorer):
 
 
 def test_via_radeval_interface():
-    from RadEval import RadEval
+    from radeval import RadEval
     evaluator = RadEval(metrics=["radgraph_radcliq"], show_progress=False)
     results = evaluator(refs=REFS, hyps=HYPS)
     assert "radgraph_radcliq" in results
@@ -80,7 +80,7 @@ def test_via_radeval_interface():
 
 def test_via_radeval_details():
     """do_details returns same scalar as default for radgraph_radcliq."""
-    from RadEval import RadEval
+    from radeval import RadEval
     evaluator = RadEval(
         metrics=["radgraph_radcliq"], detailed=True, show_progress=False)
     results = evaluator(refs=REFS, hyps=HYPS)
