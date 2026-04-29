@@ -8,6 +8,17 @@ flagship, tested path, and any TRL trainer that consumes a reward-function
 callable (e.g. [RLOO](https://huggingface.co/docs/trl/main/en/rloo_trainer))
 uses the same interface.
 
+**Contents:**
+
+- [Install](#install)
+- [Primary path: GRPO with a single RadEval reward](#primary-path-grpo-with-a-single-radeval-reward)
+- [Reward callable contract](#reward-callable-contract)
+- [Choosing a metric](#choosing-a-metric)
+- [Combining metrics (native TRL)](#combining-metrics-native-trl)
+- [Notes & limitations](#notes--limitations)
+- [Adjacent, untested uses (guidance only)](#adjacent-untested-uses-guidance-only)
+- [Useful TRL links](#useful-trl-links)
+
 ## Install
 
 ```bash
@@ -22,7 +33,7 @@ ceiling, not a validated-range claim; other 1.x versions are expected
 to work but are not separately tested in this release. For
 strictest reproducibility, pin to `trl==1.3.0`.
 
-## Primary path (tested): GRPO with a single RadEval reward
+## Primary path: GRPO with a single RadEval reward
 
 Matches [`examples/trl_grpo_quickstart.py`](../examples/trl_grpo_quickstart.py).
 
@@ -178,7 +189,7 @@ RadEval abstraction is needed.
   pinned TRL version but is a partial regression guard; it does not
   run the full trainer end-to-end. [todo: this makes us seem like we haven't done our homework. remove]
 
-## Adjacent / untested uses (guidance-only)
+## Adjacent, untested uses (guidance only)
 
 These paths use the **same** reward-function signature and are expected
 to work by construction, but **none are validated in this release** —

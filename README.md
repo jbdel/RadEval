@@ -11,7 +11,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?)](https://github.com/jbdel/RadEval/main/LICENSE)
 <!--- BADGES: END --->
 
-RadEval is a Python framework for evaluating AI-generated radiology reports. It serves two use cases:
+RadEval (EMNLP, 2025) is a Python framework for evaluating AI-generated radiology reports. It serves two use cases:
 
 1. **Evaluation:** 16 metrics spanning lexical, semantic, clinical, and LLM-based evaluation, all behind a single interface with lazy loading and config-file support.
 2. **Reinforcement-learning (RL) rewards:** every RL-eligible metric exposed as a drop-in HuggingFace TRL reward function for GRPO (and other trainers that accept a reward callable).
@@ -19,12 +19,12 @@ RadEval is a Python framework for evaluating AI-generated radiology reports. It 
 ## Table of Contents
 
 - [Installation](#installation)
-- [Usage](#usage)
+- [Usage: Evaluation](#usage-evaluation)
   - [Basic](#basic)
   - [Config file](#config-file)
   - [Output modes](#output-modes)
   - [Comparing systems](#comparing-systems)
-- [Reinforcement learning with RadEval rewards](#reinforcement-learning-with-radeval-rewards)
+- [Usage: RL rewards](#usage-rl-rewards)
   - [Quickstart](#rl-quickstart)
   - [Benchmarks: cost & divergence](#rl-benchmarks-cost--divergence)
   - [Reward API & docs](#rl-reward-api--docs)
@@ -56,7 +56,7 @@ pip install -e '.[api]'
 > `accelerate>=1.1`, `numpy<3`. Full test suite passes on this configuration.
 > For the `[rl]` extras, add `trl>=1.3.0,<2`.
 
-## Usage
+## Usage: Evaluation
 
 ### Basic
 
@@ -156,7 +156,7 @@ signatures, scores = compare_systems(
 
 See [docs/hypothesis_testing.md](docs/hypothesis_testing.md) for a full walkthrough and interpretation guide.
 
-## Reinforcement learning with RadEval rewards
+## Usage: RL rewards
 
 RadEval metrics aren't just for offline evaluation — every RL-eligible metric is a drop-in [HuggingFace TRL](https://github.com/huggingface/trl) reward function. GRPO is the flagship, tested path; RLOO and other TRL trainers that consume a reward-function callable use the same interface.
 
@@ -188,7 +188,7 @@ Runnable end-to-end: `python examples/trl_grpo_quickstart.py`.
 How expensive is each metric when used as a per-step reward, how does reward choice change what the model learns? See **[docs/trl_rewards_benchmarks.md](docs/trl_rewards_benchmarks.md)** for:
 
 - A **speed table** covering all 16 public metrics, from **0.09 ms/sample** (BLEU, CPU) to **~2,200 ms/sample** (GREEN, 7B local LLM). RadCliQ, a metric with strong correlation to radiologist preferences, comes in at **~161 ms/sample**.
-- A **reward-divergence gallery**: same rollouts, scored by several metrics side-by-side. **Headline finding**: on a negation flip ("No pleural effusion." → "Pleural effusion."), BERTScore rewards the clinically-wrong rollout at **0.893**, nearly its 1.0 ceiling; a GRPO policy trained against BERTScore would be pushed *toward* this rollout. Clinical metrics penalize the flip, but by widely varying magnitudes: RadGraph drops from 1.0 to 0.50, RadCliQ rises by ~1.7 distance units, and CRIMSON (LLM judge, signed range (−1, 1]) scores **−0.333**: a single hallucinated abnormal finding against a normal reference, exactly as defined by the CRIMSON paper. The benchmarks page lays out the full per-metric reaction across several other rollout types.
+- A **reward-divergence gallery**: same rollouts, scored by several metrics side-by-side. **Headline finding**: on a negation flip ("No pleural effusion." → "Pleural effusion."), BERTScore rewards the clinically-wrong rollout at **0.893**, nearly its 1.0 ceiling; a GRPO policy trained against BERTScore would be pushed *toward* this rollout. Clinical metrics penalize the flip, but by widely varying magnitudes: RadGraph drops from 1.0 to 0.50, RadCliQ rises by ~1.7 distance units, and CRIMSON (LLM judge, signed range (−1, 1]) scores **−0.333**: a single hallucinated abnormal finding against a normal reference. The benchmarks page lays out the full per-metric reaction across several other rollout types.
 
 ### RL reward API & docs
 

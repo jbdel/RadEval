@@ -13,6 +13,13 @@ matter?"** Two artifacts answer those questions:
    metrics, showing how reward choice changes what the GRPO policy
    learns.
 
+**Contents:**
+
+- [Per-batch cost (20 samples)](#per-batch-cost-20-samples)
+- [What reward would this rollout receive?](#what-reward-would-this-rollout-receive)
+- [Methodology & caveats](#methodology--caveats)
+- [Pointers](#pointers)
+
 ## Per-batch cost (20 samples)
 
 | Metric | `key=` | Cached init | Per-sample | Peak VRAM |
@@ -51,16 +58,16 @@ process sees no VRAM delta; actual usage is ~14 GB in a worker.
 
 ### Takeaways
 
-- **The actionable takeaway is relative ordering, not absolute
+**The main takeaway is relative ordering, not absolute
   numbers.** Absolute latencies vary with hardware, report length,
   and batch size (see "Cost depends on…" below), but the ordering
-  BLEU < BERTScore < F1CheXbert < RadGraph < RadCliQ < GREEN ≪ API
-  metrics holds up across reasonable GPU setups.
+  BLEU < BERTScore < F1CheXbert < RadGraph < RadCliQ < GREEN ≪ API.
+
+Per metric:
 - **BLEU / ROUGE are essentially free** (sub-0.2 ms/sample, CPU): use
-  as a sanity baseline or a cheap auxiliary reward.
+  as a sanity baseline.
 - **BERTScore is the cheapest semantic option** at 0.64 ms/sample.
-- **F1CheXbert / F1RadBERT-CT / SRRBert** cluster in the 2–5 ms range:
-  affordable per-step rewards for CXR/CT workflows.
+- **F1CheXbert / F1RadBERT-CT / SRRBert** cluster in the 2–5 ms range.
 - **RadGraph and its derivatives** (including RadCliQ) jump to
   ~160 ms/sample; 100× the F1CheXbert cost. Tractable but significant
   for large-batch training.
@@ -99,7 +106,7 @@ What they're measuring varies with:
 
 ## What reward would this rollout receive?
 
-Same setup you're imagining: a GRPO trainer samples a candidate
+Setup: a GRPO trainer samples a candidate
 completion for each prompt, the reward function scores each sample,
 the score becomes the training signal. Below: 5 curated `(reference,
 candidate rollout)` pairs scored by five metrics (BLEU, BERTScore,
@@ -111,7 +118,7 @@ better (RadCliQ only). For RL training with RadCliQ, see the
 inversion recipe in "Considerations" below.
 
 Row 1 is an **exact-match sanity row**; it fixes the ceiling for each
-metric so the rest of the table is read relative to it (BLEU /
+metric so the rest of the table is read relative to it. BLEU /
 BERTScore / RadGraph / CRIMSON all max at 1.0; RadCliQ's floor is
 ~9.37 since it's a distance, lower = better).
 
@@ -124,21 +131,16 @@ BERTScore / RadGraph / CRIMSON all max at 1.0; RadCliQ's floor is
 | 5 | Stable bibasilar atelectasis without consolidation. | New right lower lobe consolidation. | 0.00 | 0.355 | 0.00 | 11.12 | −0.333 |
 
 > **Note on method.** This gallery is a hand-picked set of illustrative
-> examples, not a representative sample. We selected columns (from a
+> examples. We selected columns (from a
 > run that scored 7 metrics) and rows (from a run that scored 8
 > rollouts) to keep the table readable while preserving the sharpest
 > contrasts. F1CheXbert was dropped because its per-sample output has
 > narrow dynamic range (three unique values across the set); GREEN was
 > dropped because its signal on this gallery closely tracked CRIMSON's
 > at roughly double the compute cost. Full 7-column × 8-row data in
-> [`docs/benchmarks/trl_rewards_260429.json`](./benchmarks/trl_rewards_260429.json);
-> the selection rule is documented inline in
-> [`examples/bench_rewards.py`](../examples/bench_rewards.py) next to
-> `GALLERY_METRICS`.
+> [`docs/benchmarks/trl_rewards_260429.json`](./benchmarks/trl_rewards_260429.json)
 
-### Three rollouts worth zooming in on
-
-The headline is **row 3**. If you skim only one row, make it that one.
+### Rollout deep dive
 
 1. **Row 2: clinically correct paraphrase.** "Mild cardiomegaly." →
    "The cardiac silhouette is mildly enlarged." Same finding, totally
@@ -150,7 +152,7 @@ The headline is **row 3**. If you skim only one row, make it that one.
    metric that correctly rewards the clinically-equivalent rewording.
    **Same rollout, opposite gradient across rewards.**
 
-2. **Row 3: flipped negation (headline).** "No pleural effusion." →
+2. **Row 3: flipped negation.** "No pleural effusion." →
    "Pleural effusion." Three of four tokens overlap, and BERTScore's
    embeddings are nearly identical between them, so **BERTScore
    scores 0.893, only slightly below the exact-match ceiling of 1.0.**
@@ -161,11 +163,7 @@ The headline is **row 3**. If you skim only one row, make it that one.
    **CRIMSON returns −0.333** — a signed negative in CRIMSON's
    defined range (−1, 1], meaning the report has more weighted
    errors than correct findings
-   ([CRIMSON paper, §3.3](https://arxiv.org/pdf/2603.06183)). For
-   this specific rollout, −0.333 is exactly what CRIMSON's scoring
-   function emits for one actionable-non-urgent hallucinated finding
-   against a normal reference. **Even the strongest drop-in NLP
-   reward is actively dangerous here.**
+   ([CRIMSON paper, §3.3](https://arxiv.org/pdf/2603.06183)). 
 
 3. **Row 4: severity flip.** "Mild pulmonary edema." → "Severe
    pulmonary edema." BERTScore 0.955 (one token differs). RadGraph
