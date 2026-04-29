@@ -80,13 +80,21 @@ METRIC_PLAN: list[tuple[str, str | None, dict]] = [
     ("radfact_ct", "radfact_ct_f1", {}),
 ]
 
-# Gallery subset: 5 metrics that span lexical → semantic → clinical.
-GALLERY_METRICS: list[tuple[str, str | None]] = [
-    ("bleu", None),
-    ("bertscore", None),
-    ("f1chexbert", "f1chexbert_sample_acc_5"),
-    ("radgraph", "radgraph_partial"),
-    ("radcliq", None),
+# Gallery subset: 7 metrics spanning lexical → semantic → clinical
+# → LLM-based clinical. Plan/06 will evaluate which columns to keep
+# after measurement (the doc's divergence table renders a curated
+# subset, not all 7). 3-tuple to match METRIC_PLAN shape: (metric,
+# key, extra_init_kwargs). CRIMSON is forced to its openai provider
+# so the gallery column reflects what the API judge returns, matching
+# the "API-based clinical" row in the speed table.
+GALLERY_METRICS: list[tuple[str, str | None, dict]] = [
+    ("bleu", None, {}),
+    ("bertscore", None, {}),
+    ("f1chexbert", "f1chexbert_sample_acc_5", {}),
+    ("radgraph", "radgraph_partial", {}),
+    ("radcliq", None, {}),
+    ("green", None, {}),
+    ("crimson", None, {"provider": "openai", "model_name": "gpt-4o-mini"}),
 ]
 
 
@@ -315,13 +323,16 @@ def _score_one_pair(
     expected_key: str | None,
     ref: str,
     hyp: str,
+    extra_kwargs: dict | None = None,
 ) -> float | None:
     """Score a single (ref, hyp) pair and return the scalar. None on skip."""
     from RadEval.metrics._registry import get_metric_class
 
+    extra_kwargs = extra_kwargs or {}
+
     try:
         cls = get_metric_class(metric)
-        scorer = cls()
+        scorer = cls(**extra_kwargs)
     except Exception:
         return None
     try:
@@ -397,13 +408,16 @@ def run_benchmark(output_path: Path, dry_run: bool = False) -> None:
     # E2: divergence. Score each pair with each gallery metric.
     for entry in divergence_rows:
         scores: dict[str, float | None] = {}
-        for metric, key in GALLERY_METRICS:
+        for metric, key, extra in GALLERY_METRICS:
             sys.stderr.write(f"[divergence row {entry['id']}] {metric}\n")
             sys.stderr.flush()
             if dry_run:
                 scores[metric] = _fake_score(metric)
             else:
-                scores[metric] = _score_one_pair(metric, key, entry["ref"], entry["hyp"])
+                scores[metric] = _score_one_pair(
+                    metric, key, entry["ref"], entry["hyp"],
+                    extra_kwargs=extra,
+                )
         snapshot["divergence"].append(divergence_row(entry, scores))
 
     output_path.parent.mkdir(parents=True, exist_ok=True)

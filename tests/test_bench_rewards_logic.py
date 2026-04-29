@@ -117,7 +117,7 @@ def test_metric_plan_structure(bench):
 
 def test_gallery_metrics_structure(bench):
     """Gallery covers lexical/semantic/clinical spectrum."""
-    names = [m for m, _ in bench.GALLERY_METRICS]
+    names = [m for m, _, _ in bench.GALLERY_METRICS]
     assert "bleu" in names, "BLEU is the familiar lexical baseline"
     assert "bertscore" in names, "BERTScore is the headline semantic baseline"
     assert "f1chexbert" in names
@@ -167,7 +167,7 @@ def test_dry_run_produces_expected_snapshot_structure(bench, tmp_path):
     # Divergence rows: one per fixture entry, each scored by every
     # GALLERY_METRICS metric.
     assert len(data["divergence"]) == 8, "divergence fixture has 8 rows"
-    gallery_names = [m for m, _ in bench.GALLERY_METRICS]
+    gallery_names = [m for m, _, _ in bench.GALLERY_METRICS]
     for row in data["divergence"]:
         for field in ("id", "ref", "hyp", "narrative", "scores"):
             assert field in row
