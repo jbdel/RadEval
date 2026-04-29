@@ -1,0 +1,22 @@
+[
+  {"prompt": "Generate a chest x-ray report: heart size normal, lungs clear.", "ground_truth": "Normal heart size. Lungs are clear. No acute cardiopulmonary process."},
+  {"prompt": "Generate a chest x-ray report: mild cardiomegaly, small pleural effusion.", "ground_truth": "Mild cardiomegaly. Small bilateral pleural effusions."},
+  {"prompt": "Generate a chest x-ray report: no acute findings.", "ground_truth": "No acute cardiopulmonary abnormality."},
+  {"prompt": "Generate a chest x-ray report: bibasilar atelectasis.", "ground_truth": "Bibasilar atelectasis. No focal consolidation."},
+  {"prompt": "Generate a chest x-ray report: pulmonary edema.", "ground_truth": "Mild pulmonary edema. No pneumothorax."},
+  {"prompt": "Generate a chest x-ray report: pneumonia right lower lobe.", "ground_truth": "Right lower lobe consolidation consistent with pneumonia."},
+  {"prompt": "Generate a chest x-ray report: pneumothorax left apex.", "ground_truth": "Small left apical pneumothorax. No tension features."},
+  {"prompt": "Generate a chest x-ray report: stable appearance, no new findings.", "ground_truth": "Stable chest radiograph. No new findings compared to prior."},
+  {"prompt": "Generate a chest x-ray report: support devices in place.", "ground_truth": "Endotracheal tube and nasogastric tube appropriately positioned."},
+  {"prompt": "Generate a chest x-ray report: interstitial edema.", "ground_truth": "Interstitial pulmonary edema without overt alveolar filling."},
+  {"prompt": "Generate a chest x-ray report: rib fracture suspected.", "ground_truth": "Possible nondisplaced right eighth rib fracture."},
+  {"prompt": "Generate a chest x-ray report: improved pulmonary edema.", "ground_truth": "Improved pulmonary edema. Small residual bilateral pleural effusions."},
+  {"prompt": "Generate a chest x-ray report: clear post-operative appearance.", "ground_truth": "Post-operative changes. No acute abnormality."},
+  {"prompt": "Generate a chest x-ray report: hyperinflation.", "ground_truth": "Hyperinflated lungs consistent with chronic obstructive pulmonary disease."},
+  {"prompt": "Generate a chest x-ray report: enlarged cardiac silhouette.", "ground_truth": "Enlarged cardiac silhouette. Pulmonary vascular congestion."},
+  {"prompt": "Generate a chest x-ray report: right-sided port in place.", "ground_truth": "Right-sided chest port with tip in the superior vena cava."},
+  {"prompt": "Generate a chest x-ray report: worsening opacity.", "ground_truth": "Worsening right lower lobe opacity. Consider pneumonia."},
+  {"prompt": "Generate a chest x-ray report: no pleural effusion.", "ground_truth": "No pleural effusion. No pneumothorax."},
+  {"prompt": "Generate a chest x-ray report: mediastinal widening.", "ground_truth": "Widened mediastinum. Recommend further evaluation."},
+  {"prompt": "Generate a chest x-ray report: low lung volumes.", "ground_truth": "Low lung volumes with bibasilar atelectasis."}
+]

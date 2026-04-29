@@ -1,0 +1,269 @@
+{
+  "run_ts": "2026-04-29T18:16:56",
+  "env": {
+    "radeval_version": "2.2.0",
+    "torch": "2.9.1+cu128",
+    "transformers": "5.6.2",
+    "python": "3.11.15",
+    "cuda": "12.8",
+    "gpu": "NVIDIA A100-SXM4-80GB",
+    "hf_cache": "/fss/davev/.cache/huggingface"
+  },
+  "workload": {
+    "n_samples": 20,
+    "fixture": "docs/benchmarks/fixtures/speed_workload.json"
+  },
+  "speed": [
+    {
+      "metric": "bleu",
+      "key": "bleu",
+      "cached_init_s": 0.0038,
+      "warm_batch_s_median": 0.0018,
+      "warm_per_sample_ms": 0.088,
+      "peak_vram_mb_approx": 0.0
+    },
+    {
+      "metric": "rouge",
+      "key": "rouge1",
+      "cached_init_s": 0.0625,
+      "warm_batch_s_median": 0.0031,
+      "warm_per_sample_ms": 0.156,
+      "peak_vram_mb_approx": 0.0
+    },
+    {
+      "metric": "bertscore",
+      "key": "bertscore",
+      "cached_init_s": 5.588,
+      "warm_batch_s_median": 0.0128,
+      "warm_per_sample_ms": 0.64,
+      "peak_vram_mb_approx": 260.4
+    },
+    {
+      "metric": "radeval_bertscore",
+      "key": "radeval_bertscore",
+      "cached_init_s": 0.8601,
+      "warm_batch_s_median": 0.0229,
+      "warm_per_sample_ms": 1.143,
+      "peak_vram_mb_approx": 605.6
+    },
+    {
+      "metric": "f1chexbert",
+      "key": "f1chexbert_sample_acc_5",
+      "cached_init_s": 4.5245,
+      "warm_batch_s_median": 0.0371,
+      "warm_per_sample_ms": 1.856,
+      "peak_vram_mb_approx": 434.2
+    },
+    {
+      "metric": "f1radbert_ct",
+      "key": "f1radbert_ct_sample_acc",
+      "cached_init_s": 0.8177,
+      "warm_batch_s_median": 0.0403,
+      "warm_per_sample_ms": 2.014,
+      "peak_vram_mb_approx": 485.1
+    },
+    {
+      "metric": "radgraph",
+      "key": "radgraph_partial",
+      "cached_init_s": 4.0217,
+      "warm_batch_s_median": 3.1813,
+      "warm_per_sample_ms": 159.067,
+      "peak_vram_mb_approx": 890.3
+    },
+    {
+      "metric": "ratescore",
+      "key": "ratescore",
+      "cached_init_s": 5.1219,
+      "warm_batch_s_median": 1.0575,
+      "warm_per_sample_ms": 52.875,
+      "peak_vram_mb_approx": 1130.1
+    },
+    {
+      "metric": "srrbert",
+      "key": "srrbert_weighted_f1",
+      "cached_init_s": 0.7907,
+      "warm_batch_s_median": 0.1002,
+      "warm_per_sample_ms": 5.012,
+      "peak_vram_mb_approx": 420.1
+    },
+    {
+      "metric": "radgraph_radcliq",
+      "key": "radgraph_radcliq",
+      "cached_init_s": 4.3398,
+      "warm_batch_s_median": 3.1944,
+      "warm_per_sample_ms": 159.72,
+      "peak_vram_mb_approx": 890.3
+    },
+    {
+      "metric": "temporal",
+      "key": "temporal_f1",
+      "cached_init_s": 0.4212,
+      "warm_batch_s_median": 0.3336,
+      "warm_per_sample_ms": 16.679,
+      "peak_vram_mb_approx": 191.1
+    },
+    {
+      "metric": "radcliq",
+      "key": "radcliq_v1",
+      "cached_init_s": 4.5756,
+      "warm_batch_s_median": 3.2534,
+      "warm_per_sample_ms": 162.669,
+      "peak_vram_mb_approx": 1175.3
+    },
+    {
+      "metric": "green",
+      "key": "green",
+      "cached_init_s": 0.0002,
+      "warm_batch_s_median": 48.809,
+      "warm_per_sample_ms": 2440.45,
+      "peak_vram_mb_approx": 0.0
+    },
+    {
+      "metric": "crimson",
+      "key": "crimson",
+      "cached_init_s": 1.0834,
+      "warm_batch_s_median": 6.8355,
+      "warm_per_sample_ms": 341.777,
+      "peak_vram_mb_approx": 0.0
+    },
+    {
+      "metric": "mammo_green",
+      "key": "mammo_green",
+      "cached_init_s": 0.0145,
+      "warm_batch_s_median": 4.6372,
+      "warm_per_sample_ms": 231.861,
+      "peak_vram_mb_approx": 0.0
+    },
+    {
+      "metric": "radfact_ct",
+      "key": "radfact_ct_f1",
+      "cached_init_s": 0.0124,
+      "warm_batch_s_median": 7.5018,
+      "warm_per_sample_ms": 375.092,
+      "peak_vram_mb_approx": 0.0
+    }
+  ],
+  "divergence_fixture": "docs/benchmarks/fixtures/divergence_examples.json",
+  "divergence": [
+    {
+      "id": 1,
+      "ref": "Mild cardiomegaly.",
+      "hyp": "The cardiac silhouette is mildly enlarged.",
+      "narrative": "Clinically correct paraphrase \u2014 different wording, same finding. BLEU near-0 would push the policy away from this; clinical metrics reward it.",
+      "scores": {
+        "bleu": 2.295748846116193e-16,
+        "bertscore": 0.21496091783046722,
+        "f1chexbert": 1.0,
+        "radgraph": 0.0,
+        "radcliq": 10.672966289380014,
+        "green": 1.0,
+        "crimson": 1.0
+      }
+    },
+    {
+      "id": 2,
+      "ref": "No pleural effusion.",
+      "hyp": "Pleural effusion.",
+      "narrative": "HEADLINE \u2014 negation flip. Three of four tokens overlap; BERTScore embeddings are nearly identical except for one word. A BERTScore reward would partially reward inverting the clinical meaning. F1CheXbert/RadGraph correctly score 0.",
+      "scores": {
+        "bleu": 9.069748819809871e-08,
+        "bertscore": 0.89275062084198,
+        "f1chexbert": 0.8,
+        "radgraph": 0.5,
+        "radcliq": 11.060720487930437,
+        "green": 0.0,
+        "crimson": -0.3333
+      }
+    },
+    {
+      "id": 3,
+      "ref": "Mild cardiomegaly. Small bilateral pleural effusions.",
+      "hyp": "Mild cardiomegaly.",
+      "narrative": "Missing finding \u2014 partial report. Lexical/semantic rewards barely penalize the omission; RadGraph entity/relation scoring does.",
+      "scores": {
+        "bleu": 0.00013533528311819452,
+        "bertscore": 0.7175441384315491,
+        "f1chexbert": 0.8,
+        "radgraph": 0.5,
+        "radcliq": 10.516819276279257,
+        "green": 0.5,
+        "crimson": 0.5
+      }
+    },
+    {
+      "id": 4,
+      "ref": "No acute findings.",
+      "hyp": "No acute findings. Small right pneumothorax.",
+      "narrative": "Hallucinated finding \u2014 model adds a clinically significant finding not present in the reference. Lexical/semantic prefix match is high; clinical metrics penalize the fabrication.",
+      "scores": {
+        "bleu": 6.389431040945238e-05,
+        "bertscore": 0.6041836738586426,
+        "f1chexbert": 1.0,
+        "radgraph": 0.5714285714285715,
+        "radcliq": 10.431722219505255,
+        "green": 0.5,
+        "crimson": -0.3333
+      }
+    },
+    {
+      "id": 5,
+      "ref": "No acute cardiopulmonary process.",
+      "hyp": "No acute cardiopulmonary process.",
+      "narrative": "Exact match \u2014 sanity row. All metrics should score at or near their respective maximum.",
+      "scores": {
+        "bleu": 0.9999999992291674,
+        "bertscore": 1.0,
+        "f1chexbert": 1.0,
+        "radgraph": 1.0,
+        "radcliq": 9.372604544321518,
+        "green": 1.0,
+        "crimson": 1.0
+      }
+    },
+    {
+      "id": 6,
+      "ref": "Left lower lobe consolidation consistent with pneumonia.",
+      "hyp": "Right upper lobe mass.",
+      "narrative": "Total mismatch \u2014 different finding, different location. All metrics should bottom out.",
+      "scores": {
+        "bleu": 1.2001245719779727e-12,
+        "bertscore": 0.5794366598129272,
+        "f1chexbert": 0.8,
+        "radgraph": 0.22222222222222224,
+        "radcliq": 10.930076960546126,
+        "green": 0.0,
+        "crimson": -0.3333
+      }
+    },
+    {
+      "id": 7,
+      "ref": "Mild pulmonary edema.",
+      "hyp": "Severe pulmonary edema.",
+      "narrative": "Severity flip \u2014 same finding, wrong severity. Lexical/semantic rewards score this high; clinical metrics may or may not catch the severity mismatch depending on label granularity.",
+      "scores": {
+        "bleu": 4.272870060579654e-06,
+        "bertscore": 0.9549447894096375,
+        "f1chexbert": 1.0,
+        "radgraph": 0.6666666666666666,
+        "radcliq": 10.203904448613157,
+        "green": 0.5,
+        "crimson": 0.5
+      }
+    },
+    {
+      "id": 8,
+      "ref": "Stable bibasilar atelectasis without consolidation.",
+      "hyp": "New right lower lobe consolidation.",
+      "narrative": "Opposite clinical conclusion \u2014 stable/benign vs new/active finding. Semantic similarity of 'lobe' / 'consolidation' inflates BERTScore; clinical metrics correctly flag the divergence.",
+      "scores": {
+        "bleu": 1.6990442439622046e-12,
+        "bertscore": 0.3548906743526459,
+        "f1chexbert": 0.6000000000000001,
+        "radgraph": 0.0,
+        "radcliq": 11.118538114352845,
+        "green": 0.0,
+        "crimson": -0.3333
+      }
+    }
+  ]
+}

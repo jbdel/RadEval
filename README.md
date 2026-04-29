@@ -1,7 +1,7 @@
 # RadEval
 
 <!--- BADGES: START --->
-[![PyPI](https://img.shields.io/badge/RadEval-v2.1.0-00B7EB?logo=python&logoColor=00B7EB)](https://pypi.org/project/RadEval/)
+[![PyPI](https://img.shields.io/badge/RadEval-v2.2.0-00B7EB?logo=python&logoColor=00B7EB)](https://pypi.org/project/RadEval/)
 [![Python version](https://img.shields.io/badge/python-3.11+-important?logo=python&logoColor=important)]()
 [![Expert Dataset](https://img.shields.io/badge/Expert-%20Dataset-4CAF50?logo=googlecloudstorage&logoColor=9BF0E1)](https://huggingface.co/datasets/IAMJB/RadEvalExpertDataset)
 [![Model](https://img.shields.io/badge/Model-RadEvalModernBERT-0066CC?logo=huggingface&labelColor=grey)](https://huggingface.co/IAMJB/RadEvalModernBERT)
@@ -11,17 +11,23 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?)](https://github.com/jbdel/RadEval/main/LICENSE)
 <!--- BADGES: END --->
 
-RadEval is a Python framework for evaluating AI-generated radiology reports. It provides 16 metrics spanning lexical, semantic, clinical, and LLM-based evaluation — all behind a single interface with lazy loading, config-file support, and compatibility with HuggingFace TRL for reinforcement learning.
+RadEval (EMNLP, 2025) is a Python framework for evaluating AI-generated radiology reports. It serves two use cases:
+
+1. **Evaluation:** 16 metrics spanning lexical, semantic, clinical, and LLM-based evaluation, all behind a single interface with lazy loading and config-file support.
+2. **Reinforcement-learning (RL) rewards:** every RL-eligible metric exposed as a drop-in HuggingFace TRL reward function for GRPO (and other trainers that accept a reward callable).
 
 ## Table of Contents
 
 - [Installation](#installation)
-- [Usage](#usage)
+- [Usage: Evaluation](#usage-evaluation)
   - [Basic](#basic)
   - [Config file](#config-file)
   - [Output modes](#output-modes)
   - [Comparing systems](#comparing-systems)
-  - [RL rewards](#rl-rewards)
+- [Usage: RL rewards](#usage-rl-rewards)
+  - [Quickstart](#rl-quickstart)
+  - [Benchmarks: cost & divergence](#rl-benchmarks-cost--divergence)
+  - [Reward API & docs](#rl-reward-api--docs)
 - [Supported Metrics](#supported-metrics)
 - [API Keys for LLM Metrics](#api-keys-for-llm-metrics)
 - [Documentation](#documentation)
@@ -47,14 +53,14 @@ pip install -e '.[api]'
 ```
 > **Known-good stack (for RadEval 2.1+):** Python 3.11, `torch==2.9.1+cu128`,
 > `transformers==5.6.2`, `tokenizers==0.22.2`, `huggingface_hub>=1.0`,
-> `accelerate>=1.1`, `numpy<3`. All 187 tests (170 local + 17 integration)
-> pass on this configuration.
+> `accelerate>=1.1`, `numpy<3`. Full test suite passes on this configuration.
+> For the `[rl]` extras, add `trl>=1.3.0,<2`.
 
-## Usage
+## Usage: Evaluation
 
 ### Basic
 
-Pass a list of metric names. Each metric is loaded lazily — only the ones you enable import their dependencies.
+Pass a list of metric names. Each metric is loaded lazily; only the ones you enable import their dependencies.
 
 ```python
 from RadEval import RadEval
@@ -150,9 +156,17 @@ signatures, scores = compare_systems(
 
 See [docs/hypothesis_testing.md](docs/hypothesis_testing.md) for a full walkthrough and interpretation guide.
 
-### RL rewards
+## Usage: RL rewards
 
-Wrap any metric as a [TRL](https://github.com/huggingface/trl)-compatible reward function for reinforcement learning:
+RadEval metrics aren't just for offline evaluation — every RL-eligible metric is a drop-in [HuggingFace TRL](https://github.com/huggingface/trl) reward function. GRPO is the flagship, tested path; RLOO and other TRL trainers that consume a reward-function callable use the same interface.
+
+Three things to look at, in increasing depth:
+
+### RL quickstart
+
+```bash
+pip install RadEval[rl]    # adds trl>=1.3.0,<2
+```
 
 ```python
 from RadEval.rewards import make_reward_fn
@@ -160,12 +174,26 @@ from trl import GRPOTrainer
 
 trainer = GRPOTrainer(
     model=model,
-    reward_funcs=[make_reward_fn("bertscore")],
-    train_dataset=dataset,   # must have a "ground_truth" column
+    processing_class=tokenizer,
+    reward_funcs=[make_reward_fn("bleu")],   # or bertscore, radgraph (key=...), radcliq, ...
+    train_dataset=dataset,                   # must have a "ground_truth" column
 )
+trainer.train()
 ```
 
-See [docs/trl_rewards.md](docs/trl_rewards.md) for recommended metrics, score transforms, and a runnable demo.
+Runnable end-to-end: `python examples/trl_grpo_quickstart.py`.
+
+### RL benchmarks: cost & divergence
+
+How expensive is each metric when used as a per-step reward, how does reward choice change what the model learns? See **[docs/trl_rewards_benchmarks.md](docs/trl_rewards_benchmarks.md)** for:
+
+- A **speed table** covering all 16 public metrics, from **0.09 ms/sample** (BLEU, CPU) to **~2,200 ms/sample** (GREEN, 7B local LLM). RadCliQ, a metric with strong correlation to radiologist preferences, comes in at **~161 ms/sample**.
+- A **reward-divergence gallery**: same rollouts, scored by several metrics side-by-side. **Headline finding**: on a negation flip ("No pleural effusion." → "Pleural effusion."), BERTScore rewards the clinically-wrong rollout at **0.893**, nearly its 1.0 ceiling; a GRPO policy trained against BERTScore would be pushed *toward* this rollout. Clinical metrics penalize the flip, but by widely varying magnitudes: RadGraph drops from 1.0 to 0.50, RadCliQ rises by ~1.7 distance units, and CRIMSON (LLM judge, signed range (−1, 1]) scores **−0.333**: a single hallucinated abnormal finding against a normal reference. The benchmarks page lays out the full per-metric reaction across several other rollout types.
+
+### RL reward API & docs
+
+- **[docs/trl_rewards.md](docs/trl_rewards.md):** `make_reward_fn` contract, required `key=` for multi-key metrics, conversational-completion handling, multi-metric composition, VLM pointer, known limitations.
+- Note: For *distance* metrics (lower = better) such as RadCliQ, use the safe inversion `make_reward_fn("radcliq", score_transform=lambda x: -x)`.
 
 ## Supported Metrics
 
@@ -214,6 +242,7 @@ If not passed explicitly, keys fall back to the environment variables `OPENAI_AP
 | [docs/hypothesis_testing.md](docs/hypothesis_testing.md) | Statistical background, full example, performance notes |
 | [docs/file_formats.md](docs/file_formats.md) | Loading data from .tok, .json, and Python lists |
 | [docs/trl_rewards.md](docs/trl_rewards.md) | Using RadEval metrics as RL reward functions with HuggingFace TRL |
+| [docs/trl_rewards_benchmarks.md](docs/trl_rewards_benchmarks.md) | Speed table + reward-divergence gallery for picking an RL reward metric |
 
 ## RadEval Expert Dataset
 
@@ -293,7 +322,7 @@ A curated evaluation set annotated by board-certified radiologists for validatin
 
 ## Contributing
 
-RadEval is open source and we welcome contributions from the community. Whether it's a new metric, a bug fix, or improved documentation — feel free to open an issue or submit a pull request on [GitHub](https://github.com/jbdel/RadEval).
+RadEval is open source and we welcome contributions from the community. Whether it's a new metric, a bug fix, or improved documentation; feel free to open an issue or submit a pull request on [GitHub](https://github.com/jbdel/RadEval).
 
 ## Acknowledgments
 

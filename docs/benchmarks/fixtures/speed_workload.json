@@ -1,0 +1,22 @@
+[
+  {"ref": "No acute cardiopulmonary process.", "hyp": "No acute cardiopulmonary findings."},
+  {"ref": "Mild cardiomegaly with small bilateral pleural effusions.", "hyp": "Mildly enlarged cardiac silhouette and small pleural effusions bilaterally."},
+  {"ref": "No pleural effusion.", "hyp": "No pleural effusion or pneumothorax."},
+  {"ref": "Bibasilar atelectasis.", "hyp": "Low lung volumes with bibasilar atelectasis."},
+  {"ref": "Mild pulmonary edema. No pneumothorax.", "hyp": "Pulmonary vascular congestion without pneumothorax."},
+  {"ref": "Right lower lobe consolidation consistent with pneumonia.", "hyp": "Right lower lobe airspace opacity, likely pneumonia."},
+  {"ref": "Small left apical pneumothorax.", "hyp": "No pneumothorax."},
+  {"ref": "Stable chest radiograph.", "hyp": "No interval change from the prior study."},
+  {"ref": "Endotracheal tube and nasogastric tube appropriately positioned.", "hyp": "Support devices appropriately positioned."},
+  {"ref": "Interstitial pulmonary edema without overt alveolar filling.", "hyp": "Mild interstitial edema."},
+  {"ref": "Possible nondisplaced right eighth rib fracture.", "hyp": "No acute osseous abnormality."},
+  {"ref": "Improved pulmonary edema.", "hyp": "Decreased pulmonary edema compared to prior."},
+  {"ref": "Post-operative changes. No acute abnormality.", "hyp": "Expected postoperative appearance."},
+  {"ref": "Hyperinflated lungs consistent with chronic obstructive pulmonary disease.", "hyp": "Emphysematous changes throughout both lungs."},
+  {"ref": "Enlarged cardiac silhouette. Pulmonary vascular congestion.", "hyp": "Cardiomegaly and vascular engorgement."},
+  {"ref": "Right-sided chest port with tip in the superior vena cava.", "hyp": "Right chest port tip terminates in the SVC."},
+  {"ref": "Worsening right lower lobe opacity.", "hyp": "Stable right lower lobe opacity."},
+  {"ref": "No pleural effusion. No pneumothorax.", "hyp": "Clear lungs bilaterally."},
+  {"ref": "Widened mediastinum. Recommend further evaluation.", "hyp": "Normal mediastinal contours."},
+  {"ref": "Low lung volumes with bibasilar atelectasis.", "hyp": "Low lung volumes; bibasilar subsegmental atelectasis."}
+]
