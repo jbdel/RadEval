@@ -158,13 +158,14 @@ The headline is **row 3**. If you skim only one row, make it that one.
    negation**, corrupting the clinical meaning while keeping the text
    "looking right." Clinical metrics flag the flip: RadGraph drops to
    0.50, RadCliQ rises to 11.06 (higher distance = worse), and
-   **CRIMSON returns −0.333** — a negative score that sharply
-   contradicts BERTScore's positive signal. (Whether CRIMSON's
-   authors intended signed output as a deliberate clinical-wrongness
-   signal versus an emergent property of the prompt is unconfirmed;
-   the observed behavior on this gallery is consistent but based on
-   small-n.) **Even the strongest drop-in NLP reward is actively
-   dangerous here.**
+   **CRIMSON returns −0.333** — a signed negative in CRIMSON's
+   defined range (−1, 1], meaning the report has more weighted
+   errors than correct findings
+   ([CRIMSON paper, §3.3](https://arxiv.org/pdf/2603.06183)). For
+   this specific rollout, −0.333 is exactly what CRIMSON's scoring
+   function emits for one actionable-non-urgent hallucinated finding
+   against a normal reference. **Even the strongest drop-in NLP
+   reward is actively dangerous here.**
 
 3. **Row 4: severity flip.** "Mild pulmonary edema." → "Severe
    pulmonary edema." BERTScore 0.955 (one token differs). RadGraph
@@ -208,12 +209,16 @@ Tradeoffs observed above, in ascending order of per-sample cost:
   Negation is universally safe; bounded inversions like `1/(1+x)`
   are unsafe because RadCliQ's range isn't strictly non-negative.
 - **LLM judge with signed output:** `crimson` via OpenAI
-  (~380 ms/sample, API-bound). On this gallery, CRIMSON returned
-  negative scores on every clinically-wrong row (see rows 3 and 5
-  above); the sharpest "this is wrong" signal observed here. Whether
-  the sign is a deliberate semantic feature or a side-effect of the
-  LLM prompt is unconfirmed — worth verifying against the CRIMSON
-  paper before relying on it. Eval-only regardless: a `UserWarning`
+  (~380 ms/sample, API-bound). Range **(−1, 1]** per the
+  [CRIMSON paper, §3.3](https://arxiv.org/pdf/2603.06183):
+  `1` = no errors; `0` = no better than submitting a normal
+  template; `<0` = more weighted errors than correct findings,
+  asymptotically approaching `−1` as hallucinations accumulate.
+  The signed negative is a first-class semantic feature, not an
+  artifact; rows 3 and 5 in the gallery both land at −0.333,
+  corresponding to one actionable non-urgent false finding
+  against a normal reference. The sharpest "this is wrong"
+  signal in the gallery. Eval-only regardless: a `UserWarning`
   fires when you wrap CRIMSON as a reward, and the network-bound
   per-sample cost makes it impractical for online RL.
 - **Other LLM-backed / eval-only:** `green` (2.2 s/sample, 7B
