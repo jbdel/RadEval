@@ -130,7 +130,11 @@ BERTScore / RadGraph / CRIMSON all max at 1.0; RadCliQ's floor is
 > contrasts. F1CheXbert was dropped because its per-sample output has
 > narrow dynamic range (three unique values across the set); GREEN was
 > dropped because its signal on this gallery closely tracked CRIMSON's
-> at roughly double the compute cost.
+> at roughly double the compute cost. Full 7-column × 8-row data in
+> [`docs/benchmarks/trl_rewards_260429.json`](./benchmarks/trl_rewards_260429.json);
+> the selection rule is documented inline in
+> [`examples/bench_rewards.py`](../examples/bench_rewards.py) next to
+> `GALLERY_METRICS`.
 
 ### Three rollouts worth zooming in on
 
@@ -154,9 +158,13 @@ The headline is **row 3**. If you skim only one row, make it that one.
    negation**, corrupting the clinical meaning while keeping the text
    "looking right." Clinical metrics flag the flip: RadGraph drops to
    0.50, RadCliQ rises to 11.06 (higher distance = worse), and
-   **CRIMSON returns −0.333** (the only metric that assigns a negative
-   reward, sharply contradicting BERTScore's positive signal). **Even
-   the strongest drop-in NLP reward is actively dangerous here.**
+   **CRIMSON returns −0.333** — a negative score that sharply
+   contradicts BERTScore's positive signal. (Whether CRIMSON's
+   authors intended signed output as a deliberate clinical-wrongness
+   signal versus an emergent property of the prompt is unconfirmed;
+   the observed behavior on this gallery is consistent but based on
+   small-n.) **Even the strongest drop-in NLP reward is actively
+   dangerous here.**
 
 3. **Row 4: severity flip.** "Mild pulmonary edema." → "Severe
    pulmonary edema." BERTScore 0.955 (one token differs). RadGraph
@@ -200,11 +208,14 @@ Tradeoffs observed above, in ascending order of per-sample cost:
   Negation is universally safe; bounded inversions like `1/(1+x)`
   are unsafe because RadCliQ's range isn't strictly non-negative.
 - **LLM judge with signed output:** `crimson` via OpenAI
-  (~380 ms/sample, API-bound). Returns a signed score where
-  clinically-wrong rollouts land *negative* (see rows 3 and 5 above);
-  the sharpest "this is wrong" signal in the gallery. Eval-only: a
-  `UserWarning` fires when you wrap it as a reward, and network-
-  bound per-sample cost makes it impractical for online RL.
+  (~380 ms/sample, API-bound). On this gallery, CRIMSON returned
+  negative scores on every clinically-wrong row (see rows 3 and 5
+  above); the sharpest "this is wrong" signal observed here. Whether
+  the sign is a deliberate semantic feature or a side-effect of the
+  LLM prompt is unconfirmed — worth verifying against the CRIMSON
+  paper before relying on it. Eval-only regardless: a `UserWarning`
+  fires when you wrap CRIMSON as a reward, and the network-bound
+  per-sample cost makes it impractical for online RL.
 - **Other LLM-backed / eval-only:** `green` (2.2 s/sample, 7B
   local LLM; redundant with CRIMSON on this gallery),
   `mammo_green` and `radfact_ct` (hundreds of ms each, network-

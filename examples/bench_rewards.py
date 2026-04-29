@@ -81,12 +81,24 @@ METRIC_PLAN: list[tuple[str, str | None, dict]] = [
 ]
 
 # Gallery subset: 7 metrics spanning lexical → semantic → clinical
-# → LLM-based clinical. Plan/06 will evaluate which columns to keep
-# after measurement (the doc's divergence table renders a curated
-# subset, not all 7). 3-tuple to match METRIC_PLAN shape: (metric,
-# key, extra_init_kwargs). CRIMSON is forced to its openai provider
-# so the gallery column reflects what the API judge returns, matching
-# the "API-based clinical" row in the speed table.
+# → LLM-based clinical. The doc's divergence table renders a curated
+# subset (5 of 7 columns, 5 of 8 rows) — see plan/06.md Findings for
+# the selection analysis. The JSON snapshot keeps all 7 × 8 so users
+# re-running the benchmark see the full picture.
+#
+# Doc-to-JSON mapping (authoritative, for anyone regenerating the
+# rendered table from a new snapshot):
+#   Rendered doc columns:  bleu, bertscore, radgraph, radcliq, crimson
+#   Rendered doc rows:     JSON id=5 (exact match, shown as row 1),
+#                          JSON id=1 (paraphrase, shown as row 2),
+#                          JSON id=2 (negation flip, shown as row 3),
+#                          JSON id=7 (severity flip, shown as row 4),
+#                          JSON id=8 (opposite conclusion, shown as row 5).
+#
+# 3-tuple to match METRIC_PLAN shape: (metric, key, extra_init_kwargs).
+# CRIMSON is forced to its openai provider so the gallery column
+# reflects what the API judge returns, matching the "API-based
+# clinical" row in the speed table.
 GALLERY_METRICS: list[tuple[str, str | None, dict]] = [
     ("bleu", None, {}),
     ("bertscore", None, {}),

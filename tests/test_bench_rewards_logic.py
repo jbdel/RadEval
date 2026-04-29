@@ -174,6 +174,49 @@ def test_dry_run_produces_expected_snapshot_structure(bench, tmp_path):
         assert set(row["scores"].keys()) == set(gallery_names)
 
 
+def test_gallery_extra_kwargs_propagation(bench, monkeypatch):
+    """Verify that extra_kwargs declared in GALLERY_METRICS reach the
+    metric's cls() call. Prevents silent fallback to default provider
+    (e.g., CRIMSON defaulting to provider='hf' when the gallery
+    expects provider='openai')."""
+    observed: dict = {}
+
+    class _FakeMetric:
+        def __init__(self, **kwargs):
+            observed.update(kwargs)
+
+        def compute(self, refs, hyps, per_sample=False):  # pragma: no cover
+            return {"crimson": [0.0] * len(refs)}
+
+    def _fake_get_metric_class(name):
+        return _FakeMetric
+
+    monkeypatch.setattr(
+        "RadEval.metrics._registry.get_metric_class",
+        _fake_get_metric_class,
+    )
+
+    result = bench._score_one_pair(
+        "crimson", None, "ref", "hyp",
+        extra_kwargs={"provider": "openai", "model_name": "gpt-4o-mini"},
+    )
+    assert result == 0.0
+    assert observed == {"provider": "openai", "model_name": "gpt-4o-mini"}, (
+        f"extra_kwargs were not forwarded to cls(); observed={observed!r}"
+    )
+
+
+def test_gallery_crimson_config_is_openai(bench):
+    """The gallery's CRIMSON entry should pin provider=openai so the
+    'API-backed clinical judge' column actually reflects the API path."""
+    entries = {m: extra for (m, _, extra) in bench.GALLERY_METRICS}
+    assert "crimson" in entries
+    assert entries["crimson"].get("provider") == "openai", (
+        f"crimson gallery config should set provider=openai, "
+        f"got {entries['crimson']!r}"
+    )
+
+
 def test_dry_run_skip_accounting_path(bench, tmp_path, monkeypatch):
     """Force a metric to fail during dry-run-adjacent pipeline by
     pointing `_fake_speed_record` at a `skip_record` for one named
