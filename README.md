@@ -11,10 +11,10 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?)](https://github.com/jbdel/RadEval/main/LICENSE)
 <!--- BADGES: END --->
 
-RadEval is a Python framework for evaluating AI-generated radiology reports. It serves two use cases under one package:
+RadEval is a Python framework for evaluating AI-generated radiology reports. It serves two use cases:
 
-1. **Evaluator** — 16 metrics spanning lexical, semantic, clinical, and LLM-based evaluation, all behind a single interface with lazy loading and config-file support.
-2. **Reinforcement-learning reward provider** — every RL-eligible metric exposed as a drop-in HuggingFace TRL reward function for GRPO (and other trainers that accept a reward callable). Runnable quickstart, benchmarked per-sample cost, and a gallery showing how reward choice shapes what the policy learns.
+1. **Evaluation** — 16 metrics spanning lexical, semantic, clinical, and LLM-based evaluation, all behind a single interface with lazy loading and config-file support.
+2. **Reinforcement-learning (RL) rewards** — Every RL-eligible metric exposed as a drop-in HuggingFace TRL reward function for GRPO (and other trainers that accept a reward callable).
 
 ## Table of Contents
 
@@ -181,19 +181,19 @@ trainer = GRPOTrainer(
 trainer.train()
 ```
 
-Runnable end-to-end: `python examples/trl_grpo_quickstart.py` (5 GRPO steps on `Qwen/Qwen2.5-0.5B` using a 20-sample synthetic fixture; completes in minutes on a single modest GPU).
+Runnable end-to-end: `python examples/trl_grpo_quickstart.py`.
 
 ### RL benchmarks: cost & divergence
 
-How expensive is each metric when used as a per-step reward, and does reward choice actually change what the model learns? **Yes, dramatically.** See **[docs/trl_rewards_benchmarks.md](docs/trl_rewards_benchmarks.md)** for:
+How expensive is each metric when used as a per-step reward, how does reward choice change what the model learns? See **[docs/trl_rewards_benchmarks.md](docs/trl_rewards_benchmarks.md)** for:
 
-- A **speed table** covering all 16 public metrics, from **0.09 ms/sample** (BLEU, CPU) to **~2 200 ms/sample** (GREEN, 7B local LLM). RadCliQ — the metric with the best correlation to radiologist preferences — comes in at **~161 ms/sample**.
-- A **reward-divergence gallery**: same rollouts, scored by five metrics side-by-side. **Headline finding**: on a negation flip ("No pleural effusion." → "Pleural effusion."), **BERTScore gives a reward of 0.893 — nearly exact-match ceiling** — while F1CheXbert and RadGraph correctly penalize. Using BERTScore as an RL reward in radiology is dangerous; the page shows exactly why.
+- A **speed table** covering all 16 public metrics, from **0.09 ms/sample** (BLEU, CPU) to **~2,200 ms/sample** (GREEN, 7B local LLM). RadCliQ, a metric with strong correlation to radiologist preferences, comes in at **~161 ms/sample**.
+- A **reward-divergence gallery**: same rollouts, scored by several metrics side-by-side. **Headline finding**: on a negation flip ("No pleural effusion." → "Pleural effusion."), BERTScore rewards the clinically-wrong rollout at **0.893**, nearly its 1.0 ceiling; a GRPO policy trained against BERTScore would be pushed *toward* this rollout. Clinical metrics penalize the flip to varying degrees (F1CheXbert drops ~0.20, RadGraph drops ~0.50, RadCliQ rises ~1.7 distance units). The benchmarks page lays out the full per-metric reaction across a handful of other rollout types.
 
 ### RL reward API & docs
 
 - **[docs/trl_rewards.md](docs/trl_rewards.md)** — `make_reward_fn` contract, required `key=` for multi-key metrics, conversational-completion handling, multi-metric composition, VLM pointer, known limitations.
-- **RadCliQ direction caveat** — RadCliQ is a *distance* (lower = better); for RL use the safe inversion `make_reward_fn("radcliq", score_transform=lambda x: -x)`.
+- Note: For *distance* metrics (lower = better) such as RadCliQ, use the safe inversion `make_reward_fn("radcliq", score_transform=lambda x: -x)`.
 
 ## Supported Metrics
 
