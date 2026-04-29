@@ -13,8 +13,8 @@
 
 RadEval is a Python framework for evaluating AI-generated radiology reports. It serves two use cases:
 
-1. **Evaluation** — 16 metrics spanning lexical, semantic, clinical, and LLM-based evaluation, all behind a single interface with lazy loading and config-file support.
-2. **Reinforcement-learning (RL) rewards** — Every RL-eligible metric exposed as a drop-in HuggingFace TRL reward function for GRPO (and other trainers that accept a reward callable).
+1. **Evaluation:** 16 metrics spanning lexical, semantic, clinical, and LLM-based evaluation, all behind a single interface with lazy loading and config-file support.
+2. **Reinforcement-learning (RL) rewards:** every RL-eligible metric exposed as a drop-in HuggingFace TRL reward function for GRPO (and other trainers that accept a reward callable).
 
 ## Table of Contents
 
@@ -60,7 +60,7 @@ pip install -e '.[api]'
 
 ### Basic
 
-Pass a list of metric names. Each metric is loaded lazily — only the ones you enable import their dependencies.
+Pass a list of metric names. Each metric is loaded lazily; only the ones you enable import their dependencies.
 
 ```python
 from RadEval import RadEval
@@ -192,7 +192,7 @@ How expensive is each metric when used as a per-step reward, how does reward cho
 
 ### RL reward API & docs
 
-- **[docs/trl_rewards.md](docs/trl_rewards.md)** — `make_reward_fn` contract, required `key=` for multi-key metrics, conversational-completion handling, multi-metric composition, VLM pointer, known limitations.
+- **[docs/trl_rewards.md](docs/trl_rewards.md):** `make_reward_fn` contract, required `key=` for multi-key metrics, conversational-completion handling, multi-metric composition, VLM pointer, known limitations.
 - Note: For *distance* metrics (lower = better) such as RadCliQ, use the safe inversion `make_reward_fn("radcliq", score_transform=lambda x: -x)`.
 
 ## Supported Metrics
@@ -322,7 +322,7 @@ A curated evaluation set annotated by board-certified radiologists for validatin
 
 ## Contributing
 
-RadEval is open source and we welcome contributions from the community. Whether it's a new metric, a bug fix, or improved documentation — feel free to open an issue or submit a pull request on [GitHub](https://github.com/jbdel/RadEval).
+RadEval is open source and we welcome contributions from the community. Whether it's a new metric, a bug fix, or improved documentation; feel free to open an issue or submit a pull request on [GitHub](https://github.com/jbdel/RadEval).
 
 ## Acknowledgments
 

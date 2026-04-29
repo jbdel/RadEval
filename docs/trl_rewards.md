@@ -3,7 +3,7 @@
 # RadEval as a TRL-compatible reward provider
 
 RadEval's 16+ radiology metrics work as drop-in reward functions for
-Hugging Face [TRL](https://github.com/huggingface/trl) — GRPO is the
+Hugging Face [TRL](https://github.com/huggingface/trl). GRPO is the
 flagship, tested path, and any TRL trainer that consumes a reward-function
 callable (e.g. [RLOO](https://huggingface.co/docs/trl/main/en/rloo_trainer))
 uses the same interface.
@@ -18,7 +18,7 @@ pip install RadEval[rl]          # installs trl>=1.3.0,<2
 
 **Validated stack**: TRL 1.3.0, transformers 5.6.2,
 torch 2.9.1, Python 3.11. The `trl>=1.3.0,<2` pin is a compatibility
-ceiling, not a validated-range claim — other 1.x versions are expected
+ceiling, not a validated-range claim; other 1.x versions are expected
 to work but are not separately tested in this release. For
 strictest reproducibility, pin to `trl==1.3.0`.
 
@@ -137,12 +137,12 @@ trainer = GRPOTrainer(
 )
 ```
 
-TRL auto-logs `reward/bertscore/mean` / `/std` per function — no extra
+TRL auto-logs `reward/bertscore/mean` / `/std` per function; no extra
 RadEval abstraction is needed.
 
 > **VRAM note.** Two reward functions that share a heavy underlying
 > metric (e.g. two keys from RadGraph, or two BERTScore variants) will
-> load the underlying model twice — scorer caching is not yet shipped
+> load the underlying model twice; scorer caching is not yet shipped
 > in v2.2.0. Plan VRAM accordingly, or use a single reward function and
 > have it compute multiple keys.
 
@@ -175,7 +175,7 @@ RadEval abstraction is needed.
   `{role, content}` message dict.
   `tests/test_trl_integration.py::test_quickstart_config_surface`
   exercises the quickstart's config-construction surface against the
-  pinned TRL version but is a partial regression guard — it does not
+  pinned TRL version but is a partial regression guard; it does not
   run the full trainer end-to-end. [todo: this makes us seem like we haven't done our homework. remove]
 
 ## Adjacent / untested uses (guidance-only)
@@ -184,13 +184,13 @@ These paths use the **same** reward-function signature and are expected
 to work by construction, but **none are validated in this release** —
 the snippets below are orientation, not verified recipes:
 
-- **[RLOO](https://huggingface.co/docs/trl/main/en/rloo_trainer)** —
+- **[RLOO](https://huggingface.co/docs/trl/main/en/rloo_trainer):**
   REINFORCE-style online RL; same `reward_funcs=[...]` surface.
-- **PPO** — [`trl.experimental.ppo.PPOTrainer`](https://huggingface.co/docs/trl/main/en/ppo_trainer)
+- **PPO:** [`trl.experimental.ppo.PPOTrainer`](https://huggingface.co/docs/trl/main/en/ppo_trainer)
   requires a full reward model (`nn.Module`), not a reward-function
   callable, so RadEval metrics don't plug in directly. Use GRPO or
   RLOO for metric-as-reward workflows.
-- **VLM GRPO** — TRL's
+- **VLM GRPO:** TRL's
   [`examples/scripts/grpo_vlm.py`](https://github.com/huggingface/trl/blob/main/examples/scripts/grpo_vlm.py)
   works unchanged with RadEval rewards: the reward function never sees
   the image; only the decoded text completion. Wire it up identically:

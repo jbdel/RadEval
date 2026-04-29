@@ -62,7 +62,7 @@ process sees no VRAM delta; actual usage is ~14 GB in a worker.
 - **F1CheXbert / F1RadBERT-CT / SRRBert** cluster in the 2–5 ms range:
   affordable per-step rewards for CXR/CT workflows.
 - **RadGraph and its derivatives** (including RadCliQ) jump to
-  ~160 ms/sample — 100× the F1CheXbert cost. Tractable but significant
+  ~160 ms/sample; 100× the F1CheXbert cost. Tractable but significant
   for large-batch training.
   - RadCliQ, the costliest metric in this tier at ~161 ms/sample,
     correlates best with radiologist judgment in published studies
@@ -110,7 +110,7 @@ Reward direction: ↑ = higher is better reward signal, ↓ = lower is
 better (RadCliQ only). For RL training with RadCliQ, see the
 inversion recipe in "Picking a reward" below.
 
-Row 1 is an **exact-match sanity row** — it fixes the ceiling for each
+Row 1 is an **exact-match sanity row**; it fixes the ceiling for each
 metric so the rest of the table is read relative to it (BLEU / BERTScore
 / F1CheXbert / RadGraph all max at 1.0; RadCliQ's floor is ~9.37 since
 it's a distance, lower = better).
@@ -212,15 +212,15 @@ was produced.
 `torch==2.9.1+cu128`, Python 3.11, NVIDIA A100-SXM4-80GB, CUDA 12.8.
 Full `env` block recorded in the snapshot file.
 
-**Workload.** `docs/benchmarks/fixtures/speed_workload.json` — 20
+**Workload.** `docs/benchmarks/fixtures/speed_workload.json`: 20
 hand-written (reference, candidate) pairs in chest-X-ray-report style.
-Small on purpose — large enough that per-sample latency isn't dominated
+Small on purpose: large enough that per-sample latency isn't dominated
 by measurement noise, small enough that the slowest metrics (GREEN,
 API-backed) complete in reasonable time.
 
 **Measurement loop.**
 - Single in-process Python process; one metric at a time.
-- **Cached init** is measured after HF weights are already on disk —
+- **Cached init** is measured after HF weights are already on disk;
   the canonical snapshot is produced by running the script twice (first
   run warms the HF cache; second run is what we publish). This
   excludes network download time, which isn't comparable across
@@ -233,7 +233,7 @@ API-backed) complete in reasonable time.
   baselines (see VRAM caveat below), but honest best-effort.
 
 **VRAM numbers are approximate** (`peak_vram_mb_approx` in the JSON).
-`torch.cuda.max_memory_allocated` only counts torch allocations — it
+`torch.cuda.max_memory_allocated` only counts torch allocations; it
 misses ONNX / raw CUDA buffers and is biased by PyTorch's caching
 allocator. **Read VRAM as directional guidance for GPU budgeting, not
 as a metric-vs-metric comparison.** For a trustworthy absolute number
@@ -246,7 +246,7 @@ rows. `green` / API metrics follow `radcliq`.
 **Integration tests** (`tests/test_bench_rewards_logic.py`) cover the
 orchestration layer (JSON schema, `METRIC_PLAN` ordering, skip
 accounting) via a `--dry-run` flag that bypasses model loading. They
-do **not** exercise real model loading or metric correctness — the
+do **not** exercise real model loading or metric correctness; the
 numerical snapshot is produced and validated by a manual run, not by
 CI.
 
@@ -265,7 +265,7 @@ python examples/bench_rewards.py \
 
 API metrics (`crimson`, `mammo_green`, `radfact_ct`) require
 `OPENAI_API_KEY` (and optionally `GEMINI_API_KEY`) set in the
-environment — the script skips them cleanly with `"skipped":
+environment; the script skips them cleanly with `"skipped":
 "no-api-key:..."` if unset. Expect ~$0.01-0.05 in API charges per
 run against `gpt-4o-mini`.
 
@@ -274,10 +274,10 @@ The exact snapshot used for this page is
 
 ## Pointers
 
-- [docs/trl_rewards.md](./trl_rewards.md) — the full reward-callable
+- [docs/trl_rewards.md](./trl_rewards.md): the full reward-callable
   contract, `make_reward_fn` API, known limitations, VLM pointer.
-- [RadCliQ paper](https://www.cell.com/patterns/fulltext/S2666-3899(23)00157-5)
-  — correlation-with-radiologist-preferences study that motivates
+- [RadCliQ paper](https://www.cell.com/patterns/fulltext/S2666-3899(23)00157-5):
+  correlation-with-radiologist-preferences study that motivates
   RadCliQ as the clinical gold standard despite its cost.
-- [RadEval paper](https://aclanthology.org/2025.emnlp-demos.40/) —
+- [RadEval paper](https://aclanthology.org/2025.emnlp-demos.40/):
   population-level metric comparisons.
