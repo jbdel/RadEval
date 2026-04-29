@@ -34,7 +34,7 @@ N-gram overlap between hypothesis and reference. Returns BLEU-4 (4-gram) by defa
 | Details | `bleu`, `bleu_1`, `bleu_2`, `bleu_3` | float each (adds BLEU-1/2/3) |
 
 ```python
-from RadEval import RadEval
+from radeval import RadEval
 
 evaluator = RadEval(metrics=["bleu"])
 results = evaluator(refs=refs, hyps=hyps)
@@ -263,7 +263,7 @@ print(results["green"])  # 0.875
 
 Mammography-specific LLM-as-judge metric. Calls an OpenAI or Gemini model to count clinically significant errors (false findings, missing findings, mischaracterization, wrong location, incorrect BI-RADS, incorrect breast density).
 
-Requires `pip install RadEval[api]` and an API key (`openai_api_key` or `OPENAI_API_KEY` / `GOOGLE_API_KEY` env var).
+Requires `pip install radeval[api]` and an API key (`openai_api_key` or `OPENAI_API_KEY` / `GOOGLE_API_KEY` env var).
 
 | Mode | Output keys | Value |
 |------|------------|-------|
@@ -290,7 +290,7 @@ Supports two backends:
 - **HuggingFace** (default, `"provider": "hf"`): uses [MedGemma-CRIMSON](https://huggingface.co/CRIMSONScore/medgemma-4b-it-crimson) locally
 - **OpenAI** (`"provider": "openai"`): uses `gpt-5.2` by default
 
-Requires `torch` + `transformers` for HuggingFace, or `pip install RadEval[api]` for OpenAI.
+Requires `torch` + `transformers` for HuggingFace, or `pip install radeval[api]` for OpenAI.
 
 | Mode | Output keys | Value |
 |------|------------|-------|
@@ -317,7 +317,7 @@ Two modes:
 - **RadFact +/-** (default): evaluates all phrases including negatives ("no pneumothorax")
 - **RadFact +** (`"filter_negatives": True`): filters out negative/normal findings first
 
-Requires `pip install RadEval[api]` and `openai_api_key` or `OPENAI_API_KEY`. Uses `gpt-4o-mini` by default.
+Requires `pip install radeval[api]` and `openai_api_key` or `OPENAI_API_KEY`. Uses `gpt-4o-mini` by default.
 
 Evaluates samples concurrently (default 10) with live cost tracking in the progress bar. Control via `"max_concurrent"`.
 

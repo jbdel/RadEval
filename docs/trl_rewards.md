@@ -22,7 +22,7 @@ uses the same interface.
 ## Install
 
 ```bash
-pip install RadEval[rl]          # installs trl>=1.3.0,<2
+pip install radeval[rl]          # installs trl>=1.3.0,<2
 ```
 
 `datasets` is already a core dependency.
@@ -42,7 +42,7 @@ from datasets import Dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from trl import GRPOConfig, GRPOTrainer
 
-from RadEval.rewards import make_reward_fn
+from radeval.rewards import make_reward_fn
 
 tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-0.5B")
 if tokenizer.pad_token is None:
@@ -207,7 +207,7 @@ the snippets below are orientation, not verified recipes:
   the image; only the decoded text completion. Wire it up identically:
 
   ```python
-  from RadEval.rewards import make_reward_fn
+  from radeval.rewards import make_reward_fn
   reward = make_reward_fn("bertscore")
   # Plug into TRL's canonical VLM GRPO example.
   ```
