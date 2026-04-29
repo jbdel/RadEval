@@ -43,7 +43,7 @@ PRIVATE_METRICS = [
     "nodule_eval",
 ]
 
-PRIVATE_DIRS = ["scripts", ".cursor", "docs/changelog"]
+PRIVATE_DIRS = ["scripts", ".cursor", "docs/changelog", "plan"]
 
 PRIVATE_FILES = [
     "findings_generation_examples.csv",
