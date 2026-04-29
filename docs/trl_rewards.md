@@ -108,6 +108,8 @@ reward_fn(completions, **kwargs) -> list[float | None]
 
 ## Choosing a metric
 
+Qualitative tiering:
+
 | Speed | Metrics | Notes |
 |---|---|---|
 | Fast (recommended) | `bleu`, `rouge`, `bertscore`, `radeval_bertscore` | No or tiny GPU footprint; milliseconds per batch. |
@@ -115,10 +117,18 @@ reward_fn(completions, **kwargs) -> list[float | None]
 | Slow (local LLM) | `green` | 7B local model inference per sample — treat as **unusable per-step** without a dedicated GPU. |
 | Very slow (API) | `crimson`, `mammo_green`, `radfact_ct` | One API call per sample — **not practical for online RL**. A `UserWarning` fires when you wrap them. |
 
+For **measured** per-sample cost across every reward-eligible metric
+plus a divergence gallery showing how reward choice changes the GRPO
+training signal, see
+[docs/trl_rewards_benchmarks.md](./trl_rewards_benchmarks.md).
+
 Paper-`radcliq` is available as `make_reward_fn("radcliq")` and is
-recommended for **evaluation / final-tune reward**. Its per-sample cost
-has not been benchmarked inside a tight GRPO loop; profile before using
-it as the primary online training reward.
+recommended for **evaluation / final-tune reward**. Benchmarked
+per-sample cost is ~160 ms/sample (composite of BERTScore + SembScore
++ RadGraph) — see the benchmarks page for the measured numbers and a
+recommendation on when it's practical as an online reward. RadCliQ is
+a **distance** (lower = better), so for RL training use
+`make_reward_fn("radcliq", score_transform=lambda x: -x)`.
 
 ## Combining metrics (native TRL)
 

@@ -170,7 +170,7 @@ trainer = GRPOTrainer(
 )
 ```
 
-Run the quickstart end-to-end: `python examples/trl_grpo_quickstart.py`. See [docs/trl_rewards.md](docs/trl_rewards.md) for the reward-callable contract, metric speed table, multi-metric composition, VLM pointer, and known limitations.
+Run the quickstart end-to-end: `python examples/trl_grpo_quickstart.py`. See [docs/trl_rewards.md](docs/trl_rewards.md) for the reward-callable contract, multi-metric composition, VLM pointer, and known limitations. See [docs/trl_rewards_benchmarks.md](docs/trl_rewards_benchmarks.md) for measured per-sample cost of every reward-eligible metric and a divergence gallery showing how reward choice changes the GRPO training signal.
 
 ## Supported Metrics
 
@@ -219,6 +219,7 @@ If not passed explicitly, keys fall back to the environment variables `OPENAI_AP
 | [docs/hypothesis_testing.md](docs/hypothesis_testing.md) | Statistical background, full example, performance notes |
 | [docs/file_formats.md](docs/file_formats.md) | Loading data from .tok, .json, and Python lists |
 | [docs/trl_rewards.md](docs/trl_rewards.md) | Using RadEval metrics as RL reward functions with HuggingFace TRL |
+| [docs/trl_rewards_benchmarks.md](docs/trl_rewards_benchmarks.md) | Speed table + reward-divergence gallery for picking an RL reward metric |
 
 ## RadEval Expert Dataset
 
