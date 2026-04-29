@@ -1,6 +1,6 @@
 """TRL-compatible reward function wrappers for RadEval metrics.
 
-TRL is not a required dependency — install it via ``pip install RadEval[rl]``.
+TRL is not a required dependency — install it via ``pip install radeval[rl]``.
 Only the reward-function interface convention is adopted here; none of this
 module imports ``trl`` at module load time.
 
@@ -149,7 +149,7 @@ def make_reward_fn(
         and extra dataset columns) via ``**kwargs`` without error.
 
     Example:
-        >>> from RadEval.rewards import make_reward_fn
+        >>> from radeval.rewards import make_reward_fn
         >>> reward = make_reward_fn("bleu")
         >>> reward(completions=["hello world"], ground_truth=["hello world"])  # doctest: +SKIP
         [1.0]

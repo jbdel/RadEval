@@ -1,9 +1,9 @@
 import numpy as np
 import torch
 from ..radgraph import RadGraph
-from RadEval.metrics.f1chexbert import F1CheXbert
+from radeval.metrics.f1chexbert import F1CheXbert
 from sklearn.preprocessing import StandardScaler
-from RadEval.metrics.bleu.bleu import Bleu
+from radeval.metrics.bleu.bleu import Bleu
 
 
 def compute_f1(test_set, retrieved_set):
@@ -67,7 +67,7 @@ class CompositeMetric:
         """Return a BERTScorer with IDF computed from *refs*."""
         cache_key = id(refs)
         if self._bert_scorer is None or self._bertscore_cache_key != cache_key:
-            from RadEval.metrics.bertscore._vendor import BERTScorer
+            from radeval.metrics.bertscore._vendor import BERTScorer
             self._bert_scorer = BERTScorer(
                 model_type='distilroberta-base',
                 # num_layers=5 matches upstream bert-score's model2layers

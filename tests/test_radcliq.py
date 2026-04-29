@@ -12,11 +12,11 @@ verifying np.allclose (max diff < 1.3e-8). These are the paper-reference
 numerics from the rajpurkarlab implementation and are reproduced bit-exactly
 on transformers 5.x thanks to the vendored bert_score's
 `add_prefix_space=True` tokenizer-loader fix (see
-RadEval/metrics/bertscore/_vendor/utils.py::get_tokenizer) and the vendored
-radgraph (RadEval/metrics/radgraph/_vendor/).
+radeval/metrics/bertscore/_vendor/utils.py::get_tokenizer) and the vendored
+radgraph (radeval/metrics/radgraph/_vendor/).
 """
 import pytest
-from RadEval import RadEval
+from radeval import RadEval
 
 
 REFS = [

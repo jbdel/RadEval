@@ -9,7 +9,7 @@ import math
 import pytest
 from pathlib import Path
 
-from RadEval import RadEval
+from radeval import RadEval
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures"
 CPU_FIXTURE = FIXTURE_DIR / "expected_scores_cpu.json"

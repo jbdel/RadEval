@@ -10,11 +10,11 @@ This script:
 Private files never enter any commit in the public repo's history.
 
 Private metrics are listed in PRIVATE_METRICS. Each name corresponds to:
-  - RadEval/metrics/<name>/         (whole directory deleted)
+  - radeval/metrics/<name>/         (whole directory deleted)
   - tests/test_<name>.py            (deleted)
   - an entry inside the
     `# --- PRIVATE METRICS ---` / `# --- END PRIVATE METRICS ---`
-    marker block in RadEval/metrics/_registry.py (stripped).
+    marker block in radeval/metrics/_registry.py (stripped).
 
 The script fails fast if the marker block is missing (refusing to publish
 anything without registry stripping), and fails fast if any private symbol
@@ -72,11 +72,11 @@ LEAK_PATTERNS = [
 # leaks — they describe sibling relationships, not importable code. Scoped to
 # EXACT paths so any *new* accidental mention elsewhere still aborts.
 LEAK_SCAN_ALLOWLIST = {
-    "./RadEval/metrics/_chexbert_base.py",
-    "./RadEval/metrics/crimson/crimson.py",
+    "./radeval/metrics/_chexbert_base.py",
+    "./radeval/metrics/crimson/crimson.py",
 }
 
-REGISTRY_PATH = "RadEval/metrics/_registry.py"
+REGISTRY_PATH = "radeval/metrics/_registry.py"
 REGISTRY_MARKER_START = "# --- PRIVATE METRICS"
 REGISTRY_MARKER_END = "# --- END PRIVATE METRICS"
 
@@ -88,10 +88,10 @@ def run(cmd, cwd=None, check=True):
 
 
 def strip_private_metric_files(repo_dir: Path, name: str):
-    metric_dir = repo_dir / "RadEval" / "metrics" / name
+    metric_dir = repo_dir / "radeval" / "metrics" / name
     if metric_dir.exists():
         shutil.rmtree(metric_dir)
-        print(f"  Removed RadEval/metrics/{name}/")
+        print(f"  Removed radeval/metrics/{name}/")
 
     test_file = repo_dir / "tests" / f"test_{name}.py"
     if test_file.exists():
@@ -199,7 +199,7 @@ def main():
     print(f"Source (private) repo: {src}")
 
     with tempfile.TemporaryDirectory(prefix="radeval_public_") as tmp:
-        dest = Path(tmp) / "RadEval"
+        dest = Path(tmp) / "radeval"
         print(f"Working copy: {dest}\n")
 
         print("=== Cloning public repo ===")
@@ -270,7 +270,7 @@ def main():
             print("Run with --push to actually push.")
 
         print("\n--- Public repo metrics listing ---")
-        run("find RadEval/metrics -type d | sort", cwd=dest)
+        run("find radeval/metrics -type d | sort", cwd=dest)
 
 
 if __name__ == "__main__":

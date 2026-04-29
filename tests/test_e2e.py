@@ -1,6 +1,6 @@
 """End-to-end tests for the RadEval API surface."""
 import pytest
-from RadEval import RadEval
+from radeval import RadEval
 
 
 # --- list syntax (primary) ---

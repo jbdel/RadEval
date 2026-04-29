@@ -201,7 +201,7 @@ Tradeoffs observed above, in ascending order of per-sample cost:
   **lower = better**. For RL, invert with
   `score_transform=lambda x: -x`:
   ```python
-  from RadEval.rewards import make_reward_fn
+  from radeval.rewards import make_reward_fn
   reward = make_reward_fn("radcliq", score_transform=lambda x: -x)
   ```
   Negation is universally safe; bounded inversions like `1/(1+x)`
@@ -276,7 +276,7 @@ CI.
 **Reproducing this page.**
 
 ```bash
-pip install RadEval[rl]
+pip install radeval[rl]
 
 # 1. Warm the HF cache (ignore the output).
 python examples/bench_rewards.py --output /tmp/warmup.json

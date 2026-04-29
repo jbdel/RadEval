@@ -1,5 +1,5 @@
 import pytest
-from RadEval import RadEval
+from radeval import RadEval
 
 
 @pytest.fixture(scope="module")

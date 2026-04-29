@@ -9,7 +9,7 @@ import warnings
 
 import pytest
 
-from RadEval.rewards import make_reward_fn, validate_rewards
+from radeval.rewards import make_reward_fn, validate_rewards
 
 
 # ---------- Round-trip tests on lightweight metrics ----------

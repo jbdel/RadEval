@@ -17,7 +17,7 @@ The procedure:
 ## Basic Usage
 
 ```python
-from RadEval import RadEval, compare_systems
+from radeval import RadEval, compare_systems
 
 evaluator = RadEval(metrics=["bleu"])
 
@@ -41,7 +41,7 @@ The first system is treated as the baseline. Each subsequent system is compared 
 ### Step 1: Define systems and references
 
 ```python
-from RadEval import RadEval, compare_systems
+from radeval import RadEval, compare_systems
 
 references = [
     "No acute cardiopulmonary process.",

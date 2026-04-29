@@ -3,7 +3,7 @@ import logging
 import pytest
 import numpy as np
 
-from RadEval.metrics.f1hopprchexbert import HopprF1CheXbert
+from radeval.metrics.f1hopprchexbert import HopprF1CheXbert
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +68,7 @@ def test_f1chexbert():
 
 def test_f1hopprchexbert_per_sample():
     """per_sample returns flat per-sample accuracy lists via RadEval."""
-    from RadEval import RadEval
+    from radeval import RadEval
     from tests.conftest import CHEXBERT_HYPS, CHEXBERT_REFS
 
     evaluator = RadEval(

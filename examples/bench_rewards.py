@@ -41,7 +41,7 @@ import traceback
 from pathlib import Path
 from typing import Any
 
-import RadEval
+import radeval
 import torch
 import transformers
 
@@ -192,7 +192,7 @@ def env_block() -> dict[str, Any]:
         gpu = torch.cuda.get_device_name(0)
         cuda = torch.version.cuda
     return {
-        "radeval_version": RadEval.__version__ if hasattr(RadEval, "__version__") else "2.2.0",
+        "radeval_version": radeval.__version__ if hasattr(radeval, "__version__") else "2.2.0",
         "torch": torch.__version__,
         "transformers": transformers.__version__,
         "python": platform.python_version(),
@@ -221,7 +221,7 @@ def _time_metric(
 
     Runs in-process. Caller is responsible for teardown between metrics.
     """
-    from RadEval.metrics._registry import get_metric_class
+    from radeval.metrics._registry import get_metric_class
 
     extra_kwargs = extra_kwargs or {}
 
@@ -338,7 +338,7 @@ def _score_one_pair(
     extra_kwargs: dict | None = None,
 ) -> float | None:
     """Score a single (ref, hyp) pair and return the scalar. None on skip."""
-    from RadEval.metrics._registry import get_metric_class
+    from radeval.metrics._registry import get_metric_class
 
     extra_kwargs = extra_kwargs or {}
 

@@ -25,7 +25,7 @@ Env:
   export GOOGLE_API_KEY="..."  # for Gemini models
 
 Usage:
-  from RadEval.metrics.green_score import MammoGREEN
+  from radeval.metrics.green_score import MammoGREEN
 
   refs = [...]
   hyps = [...]

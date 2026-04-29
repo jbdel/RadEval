@@ -21,7 +21,7 @@ import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-from RadEval.metrics.nodule_eval import NoduleEvalScore
+from radeval.metrics.nodule_eval import NoduleEvalScore
 
 if NoduleEvalScore is None:
     pytest.skip("NoduleEvalScore not available", allow_module_level=True)
@@ -146,7 +146,7 @@ class TestNoduleEvalUnit:
     """Pure-Python tests on the utils (no LLM / no imports of the scorer)."""
 
     def test_extract_pn_segment_present(self):
-        from RadEval.metrics.nodule_eval.utils import extract_pn_segment
+        from radeval.metrics.nodule_eval.utils import extract_pn_segment
         cf = (
             "LUNGS AND AIRWAYS: Clear. "
             "PULMONARY NODULES: There is an 8 mm solid nodule in the right upper lobe. "
@@ -156,7 +156,7 @@ class TestNoduleEvalUnit:
                 == "There is an 8 mm solid nodule in the right upper lobe.")
 
     def test_extract_pn_segment_at_start(self):
-        from RadEval.metrics.nodule_eval.utils import extract_pn_segment
+        from radeval.metrics.nodule_eval.utils import extract_pn_segment
         cf = (
             "PULMONARY NODULES: There is a 5 mm nodule in the lingula. "
             "LUNGS AND AIRWAYS: Emphysema."
@@ -164,12 +164,12 @@ class TestNoduleEvalUnit:
         assert extract_pn_segment(cf) == "There is a 5 mm nodule in the lingula."
 
     def test_extract_pn_segment_absent(self):
-        from RadEval.metrics.nodule_eval.utils import extract_pn_segment
+        from radeval.metrics.nodule_eval.utils import extract_pn_segment
         cf = "LUNGS AND AIRWAYS: Clear. MEDIASTINUM: No adenopathy."
         assert extract_pn_segment(cf) == ""
 
     def test_scoring_perfect_match(self):
-        from RadEval.metrics.nodule_eval.utils import compute_per_row_metrics
+        from radeval.metrics.nodule_eval.utils import compute_per_row_metrics
         m = compute_per_row_metrics(_RESP_PERFECT)
         assert m["detection_f1"] == 1.0
         assert m["size_accuracy"] == 1.0
@@ -179,7 +179,7 @@ class TestNoduleEvalUnit:
         assert m["composite"] == 1.0
 
     def test_scoring_size_tolerance_error(self):
-        from RadEval.metrics.nodule_eval.utils import compute_per_row_metrics
+        from radeval.metrics.nodule_eval.utils import compute_per_row_metrics
         m = compute_per_row_metrics(_RESP_SIZE_TOLERANCE_ERR)
         assert m["detection_f1"] == 1.0       # matched 1/1, no false/miss
         assert m["size_accuracy"] == 0.0      # outside tolerance
@@ -190,7 +190,7 @@ class TestNoduleEvalUnit:
         assert abs(m["composite"] - 0.6667) < 0.01
 
     def test_scoring_size_exact_match_only(self):
-        from RadEval.metrics.nodule_eval.utils import compute_per_row_metrics
+        from radeval.metrics.nodule_eval.utils import compute_per_row_metrics
         m = compute_per_row_metrics(_RESP_SIZE_INEXACT_ONLY)
         assert m["detection_f1"] == 1.0
         assert m["size_accuracy"] == 1.0   # within tolerance
@@ -200,7 +200,7 @@ class TestNoduleEvalUnit:
         assert m["composite"] == 1.0
 
     def test_scoring_complete_miss(self):
-        from RadEval.metrics.nodule_eval.utils import compute_per_row_metrics
+        from radeval.metrics.nodule_eval.utils import compute_per_row_metrics
         m = compute_per_row_metrics(_RESP_COMPLETE_MISS)
         assert m["detection_recall"] == 0.0
         assert m["detection_precision"] is None
@@ -223,18 +223,18 @@ class TestNoduleEvalIntegration:
             yield mock_sync, mock_async
 
     def test_import(self):
-        from RadEval.metrics.nodule_eval import NoduleEvalScore
-        from RadEval.metrics.nodule_eval.adapter import NoduleEvalMetric
+        from radeval.metrics.nodule_eval import NoduleEvalScore
+        from radeval.metrics.nodule_eval.adapter import NoduleEvalMetric
         assert NoduleEvalScore is not None
         assert NoduleEvalMetric is not None
 
     def test_invalid_provider(self):
-        from RadEval.metrics.nodule_eval import NoduleEvalScore
+        from radeval.metrics.nodule_eval import NoduleEvalScore
         with pytest.raises(NotImplementedError, match="does not support"):
             NoduleEvalScore(provider="invalid", openai_api_key="x")
 
     def test_initialization_with_api_key(self, mock_openai_client):
-        from RadEval.metrics.nodule_eval import NoduleEvalScore
+        from radeval.metrics.nodule_eval import NoduleEvalScore
         scorer = NoduleEvalScore(
             provider="openai", openai_api_key="test-key")
         assert scorer.provider == "openai"
@@ -242,7 +242,7 @@ class TestNoduleEvalIntegration:
 
     def test_both_empty_short_circuit(self, mock_openai_client):
         """Rows with no PN section on either side should skip the LLM call."""
-        from RadEval.metrics.nodule_eval import NoduleEvalScore
+        from radeval.metrics.nodule_eval import NoduleEvalScore
         scorer = NoduleEvalScore(provider="openai", openai_api_key="x")
 
         refs = [_CF_NO_NODULE]
@@ -262,7 +262,7 @@ class TestNoduleEvalIntegration:
 
     def test_full_pipeline_perfect_match(self, mock_openai_client):
         """End-to-end with mocked LLM returning the perfect-match JSON."""
-        from RadEval.metrics.nodule_eval import NoduleEvalScore
+        from radeval.metrics.nodule_eval import NoduleEvalScore
         scorer = NoduleEvalScore(provider="openai", openai_api_key="x")
 
         mock_sync, mock_async = mock_openai_client
@@ -278,7 +278,7 @@ class TestNoduleEvalIntegration:
         assert df.iloc[0]["size_exact_match"] == 1.0
 
     def test_full_pipeline_size_tolerance_err(self, mock_openai_client):
-        from RadEval.metrics.nodule_eval import NoduleEvalScore
+        from radeval.metrics.nodule_eval import NoduleEvalScore
         scorer = NoduleEvalScore(provider="openai", openai_api_key="x")
 
         mock_sync, mock_async = mock_openai_client
@@ -294,7 +294,7 @@ class TestNoduleEvalIntegration:
 
     def test_adapter_default_mode(self, mock_openai_client):
         """Verify NoduleEvalMetric.compute() returns aggregate keys."""
-        from RadEval.metrics.nodule_eval.adapter import NoduleEvalMetric
+        from radeval.metrics.nodule_eval.adapter import NoduleEvalMetric
         metric = NoduleEvalMetric(provider="openai", openai_api_key="x")
 
         mock_sync, mock_async = mock_openai_client
@@ -309,7 +309,7 @@ class TestNoduleEvalIntegration:
         assert out["nodule_eval_composite"] == 1.0
 
     def test_adapter_per_sample_mode(self, mock_openai_client):
-        from RadEval.metrics.nodule_eval.adapter import NoduleEvalMetric
+        from radeval.metrics.nodule_eval.adapter import NoduleEvalMetric
         metric = NoduleEvalMetric(provider="openai", openai_api_key="x")
 
         mock_sync, mock_async = mock_openai_client
@@ -323,7 +323,7 @@ class TestNoduleEvalIntegration:
         assert out["nodule_eval_composite"] == [1.0]
 
     def test_adapter_detailed_mode(self, mock_openai_client):
-        from RadEval.metrics.nodule_eval.adapter import NoduleEvalMetric
+        from radeval.metrics.nodule_eval.adapter import NoduleEvalMetric
         metric = NoduleEvalMetric(provider="openai", openai_api_key="x")
 
         mock_sync, mock_async = mock_openai_client

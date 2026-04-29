@@ -1,5 +1,5 @@
 import torch
-from RadEval.metrics.bertscore.bertscore import BertScoreBase
+from radeval.metrics.bertscore.bertscore import BertScoreBase
 
 
 def _get_default_device():

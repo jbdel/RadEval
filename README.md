@@ -38,8 +38,8 @@ RadEval (EMNLP, 2025) is a Python framework for evaluating AI-generated radiolog
 ## Installation
 
 ```bash
-pip install RadEval              # from PyPI
-pip install RadEval[api]         # include OpenAI/Gemini for LLM-based metrics
+pip install radeval              # from PyPI
+pip install radeval[api]         # include OpenAI/Gemini for LLM-based metrics
 ```
 
 Or install from source:
@@ -63,7 +63,7 @@ pip install -e '.[api]'
 Pass a list of metric names. Each metric is loaded lazily; only the ones you enable import their dependencies.
 
 ```python
-from RadEval import RadEval
+from radeval import RadEval
 import json
 
 refs = [
@@ -143,7 +143,7 @@ See [docs/metrics.md](docs/metrics.md) for the full output schema of each metric
 Use `compare_systems` to run paired approximate randomization tests between any number of systems:
 
 ```python
-from RadEval import RadEval, compare_systems
+from radeval import RadEval, compare_systems
 
 evaluator = RadEval(metrics=["bleu"])
 signatures, scores = compare_systems(
@@ -165,11 +165,11 @@ Three things to look at, in increasing depth:
 ### RL quickstart
 
 ```bash
-pip install RadEval[rl]    # adds trl>=1.3.0,<2
+pip install radeval[rl]    # adds trl>=1.3.0,<2
 ```
 
 ```python
-from RadEval.rewards import make_reward_fn
+from radeval.rewards import make_reward_fn
 from trl import GRPOTrainer
 
 trainer = GRPOTrainer(

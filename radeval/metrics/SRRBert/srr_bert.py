@@ -157,7 +157,7 @@ class SRRBert(nn.Module):
             (classification_dict, sample_precision, sample_recall, sample_f1)
         """
         from sklearn.metrics import classification_report
-        from RadEval.utils import multilabel_prf_per_sample
+        from radeval.utils import multilabel_prf_per_sample
 
         parsed_refs = [srr_bert_parse_sentences(ref) for ref in refs]
         parsed_hyps = [srr_bert_parse_sentences(hyp) for hyp in hyps]

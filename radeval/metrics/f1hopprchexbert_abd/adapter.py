@@ -10,7 +10,7 @@ class F1HopprCheXbertAbdMetric(MetricBase):
         if HopprF1CheXbertAbd is None:
             raise ImportError(
                 "HopprF1CheXbertAbd failed to import — missing dependency or "
-                "checkpoint. See RadEval/metrics/f1hopprchexbert_abd/__init__.py.")
+                "checkpoint. See radeval/metrics/f1hopprchexbert_abd/__init__.py.")
         self._scorer = HopprF1CheXbertAbd()
 
     def metric_keys(self, detailed=False):

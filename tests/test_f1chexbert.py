@@ -1,4 +1,4 @@
-from RadEval.metrics.f1chexbert import F1CheXbert
+from radeval.metrics.f1chexbert import F1CheXbert
 import numpy as np
 
 
@@ -93,7 +93,7 @@ def test_f1chexbert_probe_sentences_expected_present():
 
 def test_f1chexbert_per_sample():
     """do_per_sample returns flat per-sample accuracy lists."""
-    from RadEval import RadEval
+    from radeval import RadEval
     from tests.conftest import CHEXBERT_HYPS, CHEXBERT_REFS
 
     evaluator = RadEval(
