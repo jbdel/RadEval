@@ -1,4 +1,4 @@
-"""Pure-logic tests for scripts/bench_rewards.py.
+"""Pure-logic tests for examples/bench_rewards.py.
 
 No measurement, no model loads. Just exercises the pure helpers so
 regressions in the glue code surface without a full benchmark run.
@@ -11,7 +11,7 @@ import pytest
 
 
 def _load_bench_module():
-    path = Path(__file__).resolve().parent.parent / "scripts" / "bench_rewards.py"
+    path = Path(__file__).resolve().parent.parent / "examples" / "bench_rewards.py"
     spec = importlib.util.spec_from_file_location("bench_rewards", path)
     module = importlib.util.module_from_spec(spec)
     sys.modules["bench_rewards"] = module

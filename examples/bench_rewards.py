@@ -7,10 +7,10 @@ RadEval release + one machine.
 
 Usage:
     # First run: populates the HF cache. Ignore this output.
-    python scripts/bench_rewards.py --output /tmp/warmup.json
+    python examples/bench_rewards.py --output /tmp/warmup.json
 
     # Second run: the canonical snapshot.
-    python scripts/bench_rewards.py \\
+    python examples/bench_rewards.py \\
         --output docs/benchmarks/trl_rewards_260429.json
 
 Execution model:

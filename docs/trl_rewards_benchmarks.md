@@ -270,10 +270,10 @@ CI.
 pip install RadEval[rl]
 
 # 1. Warm the HF cache (ignore the output).
-python scripts/bench_rewards.py --output /tmp/warmup.json
+python examples/bench_rewards.py --output /tmp/warmup.json
 
 # 2. Generate the canonical snapshot.
-python scripts/bench_rewards.py \
+python examples/bench_rewards.py \
     --output docs/benchmarks/trl_rewards_$(date -u +%y%m%d).json
 ```
 
