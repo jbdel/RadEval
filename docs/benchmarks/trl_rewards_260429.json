@@ -1,5 +1,5 @@
 {
-  "run_ts": "2026-04-29T02:45:31",
+  "run_ts": "2026-04-29T03:29:58",
   "env": {
     "radeval_version": "2.2.0",
     "torch": "2.9.1+cu128",
@@ -17,7 +17,7 @@
     {
       "metric": "bleu",
       "key": "bleu",
-      "cached_init_s": 0.0028,
+      "cached_init_s": 0.0017,
       "warm_batch_s_median": 0.0018,
       "warm_per_sample_ms": 0.088,
       "peak_vram_mb_approx": 0.0
@@ -25,90 +25,122 @@
     {
       "metric": "rouge",
       "key": "rouge1",
-      "cached_init_s": 0.0524,
+      "cached_init_s": 0.046,
       "warm_batch_s_median": 0.0031,
-      "warm_per_sample_ms": 0.155,
+      "warm_per_sample_ms": 0.156,
       "peak_vram_mb_approx": 0.0
     },
     {
       "metric": "bertscore",
       "key": "bertscore",
-      "cached_init_s": 5.8877,
-      "warm_batch_s_median": 0.013,
-      "warm_per_sample_ms": 0.652,
+      "cached_init_s": 7.6481,
+      "warm_batch_s_median": 0.0128,
+      "warm_per_sample_ms": 0.64,
       "peak_vram_mb_approx": 260.4
     },
     {
       "metric": "radeval_bertscore",
       "key": "radeval_bertscore",
-      "cached_init_s": 1.0829,
-      "warm_batch_s_median": 0.023,
-      "warm_per_sample_ms": 1.15,
+      "cached_init_s": 0.9461,
+      "warm_batch_s_median": 0.0228,
+      "warm_per_sample_ms": 1.14,
       "peak_vram_mb_approx": 605.6
     },
     {
       "metric": "f1chexbert",
       "key": "f1chexbert_sample_acc_5",
-      "cached_init_s": 3.2985,
-      "warm_batch_s_median": 0.0343,
-      "warm_per_sample_ms": 1.713,
+      "cached_init_s": 3.2628,
+      "warm_batch_s_median": 0.035,
+      "warm_per_sample_ms": 1.749,
       "peak_vram_mb_approx": 434.2
     },
     {
       "metric": "f1radbert_ct",
       "key": "f1radbert_ct_sample_acc",
-      "cached_init_s": 0.8647,
-      "warm_batch_s_median": 0.0423,
-      "warm_per_sample_ms": 2.116,
+      "cached_init_s": 0.7559,
+      "warm_batch_s_median": 0.0407,
+      "warm_per_sample_ms": 2.034,
       "peak_vram_mb_approx": 485.1
     },
     {
       "metric": "radgraph",
       "key": "radgraph_partial",
-      "cached_init_s": 4.3496,
-      "warm_batch_s_median": 3.1693,
-      "warm_per_sample_ms": 158.465,
+      "cached_init_s": 3.871,
+      "warm_batch_s_median": 3.1558,
+      "warm_per_sample_ms": 157.792,
       "peak_vram_mb_approx": 890.3
     },
     {
       "metric": "ratescore",
       "key": "ratescore",
-      "cached_init_s": 2.7508,
-      "warm_batch_s_median": 1.0843,
-      "warm_per_sample_ms": 54.217,
+      "cached_init_s": 2.2001,
+      "warm_batch_s_median": 1.0595,
+      "warm_per_sample_ms": 52.977,
       "peak_vram_mb_approx": 1130.1
     },
     {
       "metric": "srrbert",
       "key": "srrbert_weighted_f1",
-      "cached_init_s": 0.9085,
-      "warm_batch_s_median": 0.1025,
-      "warm_per_sample_ms": 5.126,
+      "cached_init_s": 0.635,
+      "warm_batch_s_median": 0.0994,
+      "warm_per_sample_ms": 4.97,
       "peak_vram_mb_approx": 420.1
     },
     {
       "metric": "radgraph_radcliq",
       "key": "radgraph_radcliq",
-      "cached_init_s": 4.3835,
-      "warm_batch_s_median": 3.1829,
-      "warm_per_sample_ms": 159.143,
+      "cached_init_s": 3.7366,
+      "warm_batch_s_median": 3.2071,
+      "warm_per_sample_ms": 160.356,
       "peak_vram_mb_approx": 890.3
     },
     {
       "metric": "temporal",
       "key": "temporal_f1",
-      "cached_init_s": 0.617,
-      "warm_batch_s_median": 0.3314,
-      "warm_per_sample_ms": 16.569,
+      "cached_init_s": 0.4243,
+      "warm_batch_s_median": 0.3466,
+      "warm_per_sample_ms": 17.33,
       "peak_vram_mb_approx": 191.1
     },
     {
       "metric": "radcliq",
       "key": "radcliq_v1",
-      "cached_init_s": 4.8828,
-      "warm_batch_s_median": 3.2124,
-      "warm_per_sample_ms": 160.622,
+      "cached_init_s": 4.4549,
+      "warm_batch_s_median": 3.2227,
+      "warm_per_sample_ms": 161.134,
       "peak_vram_mb_approx": 1175.3
+    },
+    {
+      "metric": "green",
+      "key": "green",
+      "cached_init_s": 0.0002,
+      "warm_batch_s_median": 44.1902,
+      "warm_per_sample_ms": 2209.512,
+      "peak_vram_mb_approx": 0.0
+    },
+    {
+      "metric": "crimson",
+      "key": "crimson",
+      "cached_init_s": 0.9993,
+      "warm_batch_s_median": 7.5855,
+      "warm_per_sample_ms": 379.275,
+      "peak_vram_mb_approx": 0.0
+    },
+    {
+      "metric": "mammo_green",
+      "key": "mammo_green",
+      "cached_init_s": 0.0121,
+      "warm_batch_s_median": 5.758,
+      "warm_per_sample_ms": 287.902,
+      "peak_vram_mb_approx": 0.0
+    },
+    {
+      "metric": "radfact_ct",
+      "key": "radfact_ct_f1",
+      "cached_init_s": 0.012,
+      "warm_batch_s_median": 4.7517,
+      "warm_per_sample_ms": 237.583,
+      "peak_vram_mb_approx": 0.0
     }
   ],
   "divergence_fixture": "docs/benchmarks/fixtures/divergence_examples.json",

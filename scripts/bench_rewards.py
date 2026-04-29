@@ -48,22 +48,36 @@ import transformers
 
 # ---------- metric lookup ----------
 
-# (metric_name, key_or_none) — pre-validated keys for per_sample=True output.
-# Probed against RadEval 2.2.0. If a future adapter drifts, the warm-up call
-# inside the timing loop surfaces `"skipped": "key-drift"` with the observed keys.
-METRIC_PLAN: list[tuple[str, str | None]] = [
-    ("bleu", None),
-    ("rouge", "rouge1"),
-    ("bertscore", None),
-    ("radeval_bertscore", None),
-    ("f1chexbert", "f1chexbert_sample_acc_5"),
-    ("f1radbert_ct", "f1radbert_ct_sample_acc"),  # future-proof: pass key anyway
-    ("radgraph", "radgraph_partial"),
-    ("ratescore", None),
-    ("srrbert", "srrbert_weighted_f1"),
-    ("radgraph_radcliq", None),
-    ("temporal", None),
-    ("radcliq", None),  # LAST — composite metric
+# (metric_name, key_or_none, extra_init_kwargs)
+# Pre-validated `key=` values for per_sample=True output (probed against
+# RadEval 2.2.0). If a future adapter drifts, the warm-up call inside the
+# timing loop surfaces `"skipped": "key-drift"` with the observed keys.
+METRIC_PLAN: list[tuple[str, str | None, dict]] = [
+    # Cheap / fast local metrics.
+    ("bleu", None, {}),
+    ("rouge", "rouge1", {}),
+    ("bertscore", None, {}),
+    ("radeval_bertscore", None, {}),
+    ("f1chexbert", "f1chexbert_sample_acc_5", {}),
+    ("f1radbert_ct", "f1radbert_ct_sample_acc", {}),  # future-proof
+    ("radgraph", "radgraph_partial", {}),
+    ("ratescore", None, {}),
+    ("srrbert", "srrbert_weighted_f1", {}),
+    ("radgraph_radcliq", None, {}),
+    ("temporal", None, {}),
+    ("radcliq", None, {}),  # composite: BERTScore + SembScore + RadGraph
+    # Heavy: 7B local LLM — minutes per 20-sample batch. Included for
+    # scale calibration; the doc labels it as not online-RL-eligible.
+    ("green", None, {}),
+    # API-backed metrics: clearly not online-RL-eligible (one HTTP call
+    # per sample) but included for honest scale comparison. Each requires
+    # an env var (OPENAI_API_KEY / GEMINI_API_KEY); the benchmark skips
+    # with "no-api-key" if the needed key isn't set.
+    # CRIMSON defaults to provider="hf" (local) — override to openai
+    # here so the "very slow API" framing in the doc is actually measured.
+    ("crimson", None, {"provider": "openai", "model_name": "gpt-4o-mini"}),
+    ("mammo_green", None, {}),  # defaults to gpt-4o-mini already
+    ("radfact_ct", "radfact_ct_f1", {}),
 ]
 
 # Gallery subset: 5 metrics that span lexical → semantic → clinical.
@@ -181,12 +195,15 @@ def _time_metric(
     expected_key: str | None,
     refs: list[str],
     hyps: list[str],
+    extra_kwargs: dict | None = None,
 ) -> dict[str, Any]:
     """Benchmark one metric. Returns a speed record or a skip record.
 
     Runs in-process. Caller is responsible for teardown between metrics.
     """
     from RadEval.metrics._registry import get_metric_class
+
+    extra_kwargs = extra_kwargs or {}
 
     # --- Load / instantiate. `cached_init_s` is measured here.
     # VRAM baseline captured IMMEDIATELY BEFORE cls() so we accommodate
@@ -206,7 +223,13 @@ def _time_metric(
 
     t0 = time.perf_counter()
     try:
-        scorer = cls()
+        scorer = cls(**extra_kwargs)
+    except EnvironmentError as exc:
+        # LLM-based metrics raise EnvironmentError when the required API
+        # key isn't set. Give it a distinct skip reason so the snapshot
+        # clearly shows "would be benchmarked if OPENAI_API_KEY were set"
+        # vs. genuine load failures.
+        return skip_record(metric, expected_key, f"no-api-key:{str(exc)[:120]}")
     except (FileNotFoundError, ImportError) as exc:
         return skip_record(metric, expected_key, f"load-error:{type(exc).__name__}:{str(exc)[:120]}")
     except Exception as exc:
@@ -360,14 +383,15 @@ def run_benchmark(output_path: Path, dry_run: bool = False) -> None:
         "divergence": [],
     }
 
-    # E1: speed. radcliq last (plan rule).
-    for metric, key in METRIC_PLAN:
+    # E1: speed. radcliq last (plan rule); heavy LLM metrics at the end
+    # so their cost isn't blocking the interesting fast rows.
+    for metric, key, extra in METRIC_PLAN:
         sys.stderr.write(f"[speed] {metric}\n")
         sys.stderr.flush()
         if dry_run:
             row = _fake_speed_record(metric, key)
         else:
-            row = _time_metric(metric, key, refs, hyps)
+            row = _time_metric(metric, key, refs, hyps, extra_kwargs=extra)
         snapshot["speed"].append(row)
 
     # E2: divergence. Score each pair with each gallery metric.

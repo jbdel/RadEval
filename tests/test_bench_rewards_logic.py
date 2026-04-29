@@ -94,11 +94,25 @@ def test_validate_key_multi_key_drift(bench):
 
 
 def test_metric_plan_structure(bench):
-    """Plan should be a list of (metric, optional_key) tuples, radcliq last."""
+    """Plan is a list of (metric, optional_key, extra_kwargs) triples.
+    radcliq must come before any API-backed or 7B-LLM metrics so its
+    composite footprint can't contaminate their timing; the heavy LLM
+    metrics (green, crimson, mammo_green, radfact_ct) are ordered at
+    the end because they're minutes/hours per batch, not ms."""
     plan = bench.METRIC_PLAN
     assert isinstance(plan, list) and len(plan) > 0
-    assert all(len(entry) == 2 and isinstance(entry[0], str) for entry in plan)
-    assert plan[-1][0] == "radcliq", "radcliq must be last (contamination guard)"
+    for entry in plan:
+        assert len(entry) == 3, f"expected 3-tuple, got {entry!r}"
+        assert isinstance(entry[0], str)
+        assert isinstance(entry[2], dict), "extra_kwargs must be a dict"
+    names = [m for m, _, _ in plan]
+    # radcliq is the last LOCAL metric (before LLM/API tail).
+    assert "radcliq" in names
+    radcliq_idx = names.index("radcliq")
+    for heavy in ("green", "crimson", "mammo_green", "radfact_ct"):
+        if heavy in names:
+            assert names.index(heavy) > radcliq_idx, (
+                f"{heavy} must come after radcliq")
 
 
 def test_gallery_metrics_structure(bench):
@@ -137,7 +151,7 @@ def test_dry_run_produces_expected_snapshot_structure(bench, tmp_path):
     assert data["workload"]["fixture"].endswith("speed_workload.json")
 
     # Speed rows: one per metric in METRIC_PLAN, in declared order.
-    expected_metrics = [m for m, _ in bench.METRIC_PLAN]
+    expected_metrics = [m for m, _, _ in bench.METRIC_PLAN]
     observed_metrics = [r["metric"] for r in data["speed"]]
     assert observed_metrics == expected_metrics, (
         "speed rows must preserve METRIC_PLAN order (radcliq last)"
@@ -185,4 +199,4 @@ def test_dry_run_skip_accounting_path(bench, tmp_path, monkeypatch):
     assert "load-error:synthetic" in skipped[0]["skipped"]
     # Remaining rows are still successful, full set still present.
     names = [r["metric"] for r in data["speed"]]
-    assert names == [m for m, _ in bench.METRIC_PLAN]
+    assert names == [m for m, _, _ in bench.METRIC_PLAN]
