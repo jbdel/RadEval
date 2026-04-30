@@ -39,6 +39,8 @@ plan/
 
 # Test fixtures (generated JSON snapshots)
 tests/**/*.json
+# Exception: hand-authored RL reward fixtures (committed source, not generated)
+!tests/fixtures/synthetic_reports.json
 
 # Outreach
 outreach/

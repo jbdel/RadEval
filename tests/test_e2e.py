@@ -1,6 +1,6 @@
 """End-to-end tests for the RadEval API surface."""
 import pytest
-from RadEval import RadEval
+from radeval import RadEval
 
 
 # --- list syntax (primary) ---
@@ -102,28 +102,4 @@ def test_empty_input():
 
 
 # --- trl reward adapter ---
-
-def test_make_reward_fn():
-    from RadEval.rewards import make_reward_fn
-    reward = make_reward_fn("bleu")
-    scores = reward(completions=["hello world"], ground_truth=["hello world"])
-    assert isinstance(scores, list)
-    assert len(scores) == 1
-    assert isinstance(scores[0], (int, float))
-
-
-def test_reward_fn_score_transform():
-    from RadEval.rewards import make_reward_fn
-    raw = make_reward_fn("bleu")
-    transformed = make_reward_fn("bleu", score_transform=lambda x: x * 10)
-    refs = ["hello world"]
-    raw_score = raw(completions=refs, ground_truth=refs)[0]
-    transformed_score = transformed(completions=refs, ground_truth=refs)[0]
-    assert abs(transformed_score - raw_score * 10) < 1e-9
-
-
-def test_reward_fn_custom_column():
-    from RadEval.rewards import make_reward_fn
-    reward = make_reward_fn("bleu", reference_column="my_refs")
-    scores = reward(completions=["hello world"], my_refs=["hello world"])
-    assert len(scores) == 1
+# Reward-function unit tests live in tests/test_rewards.py.

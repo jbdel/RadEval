@@ -1,17 +1,22 @@
 """RadCliQ-v1 tests validated against rajpurkarlab/CXR-Report-Metric reference.
 
-The reference composite model (radcliq_v1.pkl) uses:
+The reference composite model (radcliq-v1.pkl) uses:
   - BERTScore: distilroberta-base, rescale_with_baseline=True, IDF from refs
   - BLEU: BLEU-2 (bigram)
   - RadGraph: (entity_f1 + relation_f1) / 2
   - Semantic embeddings: CheXbert [CLS] cosine similarity
   - Linear combination: scaler.transform(X) @ coefs  (with bias column)
 
-Expected values computed by running both implementations side-by-side
-and verifying np.allclose (max diff < 1.3e-8).
+Expected values computed by running both implementations side-by-side and
+verifying np.allclose (max diff < 1.3e-8). These are the paper-reference
+numerics from the rajpurkarlab implementation and are reproduced bit-exactly
+on transformers 5.x thanks to the vendored bert_score's
+`add_prefix_space=True` tokenizer-loader fix (see
+radeval/metrics/bertscore/_vendor/utils.py::get_tokenizer) and the vendored
+radgraph (radeval/metrics/radgraph/_vendor/).
 """
 import pytest
-from RadEval import RadEval
+from radeval import RadEval
 
 
 REFS = [

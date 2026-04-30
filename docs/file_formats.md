@@ -80,7 +80,7 @@ hyps = df["hypothesis"].tolist()
 Once loaded, pass the lists to RadEval:
 
 ```python
-from RadEval import RadEval
+from radeval import RadEval
 
 evaluator = RadEval(metrics=["bleu", "rouge"])
 results = evaluator(refs=refs, hyps=hyps)

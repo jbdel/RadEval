@@ -114,19 +114,19 @@ class TestCrimsonUnit:
 
     def test_import(self):
         """Test that CRIMSON can be imported."""
-        from RadEval.metrics.crimson import CRIMSON, CRIMSONScore
+        from radeval.metrics.crimson import CRIMSON, CRIMSONScore
         assert CRIMSON is not None
         assert CRIMSONScore is not None
 
     def test_invalid_provider(self):
         """Test that invalid provider raises error."""
-        from RadEval.metrics.crimson import CRIMSONScore
+        from radeval.metrics.crimson import CRIMSONScore
         with pytest.raises(NotImplementedError, match="does not support"):
             CRIMSONScore(provider="invalid")
 
     def test_openai_initialization_without_api_key(self):
         """Test that OpenAI initialization fails without API key."""
-        from RadEval.metrics.crimson import CRIMSONScore
+        from radeval.metrics.crimson import CRIMSONScore
 
         old_key = os.environ.pop("OPENAI_API_KEY", None)
         try:
@@ -138,7 +138,7 @@ class TestCrimsonUnit:
 
     def test_openai_initialization_with_api_key(self, mock_openai_client):
         """Test that OpenAI initialization succeeds with API key."""
-        from RadEval.metrics.crimson import CRIMSONScore
+        from radeval.metrics.crimson import CRIMSONScore
 
         scorer = CRIMSONScore(provider="openai", openai_api_key="test-key")
         assert scorer is not None
@@ -147,7 +147,7 @@ class TestCrimsonUnit:
 
     def test_hf_initialization_default_model(self, mock_hf_pipeline):
         """Test that HF initialization uses correct default model."""
-        from RadEval.metrics.crimson import CRIMSONScore
+        from radeval.metrics.crimson import CRIMSONScore
 
         scorer = CRIMSONScore(provider="hf")
         assert scorer.model_name == scorer.DEFAULT_HF_MODEL
@@ -155,7 +155,7 @@ class TestCrimsonUnit:
 
     def test_hf_single_evaluate(self, mock_hf_pipeline):
         """Test single evaluate with mocked HF backend."""
-        from RadEval.metrics.crimson import CRIMSONScore
+        from radeval.metrics.crimson import CRIMSONScore
 
         mock_hf_pipeline.return_value = [
             {
@@ -176,7 +176,7 @@ class TestCrimsonUnit:
 
     def test_openai_single_evaluate(self, mock_openai_client):
         """Test single evaluate with mocked OpenAI backend."""
-        from RadEval.metrics.crimson import CRIMSONScore
+        from radeval.metrics.crimson import CRIMSONScore
 
         mock_openai_client.chat.completions.create.return_value = create_mock_openai_response(
             json.dumps(mock_evaluations[0])
@@ -192,7 +192,7 @@ class TestCrimsonUnit:
 
     def test_call_interface(self, mock_openai_client):
         """Test the __call__ interface returns correct format."""
-        from RadEval.metrics.crimson import CRIMSONScore
+        from radeval.metrics.crimson import CRIMSONScore
 
         scorer = CRIMSONScore(provider="openai", openai_api_key="test-key")
         scorer._chat_completion_async = AsyncMock(side_effect=[
@@ -211,7 +211,7 @@ class TestCrimsonUnit:
 
     def test_computed_scores(self, mock_openai_client):
         """Test that computed scores match expected values."""
-        from RadEval.metrics.crimson import CRIMSONScore
+        from radeval.metrics.crimson import CRIMSONScore
 
         scorer = CRIMSONScore(provider="openai", openai_api_key="test-key")
         scorer._chat_completion_async = AsyncMock(side_effect=[
@@ -232,7 +232,7 @@ class TestCrimsonUnit:
 
     def test_dataframe_columns(self, mock_openai_client):
         """Test that results DataFrame has expected columns."""
-        from RadEval.metrics.crimson import CRIMSONScore
+        from radeval.metrics.crimson import CRIMSONScore
 
         scorer = CRIMSONScore(provider="openai", openai_api_key="test-key")
         scorer._chat_completion_async = AsyncMock(side_effect=[
@@ -262,7 +262,7 @@ class TestCrimsonUnit:
 
     def test_mismatched_lengths(self, mock_openai_client):
         """Test that mismatched refs/hyps lengths raise error."""
-        from RadEval.metrics.crimson import CRIMSONScore
+        from radeval.metrics.crimson import CRIMSONScore
 
         scorer = CRIMSONScore(provider="openai", openai_api_key="test-key")
         with pytest.raises(ValueError):
@@ -270,7 +270,7 @@ class TestCrimsonUnit:
 
     def test_unsupported_provider_raises(self):
         """Test that unsupported provider raises NotImplementedError."""
-        from RadEval.metrics.crimson import CRIMSONScore
+        from radeval.metrics.crimson import CRIMSONScore
         with pytest.raises(NotImplementedError, match="does not support"):
             CRIMSONScore(provider="gemini")
 
@@ -280,8 +280,8 @@ class TestCrimsonRadEvalIntegration:
 
     def test_radeval_initialization(self):
         """CRIMSON is registered and accepts per-metric config kwargs."""
-        from RadEval import RadEval
-        from RadEval.metrics._registry import METRIC_REGISTRY, get_metric_class
+        from radeval import RadEval
+        from radeval.metrics._registry import METRIC_REGISTRY, get_metric_class
 
         assert "crimson" in METRIC_REGISTRY
         cls = get_metric_class("crimson")
@@ -297,7 +297,7 @@ class TestCrimsonRadEvalIntegration:
 
     def test_radeval_with_crimson_openai(self):
         """Test RadEval with CRIMSON using mocked OpenAI backend."""
-        from RadEval import RadEval
+        from radeval import RadEval
 
         with patch("openai.OpenAI") as mock_class, \
              patch("openai.AsyncOpenAI"):
@@ -325,7 +325,7 @@ class TestCrimsonRadEvalIntegration:
     @pytest.mark.integration
     def test_radeval_with_crimson_hf(self):
         """Test RadEval with CRIMSON using real HF backend (requires GPU)."""
-        from RadEval import RadEval
+        from radeval import RadEval
 
         evaluator = RadEval(
             metrics={"crimson": {"provider": "hf"}},
@@ -336,7 +336,7 @@ class TestCrimsonRadEvalIntegration:
 
     def test_radeval_with_crimson_details(self):
         """Test RadEval with CRIMSON in details mode."""
-        from RadEval import RadEval
+        from radeval import RadEval
 
         with patch("openai.OpenAI") as mock_class, \
              patch("openai.AsyncOpenAI"):
@@ -367,7 +367,7 @@ class TestCrimsonRadEvalIntegration:
 
     def test_radeval_with_crimson_per_sample(self):
         """Test RadEval with CRIMSON in per-sample mode."""
-        from RadEval import RadEval
+        from radeval import RadEval
 
         with patch("openai.OpenAI") as mock_class, \
              patch("openai.AsyncOpenAI"):
@@ -414,7 +414,7 @@ class TestCrimsonIntegration:
 
     def test_real_api_call(self, api_key):
         """Test with real OpenAI API call."""
-        from RadEval.metrics.crimson import CRIMSONScore
+        from radeval.metrics.crimson import CRIMSONScore
 
         scorer = CRIMSONScore(provider="openai", openai_api_key=api_key)
         mean, std, scores, results_df = scorer(refs, hyps)
@@ -435,7 +435,7 @@ class TestCrimsonIntegration:
 
     def test_radeval_with_crimson(self, api_key):
         """Test CRIMSON through RadEval interface with real API."""
-        from RadEval import RadEval
+        from radeval import RadEval
 
         evaluator = RadEval(
             metrics={"crimson": {"provider": "openai"}},

@@ -7,7 +7,7 @@ import os
 import csv
 import pytest
 
-from RadEval.metrics.radfact_ct import RadFactCT
+from radeval.metrics.radfact_ct import RadFactCT
 
 _HAS_API_KEY = bool(os.environ.get("OPENAI_API_KEY"))
 
@@ -37,7 +37,7 @@ class TestRadFactCTUnit:
                 os.environ["OPENAI_API_KEY"] = old
 
     def test_unsupported_provider_raises(self):
-        from RadEval.metrics._llm_base import LLMMetricBase
+        from radeval.metrics._llm_base import LLMMetricBase
         with pytest.raises(NotImplementedError, match="does not support"):
             class _FakeRadFact(LLMMetricBase):
                 SUPPORTED_PROVIDERS = {"openai"}
@@ -56,7 +56,7 @@ class TestRadFactCTUnit:
             scorer(["hyp1", "hyp2"], ["ref"])
 
     def test_cost_tracker(self):
-        from RadEval.metrics._llm import CostTracker
+        from radeval.metrics._llm import CostTracker
         ct = CostTracker("gpt-4o-mini")
         assert ct.cost == 0.0
         ct.add(1_000_000, 0)
@@ -67,7 +67,7 @@ class TestRadFactCTUnit:
         assert ct.cost == 0.0
 
     def test_cost_tracker_unknown_model(self):
-        from RadEval.metrics._llm import CostTracker
+        from radeval.metrics._llm import CostTracker
         ct = CostTracker("unknown-model")
         ct.add(1_000_000, 1_000_000)
         assert ct.cost == pytest.approx(0.75)
@@ -158,7 +158,7 @@ class TestRadFactCTIntegration:
     def test_filter_negatives_reduces_phrases(self, scorer, scorer_filter):
         """RadFact+ should have fewer phrases than RadFact+/-."""
         text = "No pneumothorax. No pleural effusion. Mild cardiomegaly."
-        from RadEval.metrics.radfact_ct.radfact_ct import report_to_phrases, filter_negatives
+        from radeval.metrics.radfact_ct.radfact_ct import report_to_phrases, filter_negatives
         all_phrases = report_to_phrases(
             scorer.client, scorer.model_name, text, scorer.temperature)
         filtered = filter_negatives(
@@ -170,7 +170,7 @@ class TestRadFactCTIntegration:
         """Test integration through RadEval."""
         if not _HAS_API_KEY:
             pytest.skip("No OPENAI_API_KEY")
-        from RadEval import RadEval
+        from radeval import RadEval
         evaluator = RadEval(metrics=["radfact_ct"], show_progress=False)
         results = evaluator(
             refs=["The lungs are clear. Heart size is normal."],
@@ -183,7 +183,7 @@ class TestRadFactCTIntegration:
         """do_details returns same flat keys as default for radfact_ct."""
         if not _HAS_API_KEY:
             pytest.skip("No OPENAI_API_KEY")
-        from RadEval import RadEval
+        from radeval import RadEval
         evaluator = RadEval(
             metrics=["radfact_ct"], detailed=True, show_progress=False)
         results = evaluator(

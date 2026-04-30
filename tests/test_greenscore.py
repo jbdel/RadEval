@@ -29,7 +29,7 @@ expected_std = 0.16666666666666669
 
 @pytest.fixture(scope="module")
 def green_results():
-    from RadEval.metrics.green_score import GREEN
+    from radeval.metrics.green_score import GREEN
     green_scorer = GREEN(model_name, output_dir=".", cpu=False)
     mean, std, green_score_list, result_df = green_scorer(refs, hyps)
     return green_scorer, mean, std, green_score_list, result_df

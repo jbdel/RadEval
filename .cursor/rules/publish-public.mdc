@@ -1,0 +1,101 @@
+---
+description: How to publish RadEval to the public jbdel/RadEval repo, stripping private metrics
+globs: scripts/publish_public.py
+alwaysApply: false
+---
+
+# Publishing to jbdel/RadEval
+
+This project has two repos:
+- **hopprai/RadEval** (private, origin) -- full codebase with all metrics
+- **jbdel/RadEval** (public) -- same codebase minus private metrics (HopprF1CheXbert, F1HopprCheXbertCT, HopprCrimsonCT, F1HopprCheXbertMSK, F1HopprCheXbertAbd)
+
+## How to publish
+
+All development happens on hopprai/RadEval. To release publicly:
+
+```bash
+# 1. Make sure all changes are committed and pushed to hopprai/RadEval
+git add -A && git commit -m "..." && git push origin main
+
+# 2. Dry-run first (see what will be stripped, no push)
+python scripts/publish_public.py -m "v0.X.Y: description"
+
+# 3. Push to public repo
+python scripts/publish_public.py --push -m "v0.X.Y: description"
+```
+
+The script clones the **public** repo, replaces its working tree with the current
+private repo state, then:
+
+1. Deletes each private metric's folder (`RadEval/metrics/<name>/`, which implicitly
+   removes the adapter) and its test file (`tests/test_<name>.py`).
+2. Strips the `# --- PRIVATE METRICS ---` / `# --- END PRIVATE METRICS ---` block
+   from `RadEval/metrics/_registry.py`. **Fails fast** with a non-zero exit if
+   either marker is missing or if stripping produced no change — this prevents
+   silent drift from leaking private metrics into the public registry.
+3. Removes `PRIVATE_DIRS` (`scripts/`, `.cursor/`, `docs/changelog/`) and `PRIVATE_FILES`.
+4. Runs a leak-scan grep of the stripped tree against `LEAK_PATTERNS`
+   (`f1hopprchexbert`, `hoppr_crimson_ct`, `HopprF1CheXbert`, `HopprCrimsonCT`,
+   `CRIMSON_CT`). Any hit aborts before commit/push. The scan is scoped strictly
+   to the stripped staging directory and excludes `.git/`.
+5. Commits with the provided message and pushes.
+
+Private files never enter the public repo's history.
+
+## PyPI workflow
+
+Always build from the PUBLIC repo, never from hopprai/RadEval.
+
+```bash
+# After publish_public.py --push:
+cd /tmp && git clone --depth 1 https://github.com/jbdel/RadEval.git radeval_pypi
+cd radeval_pypi && python -m build --sdist
+TWINE_USERNAME=__token__ TWINE_PASSWORD="<token from scripts/pypi>" twine upload dist/*
+rm -rf /tmp/radeval_pypi
+```
+
+Bump `version` in `setup.py` before each PyPI upload.
+
+## Adding a new private metric
+
+`PRIVATE_METRICS` in `scripts/publish_public.py` is now a flat list of names:
+
+```python
+PRIVATE_METRICS = [
+    "f1hopprchexbert",
+    "f1hopprchexbert_ct",
+    "f1hopprchexbert_msk",
+    "f1hopprchexbert_abd",
+    "hoppr_crimson_ct",
+]
+```
+
+For each name, the script deletes `RadEval/metrics/<name>/` and `tests/test_<name>.py`,
+and strips the metric's entry from the registry marker block.
+
+If the symbol name of the new private metric is **not** a substring of one of the
+existing `LEAK_PATTERNS` entries, add it there as well so the post-strip leak scan
+catches any accidental public reference.
+
+The metric must also degrade gracefully when missing. Pattern:
+
+1. `__init__.py` catches import errors: `try: from .mod import Cls; except: Cls = None`
+2. The adapter `__init__` raises `ImportError(...)` with a descriptive message if the
+   underlying class is `None` (prevents cryptic `TypeError: 'NoneType' is not callable`
+   at instantiation time).
+3. Test file checks `if Cls is None or not <checkpoint>: pytest.skip(..., allow_module_level=True)`.
+4. Register in `RadEval/metrics/_registry.py` **inside** the
+   `# --- PRIVATE METRICS ---` / `# --- END PRIVATE METRICS ---` marker block.
+
+## Internal changelog convention
+
+`docs/changelog/` is a private-only directory for per-PR changelog notes that
+should not be visible in the public repo (detailed rationale, env state,
+investigation notes, etc.). It's listed in `PRIVATE_DIRS` so the publish
+script strips it. PR descriptions stay concise and reference the changelog
+file by path (e.g., `See docs/changelog/YYMMDD.md`).
+
+File naming: `docs/changelog/YYMMDD.md` (UTC date of the branch's first
+commit). One file per PR/branch — don't amend existing changelog files,
+just add a new one.

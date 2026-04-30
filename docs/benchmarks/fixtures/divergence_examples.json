@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "ref": "Mild cardiomegaly.",
+    "hyp": "The cardiac silhouette is mildly enlarged.",
+    "narrative": "Clinically correct paraphrase — different wording, same finding. BLEU near-0 would push the policy away from this; clinical metrics reward it."
+  },
+  {
+    "id": 2,
+    "ref": "No pleural effusion.",
+    "hyp": "Pleural effusion.",
+    "narrative": "HEADLINE — negation flip. Three of four tokens overlap; BERTScore embeddings are nearly identical except for one word. A BERTScore reward would partially reward inverting the clinical meaning. F1CheXbert/RadGraph correctly score 0."
+  },
+  {
+    "id": 3,
+    "ref": "Mild cardiomegaly. Small bilateral pleural effusions.",
+    "hyp": "Mild cardiomegaly.",
+    "narrative": "Missing finding — partial report. Lexical/semantic rewards barely penalize the omission; RadGraph entity/relation scoring does."
+  },
+  {
+    "id": 4,
+    "ref": "No acute findings.",
+    "hyp": "No acute findings. Small right pneumothorax.",
+    "narrative": "Hallucinated finding — model adds a clinically significant finding not present in the reference. Lexical/semantic prefix match is high; clinical metrics penalize the fabrication."
+  },
+  {
+    "id": 5,
+    "ref": "No acute cardiopulmonary process.",
+    "hyp": "No acute cardiopulmonary process.",
+    "narrative": "Exact match — sanity row. All metrics should score at or near their respective maximum."
+  },
+  {
+    "id": 6,
+    "ref": "Left lower lobe consolidation consistent with pneumonia.",
+    "hyp": "Right upper lobe mass.",
+    "narrative": "Total mismatch — different finding, different location. All metrics should bottom out."
+  },
+  {
+    "id": 7,
+    "ref": "Mild pulmonary edema.",
+    "hyp": "Severe pulmonary edema.",
+    "narrative": "Severity flip — same finding, wrong severity. Lexical/semantic rewards score this high; clinical metrics may or may not catch the severity mismatch depending on label granularity."
+  },
+  {
+    "id": 8,
+    "ref": "Stable bibasilar atelectasis without consolidation.",
+    "hyp": "New right lower lobe consolidation.",
+    "narrative": "Opposite clinical conclusion — stable/benign vs new/active finding. Semantic similarity of 'lobe' / 'consolidation' inflates BERTScore; clinical metrics correctly flag the divergence."
+  }
+]
