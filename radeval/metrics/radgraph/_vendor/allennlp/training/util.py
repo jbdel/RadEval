@@ -15,18 +15,18 @@ import torch
 from torch.utils.data import DataLoader
 from torch.nn.utils import clip_grad_norm_
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import check_for_gpu, ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.common.params import Params
-from RadEval.metrics.radgraph._vendor.allennlp.common.tqdm import Tqdm
-from RadEval.metrics.radgraph._vendor.allennlp.data import Instance, Vocabulary, Batch
-from RadEval.metrics.radgraph._vendor.allennlp.data.dataset_readers import DatasetReader
-from RadEval.metrics.radgraph._vendor.allennlp.models.archival import CONFIG_NAME
-from RadEval.metrics.radgraph._vendor.allennlp.models.model import Model
-from RadEval.metrics.radgraph._vendor.allennlp.nn import util as nn_util
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import check_for_gpu, ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.common.params import Params
+from radeval.metrics.radgraph._vendor.allennlp.common.tqdm import Tqdm
+from radeval.metrics.radgraph._vendor.allennlp.data import Instance, Vocabulary, Batch
+from radeval.metrics.radgraph._vendor.allennlp.data.dataset_readers import DatasetReader
+from radeval.metrics.radgraph._vendor.allennlp.models.archival import CONFIG_NAME
+from radeval.metrics.radgraph._vendor.allennlp.models.model import Model
+from radeval.metrics.radgraph._vendor.allennlp.nn import util as nn_util
 
 if TYPE_CHECKING:
-    from RadEval.metrics.radgraph._vendor.allennlp.data import AllennlpDataset
-    from RadEval.metrics.radgraph._vendor.allennlp.data import AllennlpLazyDataset
+    from radeval.metrics.radgraph._vendor.allennlp.data import AllennlpDataset
+    from radeval.metrics.radgraph._vendor.allennlp.data import AllennlpLazyDataset
 
 logger = logging.getLogger(__name__)
 

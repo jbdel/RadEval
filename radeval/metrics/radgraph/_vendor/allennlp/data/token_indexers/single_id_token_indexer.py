@@ -1,9 +1,9 @@
 from typing import Dict, List, Optional
 import itertools
 
-from RadEval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
-from RadEval.metrics.radgraph._vendor.allennlp.data.tokenizers.token import Token
-from RadEval.metrics.radgraph._vendor.allennlp.data.token_indexers.token_indexer import TokenIndexer, IndexedTokenList
+from radeval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.data.tokenizers.token import Token
+from radeval.metrics.radgraph._vendor.allennlp.data.token_indexers.token_indexer import TokenIndexer, IndexedTokenList
 
 
 _DEFAULT_VALUE = "THIS IS A REALLY UNLIKELY VALUE THAT HAS TO BE A STRING"

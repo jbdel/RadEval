@@ -8,7 +8,7 @@ import traceback
 from contextlib import contextmanager
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.util import int_to_device
+from radeval.metrics.radgraph._vendor.allennlp.common.util import int_to_device
 
 import torch
 import torch.distributed as dist
@@ -17,21 +17,21 @@ import torch.optim.lr_scheduler
 from torch.nn.parallel import DistributedDataParallel
 from torch.nn.utils import clip_grad_norm_
 
-from RadEval.metrics.radgraph._vendor.allennlp.common import Lazy, Registrable, Tqdm
-from RadEval.metrics.radgraph._vendor.allennlp.common import util as common_util
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError, check_for_gpu
-from RadEval.metrics.radgraph._vendor.allennlp.data import DataLoader
-from RadEval.metrics.radgraph._vendor.allennlp.data.dataloader import TensorDict
-from RadEval.metrics.radgraph._vendor.allennlp.models.model import Model
-from RadEval.metrics.radgraph._vendor.allennlp.nn import util as nn_util
-from RadEval.metrics.radgraph._vendor.allennlp.training import util as training_util
-from RadEval.metrics.radgraph._vendor.allennlp.training.checkpointer import Checkpointer
-from RadEval.metrics.radgraph._vendor.allennlp.training.learning_rate_schedulers import LearningRateScheduler
-from RadEval.metrics.radgraph._vendor.allennlp.training.metric_tracker import MetricTracker
-from RadEval.metrics.radgraph._vendor.allennlp.training.momentum_schedulers import MomentumScheduler
-from RadEval.metrics.radgraph._vendor.allennlp.training.moving_average import MovingAverage
-from RadEval.metrics.radgraph._vendor.allennlp.training.optimizers import Optimizer
-from RadEval.metrics.radgraph._vendor.allennlp.training.tensorboard_writer import TensorboardWriter
+from radeval.metrics.radgraph._vendor.allennlp.common import Lazy, Registrable, Tqdm
+from radeval.metrics.radgraph._vendor.allennlp.common import util as common_util
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError, check_for_gpu
+from radeval.metrics.radgraph._vendor.allennlp.data import DataLoader
+from radeval.metrics.radgraph._vendor.allennlp.data.dataloader import TensorDict
+from radeval.metrics.radgraph._vendor.allennlp.models.model import Model
+from radeval.metrics.radgraph._vendor.allennlp.nn import util as nn_util
+from radeval.metrics.radgraph._vendor.allennlp.training import util as training_util
+from radeval.metrics.radgraph._vendor.allennlp.training.checkpointer import Checkpointer
+from radeval.metrics.radgraph._vendor.allennlp.training.learning_rate_schedulers import LearningRateScheduler
+from radeval.metrics.radgraph._vendor.allennlp.training.metric_tracker import MetricTracker
+from radeval.metrics.radgraph._vendor.allennlp.training.momentum_schedulers import MomentumScheduler
+from radeval.metrics.radgraph._vendor.allennlp.training.moving_average import MovingAverage
+from radeval.metrics.radgraph._vendor.allennlp.training.optimizers import Optimizer
+from radeval.metrics.radgraph._vendor.allennlp.training.tensorboard_writer import TensorboardWriter
 
 logger = logging.getLogger(__name__)
 

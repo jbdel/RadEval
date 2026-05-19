@@ -2,10 +2,10 @@ from typing import Any, Dict, List
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.common import Registrable
-from RadEval.metrics.radgraph._vendor.allennlp.common.util import pad_sequence_to_length
-from RadEval.metrics.radgraph._vendor.allennlp.data.tokenizers.token import Token
-from RadEval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.common import Registrable
+from radeval.metrics.radgraph._vendor.allennlp.common.util import pad_sequence_to_length
+from radeval.metrics.radgraph._vendor.allennlp.data.tokenizers.token import Token
+from radeval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
 
 # An indexed token list represents the arguments that will be passed to a TokenEmbedder
 # corresponding to this TokenIndexer.  Each argument that the TokenEmbedder needs will have one

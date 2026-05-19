@@ -25,4 +25,4 @@ except ModuleNotFoundError:
     )
     raise
 
-from RadEval.metrics.radgraph._vendor.allennlp.version import VERSION as __version__  # noqa
+from radeval.metrics.radgraph._vendor.allennlp.version import VERSION as __version__  # noqa

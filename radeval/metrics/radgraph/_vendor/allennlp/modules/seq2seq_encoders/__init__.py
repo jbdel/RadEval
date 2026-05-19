@@ -19,11 +19,11 @@ The available Seq2Seq encoders are
 - `"stacked_bidirectional_lstm"`: allennlp.modules.seq2seq_encoders.StackedBidirectionalLstmSeq2SeqEncoder
 """
 
-from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2seq_encoders.compose_encoder import ComposeEncoder
-from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2seq_encoders.feedforward_encoder import FeedForwardEncoder
-from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2seq_encoders.gated_cnn_encoder import GatedCnnEncoder
-from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2seq_encoders.pass_through_encoder import PassThroughEncoder
-from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2seq_encoders.pytorch_seq2seq_wrapper import (
+from radeval.metrics.radgraph._vendor.allennlp.modules.seq2seq_encoders.compose_encoder import ComposeEncoder
+from radeval.metrics.radgraph._vendor.allennlp.modules.seq2seq_encoders.feedforward_encoder import FeedForwardEncoder
+from radeval.metrics.radgraph._vendor.allennlp.modules.seq2seq_encoders.gated_cnn_encoder import GatedCnnEncoder
+from radeval.metrics.radgraph._vendor.allennlp.modules.seq2seq_encoders.pass_through_encoder import PassThroughEncoder
+from radeval.metrics.radgraph._vendor.allennlp.modules.seq2seq_encoders.pytorch_seq2seq_wrapper import (
     AugmentedLstmSeq2SeqEncoder,
     GruSeq2SeqEncoder,
     LstmSeq2SeqEncoder,
@@ -32,5 +32,5 @@ from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2seq_encoders.pytorch_
     StackedAlternatingLstmSeq2SeqEncoder,
     StackedBidirectionalLstmSeq2SeqEncoder,
 )
-from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2seq_encoders.seq2seq_encoder import Seq2SeqEncoder
-from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2seq_encoders.pytorch_transformer_wrapper import PytorchTransformer
+from radeval.metrics.radgraph._vendor.allennlp.modules.seq2seq_encoders.seq2seq_encoder import Seq2SeqEncoder
+from radeval.metrics.radgraph._vendor.allennlp.modules.seq2seq_encoders.pytorch_transformer_wrapper import PytorchTransformer

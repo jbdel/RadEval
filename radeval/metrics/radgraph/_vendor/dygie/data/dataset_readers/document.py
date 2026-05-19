@@ -1,6 +1,6 @@
 from abc import ABC
 
-from RadEval.metrics.radgraph._vendor.dygie.models.shared import fields_to_batches, batches_to_fields
+from radeval.metrics.radgraph._vendor.dygie.models.shared import fields_to_batches, batches_to_fields
 import copy
 import numpy as np
 import re

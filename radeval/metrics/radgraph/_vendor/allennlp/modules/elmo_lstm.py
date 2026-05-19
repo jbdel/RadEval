@@ -8,10 +8,10 @@ import numpy
 import torch
 from torch.nn.utils.rnn import PackedSequence, pad_packed_sequence
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
-from RadEval.metrics.radgraph._vendor.allennlp.modules.encoder_base import _EncoderBase
-from RadEval.metrics.radgraph._vendor.allennlp.modules.lstm_cell_with_projection import LstmCellWithProjection
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
+from radeval.metrics.radgraph._vendor.allennlp.modules.encoder_base import _EncoderBase
+from radeval.metrics.radgraph._vendor.allennlp.modules.lstm_cell_with_projection import LstmCellWithProjection
 
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=FutureWarning)

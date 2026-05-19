@@ -3,8 +3,8 @@ from typing import Optional
 import torch
 from torch import nn
 
-from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2seq_encoders.seq2seq_encoder import Seq2SeqEncoder
-from RadEval.metrics.radgraph._vendor.allennlp.nn.util import add_positional_features
+from radeval.metrics.radgraph._vendor.allennlp.modules.seq2seq_encoders.seq2seq_encoder import Seq2SeqEncoder
+from radeval.metrics.radgraph._vendor.allennlp.nn.util import add_positional_features
 
 
 @Seq2SeqEncoder.register("pytorch_transformer")

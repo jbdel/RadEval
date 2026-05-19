@@ -4,12 +4,12 @@ import warnings
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.common.util import pad_sequence_to_length
-from RadEval.metrics.radgraph._vendor.allennlp.data.token_indexers.token_indexer import TokenIndexer, IndexedTokenList
-from RadEval.metrics.radgraph._vendor.allennlp.data.tokenizers.character_tokenizer import CharacterTokenizer
-from RadEval.metrics.radgraph._vendor.allennlp.data.tokenizers.token import Token
-from RadEval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.common.util import pad_sequence_to_length
+from radeval.metrics.radgraph._vendor.allennlp.data.token_indexers.token_indexer import TokenIndexer, IndexedTokenList
+from radeval.metrics.radgraph._vendor.allennlp.data.tokenizers.character_tokenizer import CharacterTokenizer
+from radeval.metrics.radgraph._vendor.allennlp.data.tokenizers.token import Token
+from radeval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
 
 
 @TokenIndexer.register("characters")

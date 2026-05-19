@@ -3,7 +3,7 @@ from typing import List, Optional
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.training.learning_rate_schedulers.learning_rate_scheduler import LearningRateScheduler
+from radeval.metrics.radgraph._vendor.allennlp.training.learning_rate_schedulers.learning_rate_scheduler import LearningRateScheduler
 
 
 logger = logging.getLogger(__name__)

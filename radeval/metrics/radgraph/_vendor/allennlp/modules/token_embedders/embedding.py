@@ -11,13 +11,13 @@ import numpy
 import torch
 from torch.nn.functional import embedding
 
-from RadEval.metrics.radgraph._vendor.allennlp.common import Tqdm
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path, get_file_extension, is_url_or_existing_file
-from RadEval.metrics.radgraph._vendor.allennlp.data import Vocabulary
-from RadEval.metrics.radgraph._vendor.allennlp.modules.time_distributed import TimeDistributed
-from RadEval.metrics.radgraph._vendor.allennlp.modules.token_embedders.token_embedder import TokenEmbedder
-from RadEval.metrics.radgraph._vendor.allennlp.nn import util
+from radeval.metrics.radgraph._vendor.allennlp.common import Tqdm
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path, get_file_extension, is_url_or_existing_file
+from radeval.metrics.radgraph._vendor.allennlp.data import Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.modules.time_distributed import TimeDistributed
+from radeval.metrics.radgraph._vendor.allennlp.modules.token_embedders.token_embedder import TokenEmbedder
+from radeval.metrics.radgraph._vendor.allennlp.nn import util
 
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=FutureWarning)

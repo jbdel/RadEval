@@ -23,7 +23,7 @@ from requests.adapters import HTTPAdapter
 from requests.exceptions import ConnectionError
 from requests.packages.urllib3.util.retry import Retry
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.tqdm import Tqdm
+from radeval.metrics.radgraph._vendor.allennlp.common.tqdm import Tqdm
 
 logger = logging.getLogger(__name__)
 

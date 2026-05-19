@@ -3,11 +3,11 @@ import logging
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.util import pad_sequence_to_length
-from RadEval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
-from RadEval.metrics.radgraph._vendor.allennlp.data.tokenizers.token import Token
-from RadEval.metrics.radgraph._vendor.allennlp.data.token_indexers import PretrainedTransformerIndexer, TokenIndexer
-from RadEval.metrics.radgraph._vendor.allennlp.data.token_indexers.token_indexer import IndexedTokenList
+from radeval.metrics.radgraph._vendor.allennlp.common.util import pad_sequence_to_length
+from radeval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.data.tokenizers.token import Token
+from radeval.metrics.radgraph._vendor.allennlp.data.token_indexers import PretrainedTransformerIndexer, TokenIndexer
+from radeval.metrics.radgraph._vendor.allennlp.data.token_indexers.token_indexer import IndexedTokenList
 
 logger = logging.getLogger(__name__)
 

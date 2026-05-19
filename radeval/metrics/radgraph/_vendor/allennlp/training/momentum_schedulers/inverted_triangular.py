@@ -1,6 +1,6 @@
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.training.momentum_schedulers.momentum_scheduler import MomentumScheduler
+from radeval.metrics.radgraph._vendor.allennlp.training.momentum_schedulers.momentum_scheduler import MomentumScheduler
 
 
 @MomentumScheduler.register("inverted_triangular")

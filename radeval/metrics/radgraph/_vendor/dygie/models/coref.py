@@ -5,17 +5,17 @@ from typing import Any, Dict, List, Optional, Tuple, Union, Callable
 import torch
 import torch.nn.functional as F
 
-from RadEval.metrics.radgraph._vendor.allennlp.data import Vocabulary
-from RadEval.metrics.radgraph._vendor.allennlp.models.model import Model
-from RadEval.metrics.radgraph._vendor.allennlp.modules.token_embedders import Embedding
-from RadEval.metrics.radgraph._vendor.allennlp.modules import FeedForward
-from RadEval.metrics.radgraph._vendor.allennlp.modules import TimeDistributed
-from RadEval.metrics.radgraph._vendor.allennlp.nn import util, InitializerApplicator, RegularizerApplicator
-from RadEval.metrics.radgraph._vendor.allennlp_models.coref.metrics.conll_coref_scores import ConllCorefScores
-from RadEval.metrics.radgraph._vendor.allennlp_models.coref.metrics.mention_recall import MentionRecall
+from radeval.metrics.radgraph._vendor.allennlp.data import Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.models.model import Model
+from radeval.metrics.radgraph._vendor.allennlp.modules.token_embedders import Embedding
+from radeval.metrics.radgraph._vendor.allennlp.modules import FeedForward
+from radeval.metrics.radgraph._vendor.allennlp.modules import TimeDistributed
+from radeval.metrics.radgraph._vendor.allennlp.nn import util, InitializerApplicator, RegularizerApplicator
+from radeval.metrics.radgraph._vendor.allennlp_models.coref.metrics.conll_coref_scores import ConllCorefScores
+from radeval.metrics.radgraph._vendor.allennlp_models.coref.metrics.mention_recall import MentionRecall
 
-from RadEval.metrics.radgraph._vendor.dygie.models import shared
-from RadEval.metrics.radgraph._vendor.dygie.models.entity_beam_pruner import Pruner
+from radeval.metrics.radgraph._vendor.dygie.models import shared
+from radeval.metrics.radgraph._vendor.dygie.models.entity_beam_pruner import Pruner
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 

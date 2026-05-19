@@ -8,8 +8,8 @@ from typing import TypeVar, Type, Callable, Dict, List, Optional, Tuple
 import importlib
 import logging
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.common.from_params import FromParams
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.common.from_params import FromParams
 
 logger = logging.getLogger(__name__)
 

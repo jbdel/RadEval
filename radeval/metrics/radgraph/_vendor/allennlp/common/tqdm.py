@@ -3,7 +3,7 @@
 global defaults for certain tqdm parameters.
 """
 import logging
-from RadEval.metrics.radgraph._vendor.allennlp.common import logging as common_logging
+from radeval.metrics.radgraph._vendor.allennlp.common import logging as common_logging
 import sys
 from time import time
 from typing import Optional

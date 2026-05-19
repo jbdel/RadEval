@@ -1,8 +1,8 @@
 from typing import List, Optional
 import logging
 
-from RadEval.metrics.radgraph._vendor.allennlp.common import Registrable
-from RadEval.metrics.radgraph._vendor.allennlp.data.tokenizers.token import Token
+from radeval.metrics.radgraph._vendor.allennlp.common import Registrable
+from radeval.metrics.radgraph._vendor.allennlp.data.tokenizers.token import Token
 
 
 logger = logging.getLogger(__name__)

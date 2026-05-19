@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Mapping
 
 
-from RadEval.metrics.radgraph._vendor.allennlp.data.fields.field import DataArray, Field
+from radeval.metrics.radgraph._vendor.allennlp.data.fields.field import DataArray, Field
 
 
 class MetadataField(Field[DataArray], Mapping[str, Any]):

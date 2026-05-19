@@ -1,7 +1,7 @@
 import torch.nn
 
-from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.seq2vec_encoder import Seq2VecEncoder
-from RadEval.metrics.radgraph._vendor.allennlp.nn.util import get_final_encoder_states
+from radeval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.seq2vec_encoder import Seq2VecEncoder
+from radeval.metrics.radgraph._vendor.allennlp.nn.util import get_final_encoder_states
 
 
 @Seq2VecEncoder.register("cls_pooler")

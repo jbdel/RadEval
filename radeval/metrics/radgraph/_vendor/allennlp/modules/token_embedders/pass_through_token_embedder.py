@@ -1,5 +1,5 @@
 import torch
-from RadEval.metrics.radgraph._vendor.allennlp.modules.token_embedders.token_embedder import TokenEmbedder
+from radeval.metrics.radgraph._vendor.allennlp.modules.token_embedders.token_embedder import TokenEmbedder
 
 
 @TokenEmbedder.register("pass_through")

@@ -125,6 +125,6 @@ def prepare_global_logging(
     sys.excepthook = excepthook
 
     # also log tqdm
-    from RadEval.metrics.radgraph._vendor.allennlp.common.tqdm import logger as tqdm_logger
+    from radeval.metrics.radgraph._vendor.allennlp.common.tqdm import logger as tqdm_logger
 
     tqdm_logger.addHandler(file_handler)

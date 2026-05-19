@@ -4,8 +4,8 @@ from typing import Tuple, Dict, Set
 import torch
 import torch.distributed as dist
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.util import is_distributed
-from RadEval.metrics.radgraph._vendor.allennlp.training.metrics.metric import Metric
+from radeval.metrics.radgraph._vendor.allennlp.common.util import is_distributed
+from radeval.metrics.radgraph._vendor.allennlp.training.metrics.metric import Metric
 
 
 @Metric.register("rogue")
@@ -91,7 +91,7 @@ class ROUGE(Metric):
         total_f1 = 0.0
 
         for predicted_seq, reference_seq in zip(predicted_tokens, reference_tokens):
-            from RadEval.metrics.radgraph._vendor.allennlp.training.util import get_valid_tokens_mask
+            from radeval.metrics.radgraph._vendor.allennlp.training.util import get_valid_tokens_mask
 
             m = get_valid_tokens_mask(reference_seq, self._exclude_indices).sum().item()
             n = get_valid_tokens_mask(predicted_seq, self._exclude_indices).sum().item()
@@ -132,7 +132,7 @@ class ROUGE(Metric):
         total_f1 = 0.0
 
         for predicted_seq, reference_seq in zip(predicted_tokens, reference_tokens):
-            from RadEval.metrics.radgraph._vendor.allennlp.training.util import ngrams
+            from radeval.metrics.radgraph._vendor.allennlp.training.util import ngrams
 
             predicted_ngram_counts = ngrams(predicted_seq, ngram_size, self._exclude_indices)
             reference_ngram_counts = ngrams(reference_seq, ngram_size, self._exclude_indices)

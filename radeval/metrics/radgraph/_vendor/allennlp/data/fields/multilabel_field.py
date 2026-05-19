@@ -3,9 +3,9 @@ import logging
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.data.fields.field import Field
-from RadEval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.data.fields.field import Field
+from radeval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
 
 logger = logging.getLogger(__name__)
 

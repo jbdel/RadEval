@@ -1,7 +1,7 @@
 from typing import List
 
-from RadEval.metrics.radgraph._vendor.allennlp.common import Registrable
-from RadEval.metrics.radgraph._vendor.allennlp.common.util import get_spacy_model
+from radeval.metrics.radgraph._vendor.allennlp.common import Registrable
+from radeval.metrics.radgraph._vendor.allennlp.common.util import get_spacy_model
 
 
 class SentenceSplitter(Registrable):

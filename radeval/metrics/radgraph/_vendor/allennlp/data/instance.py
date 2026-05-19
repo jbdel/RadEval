@@ -1,7 +1,7 @@
 from typing import Dict, MutableMapping, Mapping
 
-from RadEval.metrics.radgraph._vendor.allennlp.data.fields.field import DataArray, Field
-from RadEval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.data.fields.field import DataArray, Field
+from radeval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
 
 
 class Instance(Mapping[str, Field]):

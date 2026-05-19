@@ -1,9 +1,9 @@
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.modules.token_embedders.embedding import Embedding
-from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.seq2vec_encoder import Seq2VecEncoder
-from RadEval.metrics.radgraph._vendor.allennlp.modules.time_distributed import TimeDistributed
-from RadEval.metrics.radgraph._vendor.allennlp.modules.token_embedders.token_embedder import TokenEmbedder
+from radeval.metrics.radgraph._vendor.allennlp.modules.token_embedders.embedding import Embedding
+from radeval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.seq2vec_encoder import Seq2VecEncoder
+from radeval.metrics.radgraph._vendor.allennlp.modules.time_distributed import TimeDistributed
+from radeval.metrics.radgraph._vendor.allennlp.modules.token_embedders.token_embedder import TokenEmbedder
 
 
 @TokenEmbedder.register("character_encoding")

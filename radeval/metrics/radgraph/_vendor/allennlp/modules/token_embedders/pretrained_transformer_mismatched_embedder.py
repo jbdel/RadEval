@@ -2,8 +2,8 @@ from typing import Optional
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.modules.token_embedders import PretrainedTransformerEmbedder, TokenEmbedder
-from RadEval.metrics.radgraph._vendor.allennlp.nn import util
+from radeval.metrics.radgraph._vendor.allennlp.modules.token_embedders import PretrainedTransformerEmbedder, TokenEmbedder
+from radeval.metrics.radgraph._vendor.allennlp.nn import util
 
 
 @TokenEmbedder.register("pretrained_transformer_mismatched")

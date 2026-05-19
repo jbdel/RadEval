@@ -8,9 +8,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.common.registrable import FromParams
-from RadEval.metrics.radgraph._vendor.allennlp.nn.util import (
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.common.registrable import FromParams
+from radeval.metrics.radgraph._vendor.allennlp.nn.util import (
     get_lengths_from_binary_sequence_mask,
     masked_max,
     masked_mean,

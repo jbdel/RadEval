@@ -1,11 +1,11 @@
 import torch
 from torch.nn.utils.rnn import pad_packed_sequence
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.modules.augmented_lstm import AugmentedLstm
-from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2seq_encoders.seq2seq_encoder import Seq2SeqEncoder
-from RadEval.metrics.radgraph._vendor.allennlp.modules.stacked_alternating_lstm import StackedAlternatingLstm
-from RadEval.metrics.radgraph._vendor.allennlp.modules.stacked_bidirectional_lstm import StackedBidirectionalLstm
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.modules.augmented_lstm import AugmentedLstm
+from radeval.metrics.radgraph._vendor.allennlp.modules.seq2seq_encoders.seq2seq_encoder import Seq2SeqEncoder
+from radeval.metrics.radgraph._vendor.allennlp.modules.stacked_alternating_lstm import StackedAlternatingLstm
+from radeval.metrics.radgraph._vendor.allennlp.modules.stacked_bidirectional_lstm import StackedBidirectionalLstm
 
 
 class PytorchSeq2SeqWrapper(Seq2SeqEncoder):

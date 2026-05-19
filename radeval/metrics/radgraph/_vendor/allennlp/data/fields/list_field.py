@@ -1,10 +1,10 @@
 from typing import Dict, List, Iterator
 
 
-from RadEval.metrics.radgraph._vendor.allennlp.data.fields.field import DataArray, Field
-from RadEval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
-from RadEval.metrics.radgraph._vendor.allennlp.data.fields.sequence_field import SequenceField
-from RadEval.metrics.radgraph._vendor.allennlp.common.util import pad_sequence_to_length
+from radeval.metrics.radgraph._vendor.allennlp.data.fields.field import DataArray, Field
+from radeval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.data.fields.sequence_field import SequenceField
+from radeval.metrics.radgraph._vendor.allennlp.common.util import pad_sequence_to_length
 
 
 class ListField(SequenceField[DataArray]):

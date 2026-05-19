@@ -2,9 +2,9 @@ import math
 
 import torch
 from torch.nn import Parameter
-from RadEval.metrics.radgraph._vendor.allennlp.modules.attention.attention import Attention
-from RadEval.metrics.radgraph._vendor.allennlp.nn import util
-from RadEval.metrics.radgraph._vendor.allennlp.nn.activations import Activation
+from radeval.metrics.radgraph._vendor.allennlp.modules.attention.attention import Attention
+from radeval.metrics.radgraph._vendor.allennlp.nn import util
+from radeval.metrics.radgraph._vendor.allennlp.nn.activations import Activation
 
 
 @Attention.register("linear")

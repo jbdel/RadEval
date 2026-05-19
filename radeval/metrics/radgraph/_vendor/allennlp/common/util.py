@@ -30,8 +30,8 @@ import numpy
 import torch
 import torch.distributed as dist
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import log_pytorch_version_info
-from RadEval.metrics.radgraph._vendor.allennlp.common.params import Params
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import log_pytorch_version_info
+from radeval.metrics.radgraph._vendor.allennlp.common.params import Params
 
 try:
     import resource
@@ -63,7 +63,7 @@ def sanitize(x: Any) -> Any:
     can be serialized into JSON.
     """
     # Import here to avoid circular references
-    from RadEval.metrics.radgraph._vendor.allennlp.data.tokenizers.token import Token
+    from radeval.metrics.radgraph._vendor.allennlp.data.tokenizers.token import Token
 
     if isinstance(x, (str, float, int, bool)):
         # x is already serializable

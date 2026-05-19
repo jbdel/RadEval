@@ -1,12 +1,12 @@
 from typing import Dict, List
 import logging
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
-from RadEval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_reader import DatasetReader
-from RadEval.metrics.radgraph._vendor.allennlp.data.fields import TextField, SequenceLabelField, MetadataField, Field
-from RadEval.metrics.radgraph._vendor.allennlp.data.instance import Instance
-from RadEval.metrics.radgraph._vendor.allennlp.data.token_indexers import TokenIndexer, SingleIdTokenIndexer
-from RadEval.metrics.radgraph._vendor.allennlp.data.tokenizers import Token
+from radeval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
+from radeval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_reader import DatasetReader
+from radeval.metrics.radgraph._vendor.allennlp.data.fields import TextField, SequenceLabelField, MetadataField, Field
+from radeval.metrics.radgraph._vendor.allennlp.data.instance import Instance
+from radeval.metrics.radgraph._vendor.allennlp.data.token_indexers import TokenIndexer, SingleIdTokenIndexer
+from radeval.metrics.radgraph._vendor.allennlp.data.tokenizers import Token
 
 logger = logging.getLogger(__name__)
 

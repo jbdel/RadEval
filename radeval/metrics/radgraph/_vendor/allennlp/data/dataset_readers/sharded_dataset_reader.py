@@ -4,11 +4,11 @@ import os
 import torch
 from typing import Iterable
 
-from RadEval.metrics.radgraph._vendor.allennlp.common import util
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
-from RadEval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_reader import DatasetReader
-from RadEval.metrics.radgraph._vendor.allennlp.data.instance import Instance
+from radeval.metrics.radgraph._vendor.allennlp.common import util
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
+from radeval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_reader import DatasetReader
+from radeval.metrics.radgraph._vendor.allennlp.data.instance import Instance
 
 
 logger = logging.getLogger(__name__)

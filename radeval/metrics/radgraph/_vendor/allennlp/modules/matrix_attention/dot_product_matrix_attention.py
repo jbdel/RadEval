@@ -1,6 +1,6 @@
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.modules.matrix_attention.matrix_attention import MatrixAttention
+from radeval.metrics.radgraph._vendor.allennlp.modules.matrix_attention.matrix_attention import MatrixAttention
 
 
 @MatrixAttention.register("dot_product")

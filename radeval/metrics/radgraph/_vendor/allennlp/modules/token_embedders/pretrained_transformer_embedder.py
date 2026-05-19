@@ -5,10 +5,10 @@ import torch
 import torch.nn.functional as F
 from transformers import XLNetConfig
 
-from RadEval.metrics.radgraph._vendor.allennlp.data.tokenizers import PretrainedTransformerTokenizer
-from RadEval.metrics.radgraph._vendor.allennlp.modules.scalar_mix import ScalarMix
-from RadEval.metrics.radgraph._vendor.allennlp.modules.token_embedders.token_embedder import TokenEmbedder
-from RadEval.metrics.radgraph._vendor.allennlp.nn.util import batched_index_select
+from radeval.metrics.radgraph._vendor.allennlp.data.tokenizers import PretrainedTransformerTokenizer
+from radeval.metrics.radgraph._vendor.allennlp.modules.scalar_mix import ScalarMix
+from radeval.metrics.radgraph._vendor.allennlp.modules.token_embedders.token_embedder import TokenEmbedder
+from radeval.metrics.radgraph._vendor.allennlp.nn.util import batched_index_select
 
 
 @TokenEmbedder.register("pretrained_transformer")
@@ -55,7 +55,7 @@ class PretrainedTransformerEmbedder(TokenEmbedder):
         gradient_checkpointing: Optional[bool] = None,
     ) -> None:
         super().__init__()
-        from RadEval.metrics.radgraph._vendor.allennlp.common import cached_transformers
+        from radeval.metrics.radgraph._vendor.allennlp.common import cached_transformers
 
         self.transformer_model = cached_transformers.get(
             model_name, True, override_weights_file, override_weights_strip_prefix

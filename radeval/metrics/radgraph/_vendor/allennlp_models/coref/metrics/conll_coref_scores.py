@@ -5,7 +5,7 @@ from collections import Counter
 import numpy as np
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.training.metrics.metric import Metric
+from radeval.metrics.radgraph._vendor.allennlp.training.metrics.metric import Metric
 
 
 @Metric.register("conll_coref_scores")

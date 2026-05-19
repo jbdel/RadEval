@@ -1,7 +1,7 @@
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.common import Registrable
-from RadEval.metrics.radgraph._vendor.allennlp.data import TextFieldTensors
+from radeval.metrics.radgraph._vendor.allennlp.common import Registrable
+from radeval.metrics.radgraph._vendor.allennlp.data import TextFieldTensors
 
 
 class TextFieldEmbedder(torch.nn.Module, Registrable):

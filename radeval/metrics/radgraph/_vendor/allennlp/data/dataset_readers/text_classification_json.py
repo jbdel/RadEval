@@ -1,13 +1,13 @@
 from typing import Dict, List, Union
 import logging
 import json
-from RadEval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
-from RadEval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_reader import DatasetReader
-from RadEval.metrics.radgraph._vendor.allennlp.data.fields import LabelField, TextField, Field, ListField
-from RadEval.metrics.radgraph._vendor.allennlp.data.instance import Instance
-from RadEval.metrics.radgraph._vendor.allennlp.data.token_indexers import TokenIndexer, SingleIdTokenIndexer
-from RadEval.metrics.radgraph._vendor.allennlp.data.tokenizers import Tokenizer
-from RadEval.metrics.radgraph._vendor.allennlp.data.tokenizers.sentence_splitter import SpacySentenceSplitter
+from radeval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
+from radeval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_reader import DatasetReader
+from radeval.metrics.radgraph._vendor.allennlp.data.fields import LabelField, TextField, Field, ListField
+from radeval.metrics.radgraph._vendor.allennlp.data.instance import Instance
+from radeval.metrics.radgraph._vendor.allennlp.data.token_indexers import TokenIndexer, SingleIdTokenIndexer
+from radeval.metrics.radgraph._vendor.allennlp.data.tokenizers import Tokenizer
+from radeval.metrics.radgraph._vendor.allennlp.data.tokenizers.sentence_splitter import SpacySentenceSplitter
 
 logger = logging.getLogger(__name__)
 

@@ -12,10 +12,10 @@ import shutil
 
 from torch.nn import Module
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
-from RadEval.metrics.radgraph._vendor.allennlp.common.params import Params
-from RadEval.metrics.radgraph._vendor.allennlp.models.model import Model, _DEFAULT_WEIGHTS
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
+from radeval.metrics.radgraph._vendor.allennlp.common.params import Params
+from radeval.metrics.radgraph._vendor.allennlp.models.model import Model, _DEFAULT_WEIGHTS
 
 logger = logging.getLogger(__name__)
 

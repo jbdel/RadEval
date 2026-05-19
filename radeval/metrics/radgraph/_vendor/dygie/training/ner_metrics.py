@@ -2,9 +2,9 @@ from typing import Optional
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.training.metrics.metric import Metric
+from radeval.metrics.radgraph._vendor.allennlp.training.metrics.metric import Metric
 
-from RadEval.metrics.radgraph._vendor.dygie.training.f1 import compute_f1
+from radeval.metrics.radgraph._vendor.dygie.training.f1 import compute_f1
 
 # TODO(dwadden) Need to use the decoded predictions so that we catch the gold examples longer than
 # the span boundary.

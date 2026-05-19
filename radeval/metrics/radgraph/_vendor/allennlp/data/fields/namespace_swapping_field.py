@@ -2,10 +2,10 @@ from typing import Dict, List
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.util import pad_sequence_to_length
-from RadEval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
-from RadEval.metrics.radgraph._vendor.allennlp.data.tokenizers.token import Token
-from RadEval.metrics.radgraph._vendor.allennlp.data.fields.field import Field
+from radeval.metrics.radgraph._vendor.allennlp.common.util import pad_sequence_to_length
+from radeval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.data.tokenizers.token import Token
+from radeval.metrics.radgraph._vendor.allennlp.data.fields.field import Field
 
 
 class NamespaceSwappingField(Field[torch.Tensor]):

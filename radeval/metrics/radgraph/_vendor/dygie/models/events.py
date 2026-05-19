@@ -5,16 +5,16 @@ from typing import Any, Dict, List, Optional, Callable
 import torch
 from torch.nn import functional as F
 
-from RadEval.metrics.radgraph._vendor.allennlp.data import Vocabulary
-from RadEval.metrics.radgraph._vendor.allennlp.models.model import Model
-from RadEval.metrics.radgraph._vendor.allennlp.nn import util, InitializerApplicator, RegularizerApplicator
-from RadEval.metrics.radgraph._vendor.allennlp.modules import TimeDistributed
-from RadEval.metrics.radgraph._vendor.allennlp.modules.token_embedders import Embedding
+from radeval.metrics.radgraph._vendor.allennlp.data import Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.models.model import Model
+from radeval.metrics.radgraph._vendor.allennlp.nn import util, InitializerApplicator, RegularizerApplicator
+from radeval.metrics.radgraph._vendor.allennlp.modules import TimeDistributed
+from radeval.metrics.radgraph._vendor.allennlp.modules.token_embedders import Embedding
 
-from RadEval.metrics.radgraph._vendor.dygie.training.event_metrics import EventMetrics
-from RadEval.metrics.radgraph._vendor.dygie.models.shared import fields_to_batches
-from RadEval.metrics.radgraph._vendor.dygie.models.entity_beam_pruner import make_pruner
-from RadEval.metrics.radgraph._vendor.dygie.data.dataset_readers import document
+from radeval.metrics.radgraph._vendor.dygie.training.event_metrics import EventMetrics
+from radeval.metrics.radgraph._vendor.dygie.models.shared import fields_to_batches
+from radeval.metrics.radgraph._vendor.dygie.models.entity_beam_pruner import make_pruner
+from radeval.metrics.radgraph._vendor.dygie.data.dataset_readers import document
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 

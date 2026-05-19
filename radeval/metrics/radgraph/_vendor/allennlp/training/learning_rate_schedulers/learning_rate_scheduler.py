@@ -2,10 +2,10 @@ from typing import Any, Dict, List, Union
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.common.registrable import Registrable
-from RadEval.metrics.radgraph._vendor.allennlp.training.scheduler import Scheduler
-from RadEval.metrics.radgraph._vendor.allennlp.training.optimizers import Optimizer
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.common.registrable import Registrable
+from radeval.metrics.radgraph._vendor.allennlp.training.scheduler import Scheduler
+from radeval.metrics.radgraph._vendor.allennlp.training.optimizers import Optimizer
 
 
 class LearningRateScheduler(Scheduler, Registrable):

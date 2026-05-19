@@ -8,10 +8,10 @@ import time
 
 import torch
 
-import RadEval.metrics.radgraph._vendor.allennlp
-from RadEval.metrics.radgraph._vendor.allennlp.common import Registrable
-from RadEval.metrics.radgraph._vendor.allennlp.nn import util as nn_util
-from RadEval.metrics.radgraph._vendor.allennlp.training import util as training_util
+import radeval.metrics.radgraph._vendor.allennlp
+from radeval.metrics.radgraph._vendor.allennlp.common import Registrable
+from radeval.metrics.radgraph._vendor.allennlp.nn import util as nn_util
+from radeval.metrics.radgraph._vendor.allennlp.training import util as training_util
 
 logger = logging.getLogger(__name__)
 

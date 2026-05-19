@@ -1,7 +1,7 @@
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.modules.matrix_attention.matrix_attention import MatrixAttention
-from RadEval.metrics.radgraph._vendor.allennlp.nn import util
+from radeval.metrics.radgraph._vendor.allennlp.modules.matrix_attention.matrix_attention import MatrixAttention
+from radeval.metrics.radgraph._vendor.allennlp.nn import util
 
 
 @MatrixAttention.register("cosine")

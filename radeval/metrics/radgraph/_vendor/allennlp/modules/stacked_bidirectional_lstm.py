@@ -1,9 +1,9 @@
 from typing import Optional, Tuple, List
 import torch
 from torch.nn.utils.rnn import PackedSequence, pack_padded_sequence, pad_packed_sequence
-from RadEval.metrics.radgraph._vendor.allennlp.modules.augmented_lstm import AugmentedLstm
-from RadEval.metrics.radgraph._vendor.allennlp.modules.input_variational_dropout import InputVariationalDropout
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.modules.augmented_lstm import AugmentedLstm
+from radeval.metrics.radgraph._vendor.allennlp.modules.input_variational_dropout import InputVariationalDropout
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
 
 
 TensorPair = Tuple[torch.Tensor, torch.Tensor]

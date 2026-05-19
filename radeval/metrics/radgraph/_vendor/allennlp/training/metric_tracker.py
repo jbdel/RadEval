@@ -1,6 +1,6 @@
 from typing import Optional, Iterable, Dict, Any
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
 
 
 class MetricTracker:

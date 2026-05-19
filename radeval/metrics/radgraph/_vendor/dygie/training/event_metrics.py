@@ -1,8 +1,8 @@
 from collections import Counter
 
-from RadEval.metrics.radgraph._vendor.allennlp.training.metrics.metric import Metric
+from radeval.metrics.radgraph._vendor.allennlp.training.metrics.metric import Metric
 
-from RadEval.metrics.radgraph._vendor.dygie.training.f1 import compute_f1
+from radeval.metrics.radgraph._vendor.dygie.training.f1 import compute_f1
 
 
 def _invert_arguments(arguments, triggers):

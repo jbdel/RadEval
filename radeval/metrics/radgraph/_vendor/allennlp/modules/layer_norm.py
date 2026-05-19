@@ -1,6 +1,6 @@
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.nn import util
+from radeval.metrics.radgraph._vendor.allennlp.nn import util
 
 
 class LayerNorm(torch.nn.Module):

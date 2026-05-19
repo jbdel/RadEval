@@ -3,9 +3,9 @@ from typing import Any, Dict, List, Set, Tuple
 import torch
 import torch.distributed as dist
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.util import is_distributed
+from radeval.metrics.radgraph._vendor.allennlp.common.util import is_distributed
 
-from RadEval.metrics.radgraph._vendor.allennlp.training.metrics.metric import Metric
+from radeval.metrics.radgraph._vendor.allennlp.training.metrics.metric import Metric
 
 
 @Metric.register("mention_recall")

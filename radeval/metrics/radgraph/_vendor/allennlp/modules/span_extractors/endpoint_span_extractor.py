@@ -1,11 +1,11 @@
 import torch
 from torch.nn.parameter import Parameter
 
-from RadEval.metrics.radgraph._vendor.allennlp.modules.span_extractors.span_extractor import SpanExtractor
-from RadEval.metrics.radgraph._vendor.allennlp.modules.token_embedders.embedding import Embedding
-from RadEval.metrics.radgraph._vendor.allennlp.nn import util
+from radeval.metrics.radgraph._vendor.allennlp.modules.span_extractors.span_extractor import SpanExtractor
+from radeval.metrics.radgraph._vendor.allennlp.modules.token_embedders.embedding import Embedding
+from radeval.metrics.radgraph._vendor.allennlp.nn import util
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
 
 
 @SpanExtractor.register("endpoint")

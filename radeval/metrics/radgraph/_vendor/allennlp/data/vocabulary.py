@@ -13,14 +13,14 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Union, TY
 
 from filelock import FileLock
 
-from RadEval.metrics.radgraph._vendor.allennlp.common import Registrable
-from RadEval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.common.tqdm import Tqdm
-from RadEval.metrics.radgraph._vendor.allennlp.common.util import namespace_match
+from radeval.metrics.radgraph._vendor.allennlp.common import Registrable
+from radeval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.common.tqdm import Tqdm
+from radeval.metrics.radgraph._vendor.allennlp.common.util import namespace_match
 
 if TYPE_CHECKING:
-    from RadEval.metrics.radgraph._vendor.allennlp.data import instance as adi  # noqa
+    from radeval.metrics.radgraph._vendor.allennlp.data import instance as adi  # noqa
 
 
 logger = logging.getLogger(__name__)
@@ -108,7 +108,7 @@ class _IndexToTokenDefaultDict(_NamespaceDependentDefaultDict):
 
 def _read_pretrained_tokens(embeddings_file_uri: str) -> List[str]:
     # Moving this import to the top breaks everything (cycling import, I guess)
-    from RadEval.metrics.radgraph._vendor.allennlp.modules.token_embedders.embedding import EmbeddingsTextFile
+    from radeval.metrics.radgraph._vendor.allennlp.modules.token_embedders.embedding import EmbeddingsTextFile
 
     logger.info("Reading pretrained tokens from: %s", embeddings_file_uri)
     tokens: List[str] = []

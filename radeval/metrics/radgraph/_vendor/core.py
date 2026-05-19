@@ -10,23 +10,23 @@ import warnings
 import torch
 from dotmap import DotMap
 
-from RadEval.metrics.radgraph._vendor.allennlp.data import Vocabulary
-from RadEval.metrics.radgraph._vendor.allennlp.data.dataset_readers import AllennlpDataset
-from RadEval.metrics.radgraph._vendor.allennlp.data.dataloader import PyTorchDataLoader
-from RadEval.metrics.radgraph._vendor.allennlp.data import token_indexers
-from RadEval.metrics.radgraph._vendor.allennlp.modules import token_embedders, text_field_embedders
-from RadEval.metrics.radgraph._vendor.allennlp.common.params import Params
-from RadEval.metrics.radgraph._vendor.dygie.data.dataset_readers.dygie import DyGIEReader
-from RadEval.metrics.radgraph._vendor.dygie.models import dygie
+from radeval.metrics.radgraph._vendor.allennlp.data import Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.data.dataset_readers import AllennlpDataset
+from radeval.metrics.radgraph._vendor.allennlp.data.dataloader import PyTorchDataLoader
+from radeval.metrics.radgraph._vendor.allennlp.data import token_indexers
+from radeval.metrics.radgraph._vendor.allennlp.modules import token_embedders, text_field_embedders
+from radeval.metrics.radgraph._vendor.allennlp.common.params import Params
+from radeval.metrics.radgraph._vendor.dygie.data.dataset_readers.dygie import DyGIEReader
+from radeval.metrics.radgraph._vendor.dygie.models import dygie
 
-from RadEval.metrics.radgraph._vendor.utils import download_model
-from RadEval.metrics.radgraph._vendor.utils import (
+from radeval.metrics.radgraph._vendor.utils import download_model
+from radeval.metrics.radgraph._vendor.utils import (
     preprocess_reports,
     postprocess_reports,
     batch_to_device,
 )
 
-from RadEval.metrics.radgraph._vendor.rewards import compute_reward
+from radeval.metrics.radgraph._vendor.rewards import compute_reward
 from appdirs import user_cache_dir
 
 logging.getLogger("radgraph").setLevel(logging.CRITICAL)

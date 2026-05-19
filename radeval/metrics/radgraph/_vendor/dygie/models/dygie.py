@@ -5,19 +5,19 @@ import copy
 import torch
 import torch.nn.functional as F
 
-from RadEval.metrics.radgraph._vendor.allennlp.data import Vocabulary
-from RadEval.metrics.radgraph._vendor.allennlp.common.params import Params
-from RadEval.metrics.radgraph._vendor.allennlp.models.model import Model
-from RadEval.metrics.radgraph._vendor.allennlp.modules import TextFieldEmbedder, FeedForward, TimeDistributed
-from RadEval.metrics.radgraph._vendor.allennlp.modules.span_extractors import EndpointSpanExtractor
-from RadEval.metrics.radgraph._vendor.allennlp.nn import util, InitializerApplicator, RegularizerApplicator
+from radeval.metrics.radgraph._vendor.allennlp.data import Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.common.params import Params
+from radeval.metrics.radgraph._vendor.allennlp.models.model import Model
+from radeval.metrics.radgraph._vendor.allennlp.modules import TextFieldEmbedder, FeedForward, TimeDistributed
+from radeval.metrics.radgraph._vendor.allennlp.modules.span_extractors import EndpointSpanExtractor
+from radeval.metrics.radgraph._vendor.allennlp.nn import util, InitializerApplicator, RegularizerApplicator
 
 # Import submodules.
-from RadEval.metrics.radgraph._vendor.dygie.models.coref import CorefResolver
-from RadEval.metrics.radgraph._vendor.dygie.models.ner import NERTagger
-from RadEval.metrics.radgraph._vendor.dygie.models.relation import RelationExtractor
-from RadEval.metrics.radgraph._vendor.dygie.models.events import EventExtractor
-from RadEval.metrics.radgraph._vendor.dygie.data.dataset_readers import document
+from radeval.metrics.radgraph._vendor.dygie.models.coref import CorefResolver
+from radeval.metrics.radgraph._vendor.dygie.models.ner import NERTagger
+from radeval.metrics.radgraph._vendor.dygie.models.relation import RelationExtractor
+from radeval.metrics.radgraph._vendor.dygie.models.events import EventExtractor
+from radeval.metrics.radgraph._vendor.dygie.data.dataset_readers import document
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 

@@ -5,10 +5,10 @@ import math
 
 from torch.utils import data
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.common.util import lazy_groups_of
-from RadEval.metrics.radgraph._vendor.allennlp.data.instance import Instance
-from RadEval.metrics.radgraph._vendor.allennlp.data.samplers import BatchSampler
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.common.util import lazy_groups_of
+from radeval.metrics.radgraph._vendor.allennlp.data.instance import Instance
+from radeval.metrics.radgraph._vendor.allennlp.data.samplers import BatchSampler
 
 logger = logging.getLogger(__name__)
 

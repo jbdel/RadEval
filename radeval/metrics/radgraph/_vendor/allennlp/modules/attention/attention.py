@@ -5,8 +5,8 @@ an input vector and the rows of a matrix.
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.registrable import Registrable
-from RadEval.metrics.radgraph._vendor.allennlp.nn.util import masked_softmax
+from radeval.metrics.radgraph._vendor.allennlp.common.registrable import Registrable
+from radeval.metrics.radgraph._vendor.allennlp.nn.util import masked_softmax
 
 
 class Attention(torch.nn.Module, Registrable):

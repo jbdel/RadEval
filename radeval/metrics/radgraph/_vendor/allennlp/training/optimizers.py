@@ -25,7 +25,7 @@ from typing import Any, Dict, List, Tuple, Union
 import torch
 import transformers
 
-from RadEval.metrics.radgraph._vendor.allennlp.common import Params, Registrable
+from radeval.metrics.radgraph._vendor.allennlp.common import Params, Registrable
 
 logger = logging.getLogger(__name__)
 

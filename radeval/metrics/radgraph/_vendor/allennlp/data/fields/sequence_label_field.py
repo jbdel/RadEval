@@ -4,11 +4,11 @@ import textwrap
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.common.util import pad_sequence_to_length
-from RadEval.metrics.radgraph._vendor.allennlp.data.fields.field import Field
-from RadEval.metrics.radgraph._vendor.allennlp.data.fields.sequence_field import SequenceField
-from RadEval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.common.util import pad_sequence_to_length
+from radeval.metrics.radgraph._vendor.allennlp.data.fields.field import Field
+from radeval.metrics.radgraph._vendor.allennlp.data.fields.sequence_field import SequenceField
+from radeval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
 
 logger = logging.getLogger(__name__)
 

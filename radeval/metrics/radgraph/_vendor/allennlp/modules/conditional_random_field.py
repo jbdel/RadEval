@@ -5,8 +5,8 @@ from typing import List, Tuple, Dict, Union
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-import RadEval.metrics.radgraph._vendor.allennlp.nn.util as util
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+import radeval.metrics.radgraph._vendor.allennlp.nn.util as util
 
 VITERBI_DECODING = Tuple[List[int], float]  # a list of tags, and a viterbi score
 

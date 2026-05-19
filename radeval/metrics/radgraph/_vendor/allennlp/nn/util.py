@@ -12,7 +12,7 @@ import math
 import numpy
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ def move_to_device(obj, cuda_device: Union[torch.device, int]):
     Given a structure (possibly) containing Tensors on the CPU,
     move all the Tensors to the specified GPU (or do nothing, if they should be on the CPU).
     """
-    from RadEval.metrics.radgraph._vendor.allennlp.common.util import int_to_device
+    from radeval.metrics.radgraph._vendor.allennlp.common.util import int_to_device
 
     cuda_device = int_to_device(cuda_device)
 
@@ -1753,11 +1753,11 @@ def find_embedding_layer(model: torch.nn.Module) -> torch.nn.Module:
     # TextFieldEmbedder in a second pass if we didn't find a special case.
     from transformers.modeling_gpt2 import GPT2Model
     from transformers.modeling_bert import BertEmbeddings
-    from RadEval.metrics.radgraph._vendor.allennlp.modules.text_field_embedders.text_field_embedder import TextFieldEmbedder
-    from RadEval.metrics.radgraph._vendor.allennlp.modules.text_field_embedders.basic_text_field_embedder import (
+    from radeval.metrics.radgraph._vendor.allennlp.modules.text_field_embedders.text_field_embedder import TextFieldEmbedder
+    from radeval.metrics.radgraph._vendor.allennlp.modules.text_field_embedders.basic_text_field_embedder import (
         BasicTextFieldEmbedder,
     )
-    from RadEval.metrics.radgraph._vendor.allennlp.modules.token_embedders.embedding import Embedding
+    from radeval.metrics.radgraph._vendor.allennlp.modules.token_embedders.embedding import Embedding
 
     # The special case only works if we don't have mismatched embedding.  What we essentially want
     # to do is grab a transformer's wordpiece embedding layer, because using that is a lot easier

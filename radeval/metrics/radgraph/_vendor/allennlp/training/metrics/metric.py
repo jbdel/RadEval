@@ -2,7 +2,7 @@ from typing import Dict, Iterable, Optional, Any
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.registrable import Registrable
+from radeval.metrics.radgraph._vendor.allennlp.common.registrable import Registrable
 
 
 class Metric(Registrable):

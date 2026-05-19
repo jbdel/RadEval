@@ -31,8 +31,8 @@ import itertools
 import torch
 import torch.nn.init
 
-from RadEval.metrics.radgraph._vendor.allennlp.common import FromParams, Registrable
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.common import FromParams, Registrable
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
 
 logger = logging.getLogger(__name__)
 

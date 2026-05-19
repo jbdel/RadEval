@@ -15,15 +15,15 @@ a Noam schedule, and a slanted triangular schedule, which are registered as
 "cosine", "noam", and "slanted_triangular", respectively.
 """
 
-from RadEval.metrics.radgraph._vendor.allennlp.training.learning_rate_schedulers.learning_rate_scheduler import (
+from radeval.metrics.radgraph._vendor.allennlp.training.learning_rate_schedulers.learning_rate_scheduler import (
     LearningRateScheduler,
     StepLearningRateScheduler,
     MultiStepLearningRateScheduler,
     ExponentialLearningRateScheduler,
     ReduceOnPlateauLearningRateScheduler,
 )
-from RadEval.metrics.radgraph._vendor.allennlp.training.learning_rate_schedulers.cosine import CosineWithRestarts
-from RadEval.metrics.radgraph._vendor.allennlp.training.learning_rate_schedulers.noam import NoamLR
-from RadEval.metrics.radgraph._vendor.allennlp.training.learning_rate_schedulers.slanted_triangular import SlantedTriangular
-from RadEval.metrics.radgraph._vendor.allennlp.training.learning_rate_schedulers.polynomial_decay import PolynomialDecay
-from RadEval.metrics.radgraph._vendor.allennlp.training.learning_rate_schedulers.linear_with_warmup import LinearWithWarmup
+from radeval.metrics.radgraph._vendor.allennlp.training.learning_rate_schedulers.cosine import CosineWithRestarts
+from radeval.metrics.radgraph._vendor.allennlp.training.learning_rate_schedulers.noam import NoamLR
+from radeval.metrics.radgraph._vendor.allennlp.training.learning_rate_schedulers.slanted_triangular import SlantedTriangular
+from radeval.metrics.radgraph._vendor.allennlp.training.learning_rate_schedulers.polynomial_decay import PolynomialDecay
+from radeval.metrics.radgraph._vendor.allennlp.training.learning_rate_schedulers.linear_with_warmup import LinearWithWarmup

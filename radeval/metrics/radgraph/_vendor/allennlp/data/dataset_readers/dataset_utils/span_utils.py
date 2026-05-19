@@ -1,8 +1,8 @@
 from typing import Callable, List, Set, Tuple, TypeVar, Optional
 import warnings
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.data.tokenizers.token import Token
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.data.tokenizers.token import Token
 
 
 TypedSpan = Tuple[int, Tuple[int, int]]

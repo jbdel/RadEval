@@ -7,8 +7,8 @@ from typing import Optional, Tuple, List
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.nn.util import get_dropout_mask
-from RadEval.metrics.radgraph._vendor.allennlp.nn.initializers import block_orthogonal
+from radeval.metrics.radgraph._vendor.allennlp.nn.util import get_dropout_mask
+from radeval.metrics.radgraph._vendor.allennlp.nn.initializers import block_orthogonal
 
 
 class LstmCellWithProjection(torch.nn.Module):

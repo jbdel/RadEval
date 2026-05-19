@@ -1,7 +1,7 @@
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.registrable import Registrable
-from RadEval.metrics.radgraph._vendor.allennlp.training.scheduler import Scheduler
+from radeval.metrics.radgraph._vendor.allennlp.common.registrable import Registrable
+from radeval.metrics.radgraph._vendor.allennlp.training.scheduler import Scheduler
 
 
 class MomentumScheduler(Scheduler, Registrable):

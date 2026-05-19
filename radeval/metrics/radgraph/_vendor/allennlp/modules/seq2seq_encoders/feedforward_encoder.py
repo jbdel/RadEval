@@ -1,7 +1,7 @@
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.modules.feedforward import FeedForward
-from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2seq_encoders.seq2seq_encoder import Seq2SeqEncoder
+from radeval.metrics.radgraph._vendor.allennlp.modules.feedforward import FeedForward
+from radeval.metrics.radgraph._vendor.allennlp.modules.seq2seq_encoders.seq2seq_encoder import Seq2SeqEncoder
 
 
 @Seq2SeqEncoder.register("feedforward")

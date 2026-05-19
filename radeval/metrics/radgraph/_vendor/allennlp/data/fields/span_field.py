@@ -2,8 +2,8 @@ from typing import Dict
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.data.fields.field import Field
-from RadEval.metrics.radgraph._vendor.allennlp.data.fields.sequence_field import SequenceField
+from radeval.metrics.radgraph._vendor.allennlp.data.fields.field import Field
+from radeval.metrics.radgraph._vendor.allennlp.data.fields.sequence_field import SequenceField
 
 
 class SpanField(Field[torch.Tensor]):

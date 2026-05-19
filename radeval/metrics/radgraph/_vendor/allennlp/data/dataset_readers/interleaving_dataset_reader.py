@@ -1,10 +1,10 @@
 from typing import Dict, Mapping, Iterable
 import json
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_reader import DatasetReader
-from RadEval.metrics.radgraph._vendor.allennlp.data.fields import MetadataField
-from RadEval.metrics.radgraph._vendor.allennlp.data.instance import Instance
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_reader import DatasetReader
+from radeval.metrics.radgraph._vendor.allennlp.data.fields import MetadataField
+from radeval.metrics.radgraph._vendor.allennlp.data.instance import Instance
 
 _VALID_SCHEMES = {"round_robin", "all_at_once"}
 

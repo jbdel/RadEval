@@ -2,14 +2,14 @@ from typing import Dict, List, Sequence, Iterable
 import itertools
 import logging
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
-from RadEval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_reader import DatasetReader
-from RadEval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_utils import to_bioul
-from RadEval.metrics.radgraph._vendor.allennlp.data.fields import TextField, SequenceLabelField, Field, MetadataField
-from RadEval.metrics.radgraph._vendor.allennlp.data.instance import Instance
-from RadEval.metrics.radgraph._vendor.allennlp.data.token_indexers import TokenIndexer, SingleIdTokenIndexer
-from RadEval.metrics.radgraph._vendor.allennlp.data.tokenizers import Token
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
+from radeval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_reader import DatasetReader
+from radeval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_utils import to_bioul
+from radeval.metrics.radgraph._vendor.allennlp.data.fields import TextField, SequenceLabelField, Field, MetadataField
+from radeval.metrics.radgraph._vendor.allennlp.data.instance import Instance
+from radeval.metrics.radgraph._vendor.allennlp.data.token_indexers import TokenIndexer, SingleIdTokenIndexer
+from radeval.metrics.radgraph._vendor.allennlp.data.tokenizers import Token
 
 logger = logging.getLogger(__name__)
 

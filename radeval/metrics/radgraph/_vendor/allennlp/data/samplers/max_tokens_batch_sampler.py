@@ -2,7 +2,7 @@ import logging
 import random
 from typing import List, Iterable, Optional, Iterator, TypeVar
 
-from RadEval.metrics.radgraph._vendor.allennlp.data.samplers import BatchSampler, BucketBatchSampler
+from radeval.metrics.radgraph._vendor.allennlp.data.samplers import BatchSampler, BucketBatchSampler
 from torch.utils import data
 
 logger = logging.getLogger(__name__)

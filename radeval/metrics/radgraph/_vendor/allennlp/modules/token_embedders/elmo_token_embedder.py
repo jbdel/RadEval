@@ -1,9 +1,9 @@
 from typing import List
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.modules.token_embedders.token_embedder import TokenEmbedder
-from RadEval.metrics.radgraph._vendor.allennlp.modules.elmo import Elmo
-from RadEval.metrics.radgraph._vendor.allennlp.modules.time_distributed import TimeDistributed
+from radeval.metrics.radgraph._vendor.allennlp.modules.token_embedders.token_embedder import TokenEmbedder
+from radeval.metrics.radgraph._vendor.allennlp.modules.elmo import Elmo
+from radeval.metrics.radgraph._vendor.allennlp.modules.time_distributed import TimeDistributed
 
 
 @TokenEmbedder.register("elmo_token_embedder")

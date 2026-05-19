@@ -5,8 +5,8 @@ from typing import Iterable, Tuple, Dict, Set
 import torch
 import torch.distributed as dist
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.util import is_distributed
-from RadEval.metrics.radgraph._vendor.allennlp.training.metrics.metric import Metric
+from radeval.metrics.radgraph._vendor.allennlp.common.util import is_distributed
+from radeval.metrics.radgraph._vendor.allennlp.training.metrics.metric import Metric
 
 
 @Metric.register("bleu")
@@ -78,7 +78,7 @@ class BLEU(Metric):
         """
         clipped_matches = 0
         total_predicted = 0
-        from RadEval.metrics.radgraph._vendor.allennlp.training.util import ngrams
+        from radeval.metrics.radgraph._vendor.allennlp.training.util import ngrams
 
         for predicted_row, reference_row in zip(predicted_tokens, reference_tokens):
             predicted_ngram_counts = ngrams(predicted_row, ngram_size, self._exclude_indices)
@@ -139,7 +139,7 @@ class BLEU(Metric):
             _reference_lengths = gold_targets.size(0) * gold_targets.size(1)
 
         else:
-            from RadEval.metrics.radgraph._vendor.allennlp.training.util import get_valid_tokens_mask
+            from radeval.metrics.radgraph._vendor.allennlp.training.util import get_valid_tokens_mask
 
             valid_predictions_mask = get_valid_tokens_mask(predictions, self._exclude_indices)
             valid_gold_targets_mask = get_valid_tokens_mask(gold_targets, self._exclude_indices)

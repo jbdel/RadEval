@@ -45,7 +45,7 @@ def get(
     transformer = _model_cache.get(spec, None)
     if transformer is None:
         if override_weights_file is not None:
-            from RadEval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
+            from radeval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
             import torch
 
             override_weights_file = cached_path(override_weights_file)

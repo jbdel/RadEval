@@ -5,16 +5,16 @@ from typing import Any, Dict, List, Tuple
 import torch
 import torch.nn.functional as F
 
-from RadEval.metrics.radgraph._vendor.allennlp.data import TextFieldTensors, Vocabulary
-from RadEval.metrics.radgraph._vendor.allennlp.models.model import Model
-from RadEval.metrics.radgraph._vendor.allennlp.modules.token_embedders import Embedding
-from RadEval.metrics.radgraph._vendor.allennlp.modules import FeedForward, GatedSum
-from RadEval.metrics.radgraph._vendor.allennlp.modules import Seq2SeqEncoder, TimeDistributed, TextFieldEmbedder
-from RadEval.metrics.radgraph._vendor.allennlp.modules.span_extractors import SelfAttentiveSpanExtractor, EndpointSpanExtractor
-from RadEval.metrics.radgraph._vendor.allennlp.nn import util, InitializerApplicator
+from radeval.metrics.radgraph._vendor.allennlp.data import TextFieldTensors, Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.models.model import Model
+from radeval.metrics.radgraph._vendor.allennlp.modules.token_embedders import Embedding
+from radeval.metrics.radgraph._vendor.allennlp.modules import FeedForward, GatedSum
+from radeval.metrics.radgraph._vendor.allennlp.modules import Seq2SeqEncoder, TimeDistributed, TextFieldEmbedder
+from radeval.metrics.radgraph._vendor.allennlp.modules.span_extractors import SelfAttentiveSpanExtractor, EndpointSpanExtractor
+from radeval.metrics.radgraph._vendor.allennlp.nn import util, InitializerApplicator
 
-from RadEval.metrics.radgraph._vendor.allennlp_models.coref.metrics.conll_coref_scores import ConllCorefScores
-from RadEval.metrics.radgraph._vendor.allennlp_models.coref.metrics.mention_recall import MentionRecall
+from radeval.metrics.radgraph._vendor.allennlp_models.coref.metrics.conll_coref_scores import ConllCorefScores
+from radeval.metrics.radgraph._vendor.allennlp_models.coref.metrics.mention_recall import MentionRecall
 
 logger = logging.getLogger(__name__)
 

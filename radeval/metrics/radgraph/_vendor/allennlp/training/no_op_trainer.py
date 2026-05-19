@@ -2,9 +2,9 @@ import os
 from contextlib import contextmanager
 from typing import Any, Dict, Iterator, Tuple
 
-from RadEval.metrics.radgraph._vendor.allennlp.models import Model
-from RadEval.metrics.radgraph._vendor.allennlp.training.checkpointer import Checkpointer
-from RadEval.metrics.radgraph._vendor.allennlp.training.trainer import Trainer
+from radeval.metrics.radgraph._vendor.allennlp.models import Model
+from radeval.metrics.radgraph._vendor.allennlp.training.checkpointer import Checkpointer
+from radeval.metrics.radgraph._vendor.allennlp.training.trainer import Trainer
 
 
 @Trainer.register("no_op")

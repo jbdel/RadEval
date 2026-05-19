@@ -3,8 +3,8 @@ from typing import Optional, Tuple
 import torch
 from torch.nn import Conv1d, Linear
 
-from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.seq2vec_encoder import Seq2VecEncoder
-from RadEval.metrics.radgraph._vendor.allennlp.nn import Activation
+from radeval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.seq2vec_encoder import Seq2VecEncoder
+from radeval.metrics.radgraph._vendor.allennlp.nn import Activation
 
 
 @Seq2VecEncoder.register("cnn")

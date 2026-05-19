@@ -10,10 +10,10 @@ from typing import Dict, Iterable, Iterator, List, Union
 import numpy
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.common.util import ensure_list
-from RadEval.metrics.radgraph._vendor.allennlp.data.instance import Instance
-from RadEval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.common.util import ensure_list
+from radeval.metrics.radgraph._vendor.allennlp.data.instance import Instance
+from radeval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,6 @@
 import torch
-from RadEval.metrics.radgraph._vendor.allennlp.modules.attention.attention import Attention
-from RadEval.metrics.radgraph._vendor.allennlp.nn import util
+from radeval.metrics.radgraph._vendor.allennlp.modules.attention.attention import Attention
+from radeval.metrics.radgraph._vendor.allennlp.nn import util
 
 
 @Attention.register("cosine")

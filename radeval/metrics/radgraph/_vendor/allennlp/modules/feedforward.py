@@ -5,9 +5,9 @@ from typing import List, Union
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.common import FromParams
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.nn import Activation
+from radeval.metrics.radgraph._vendor.allennlp.common import FromParams
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.nn import Activation
 
 
 class FeedForward(torch.nn.Module, FromParams):

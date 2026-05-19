@@ -6,8 +6,8 @@ from typing import Tuple, Union
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.nn import util
-from RadEval.metrics.radgraph._vendor.allennlp.modules import TimeDistributed
+from radeval.metrics.radgraph._vendor.allennlp.nn import util
+from radeval.metrics.radgraph._vendor.allennlp.modules import TimeDistributed
 
 
 def make_pruner(scorer, entity_beam=False, gold_beam=False):

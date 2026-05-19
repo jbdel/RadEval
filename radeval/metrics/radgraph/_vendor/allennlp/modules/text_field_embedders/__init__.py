@@ -3,5 +3,5 @@ A `TextFieldEmbedder` is a `Module` that takes as input the `dict` of NumPy arra
 produced by a `TextField` and returns as output an embedded representation of the tokens in that field.
 """
 
-from RadEval.metrics.radgraph._vendor.allennlp.modules.text_field_embedders.text_field_embedder import TextFieldEmbedder
-from RadEval.metrics.radgraph._vendor.allennlp.modules.text_field_embedders.basic_text_field_embedder import BasicTextFieldEmbedder
+from radeval.metrics.radgraph._vendor.allennlp.modules.text_field_embedders.text_field_embedder import TextFieldEmbedder
+from radeval.metrics.radgraph._vendor.allennlp.modules.text_field_embedders.basic_text_field_embedder import BasicTextFieldEmbedder

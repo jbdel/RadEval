@@ -3,7 +3,7 @@ from typing import Dict, Generic, List, TypeVar
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
 
 DataArray = TypeVar(
     "DataArray", torch.Tensor, Dict[str, torch.Tensor], Dict[str, Dict[str, torch.Tensor]]

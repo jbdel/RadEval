@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional, Tuple, Set
 
-from RadEval.metrics.radgraph._vendor.allennlp.data.fields import (
+from radeval.metrics.radgraph._vendor.allennlp.data.fields import (
     Field,
     ListField,
     TextField,
@@ -8,10 +8,10 @@ from RadEval.metrics.radgraph._vendor.allennlp.data.fields import (
     MetadataField,
     SequenceLabelField,
 )
-from RadEval.metrics.radgraph._vendor.allennlp.data.instance import Instance
-from RadEval.metrics.radgraph._vendor.allennlp.data.tokenizers import Token, PretrainedTransformerTokenizer
-from RadEval.metrics.radgraph._vendor.allennlp.data.token_indexers import TokenIndexer
-from RadEval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_utils import enumerate_spans
+from radeval.metrics.radgraph._vendor.allennlp.data.instance import Instance
+from radeval.metrics.radgraph._vendor.allennlp.data.tokenizers import Token, PretrainedTransformerTokenizer
+from radeval.metrics.radgraph._vendor.allennlp.data.token_indexers import TokenIndexer
+from radeval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_utils import enumerate_spans
 
 
 def make_coref_instance(

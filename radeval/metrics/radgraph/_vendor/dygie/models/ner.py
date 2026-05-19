@@ -4,13 +4,13 @@ from typing import Any, Dict, List, Optional, Callable
 import torch
 from torch.nn import functional as F
 
-from RadEval.metrics.radgraph._vendor.allennlp.data import Vocabulary
-from RadEval.metrics.radgraph._vendor.allennlp.models.model import Model
-from RadEval.metrics.radgraph._vendor.allennlp.modules import TimeDistributed
-from RadEval.metrics.radgraph._vendor.allennlp.nn import util, InitializerApplicator, RegularizerApplicator
+from radeval.metrics.radgraph._vendor.allennlp.data import Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.models.model import Model
+from radeval.metrics.radgraph._vendor.allennlp.modules import TimeDistributed
+from radeval.metrics.radgraph._vendor.allennlp.nn import util, InitializerApplicator, RegularizerApplicator
 
-from RadEval.metrics.radgraph._vendor.dygie.training.ner_metrics import NERMetrics
-from RadEval.metrics.radgraph._vendor.dygie.data.dataset_readers import document
+from radeval.metrics.radgraph._vendor.dygie.training.ner_metrics import NERMetrics
+from radeval.metrics.radgraph._vendor.dygie.data.dataset_readers import document
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 

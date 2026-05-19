@@ -1,6 +1,6 @@
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.nn import Activation
+from radeval.metrics.radgraph._vendor.allennlp.nn import Activation
 
 
 class GatedSum(torch.nn.Module):

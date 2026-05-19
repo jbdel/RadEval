@@ -30,7 +30,7 @@ from typing import Callable
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.common import Registrable
+from radeval.metrics.radgraph._vendor.allennlp.common import Registrable
 
 
 class Activation(torch.nn.Module, Registrable):

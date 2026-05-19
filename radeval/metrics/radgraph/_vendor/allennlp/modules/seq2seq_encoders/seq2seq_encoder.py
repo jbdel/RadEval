@@ -1,5 +1,5 @@
-from RadEval.metrics.radgraph._vendor.allennlp.modules.encoder_base import _EncoderBase
-from RadEval.metrics.radgraph._vendor.allennlp.common import Registrable
+from radeval.metrics.radgraph._vendor.allennlp.modules.encoder_base import _EncoderBase
+from radeval.metrics.radgraph._vendor.allennlp.common import Registrable
 
 
 class Seq2SeqEncoder(_EncoderBase, Registrable):

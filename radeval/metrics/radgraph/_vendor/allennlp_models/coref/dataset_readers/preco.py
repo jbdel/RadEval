@@ -2,13 +2,13 @@ import json
 import logging
 from typing import Dict, List, Optional, Tuple
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
-from RadEval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_reader import DatasetReader
-from RadEval.metrics.radgraph._vendor.allennlp.data.instance import Instance
-from RadEval.metrics.radgraph._vendor.allennlp.data.tokenizers import PretrainedTransformerTokenizer
-from RadEval.metrics.radgraph._vendor.allennlp.data.token_indexers import SingleIdTokenIndexer, TokenIndexer
+from radeval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
+from radeval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_reader import DatasetReader
+from radeval.metrics.radgraph._vendor.allennlp.data.instance import Instance
+from radeval.metrics.radgraph._vendor.allennlp.data.tokenizers import PretrainedTransformerTokenizer
+from radeval.metrics.radgraph._vendor.allennlp.data.token_indexers import SingleIdTokenIndexer, TokenIndexer
 
-from RadEval.metrics.radgraph._vendor.allennlp_models.coref.util import make_coref_instance
+from radeval.metrics.radgraph._vendor.allennlp_models.coref.util import make_coref_instance
 
 logger = logging.getLogger(__name__)
 

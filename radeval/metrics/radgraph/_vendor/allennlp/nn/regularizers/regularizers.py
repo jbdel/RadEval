@@ -1,6 +1,6 @@
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.nn.regularizers.regularizer import Regularizer
+from radeval.metrics.radgraph._vendor.allennlp.nn.regularizers.regularizer import Regularizer
 
 
 @Regularizer.register("l1")

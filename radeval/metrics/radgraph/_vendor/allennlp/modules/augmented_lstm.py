@@ -7,11 +7,11 @@ Based on PyText version (that was based on a previous AllenNLP version)
 from typing import Optional, Tuple
 
 import torch
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
 from torch.nn.utils.rnn import PackedSequence, pack_padded_sequence, pad_packed_sequence
 
-from RadEval.metrics.radgraph._vendor.allennlp.nn.initializers import block_orthogonal
-from RadEval.metrics.radgraph._vendor.allennlp.nn.util import get_dropout_mask
+from radeval.metrics.radgraph._vendor.allennlp.nn.initializers import block_orthogonal
+from radeval.metrics.radgraph._vendor.allennlp.nn.util import get_dropout_mask
 
 
 class AugmentedLSTMCell(torch.nn.Module):

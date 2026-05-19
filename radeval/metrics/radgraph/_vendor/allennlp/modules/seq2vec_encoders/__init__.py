@@ -15,12 +15,12 @@ The available Seq2Vec encoders are
 * `"stacked_bidirectional_lstm"` allennlp.modules.stacked_bidirectional_lstm.StackedBidirectionalLstm
 """
 
-from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.bert_pooler import BertPooler
-from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.boe_encoder import BagOfEmbeddingsEncoder
-from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.cls_pooler import ClsPooler
-from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.cnn_encoder import CnnEncoder
-from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.cnn_highway_encoder import CnnHighwayEncoder
-from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.pytorch_seq2vec_wrapper import (
+from radeval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.bert_pooler import BertPooler
+from radeval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.boe_encoder import BagOfEmbeddingsEncoder
+from radeval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.cls_pooler import ClsPooler
+from radeval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.cnn_encoder import CnnEncoder
+from radeval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.cnn_highway_encoder import CnnHighwayEncoder
+from radeval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.pytorch_seq2vec_wrapper import (
     AugmentedLstmSeq2VecEncoder,
     GruSeq2VecEncoder,
     LstmSeq2VecEncoder,
@@ -29,4 +29,4 @@ from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.pytorch_
     StackedAlternatingLstmSeq2VecEncoder,
     StackedBidirectionalLstmSeq2VecEncoder,
 )
-from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.seq2vec_encoder import Seq2VecEncoder
+from radeval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.seq2vec_encoder import Seq2VecEncoder

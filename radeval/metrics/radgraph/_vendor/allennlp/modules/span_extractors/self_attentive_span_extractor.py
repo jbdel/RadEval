@@ -1,8 +1,8 @@
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.modules.span_extractors.span_extractor import SpanExtractor
-from RadEval.metrics.radgraph._vendor.allennlp.modules.time_distributed import TimeDistributed
-from RadEval.metrics.radgraph._vendor.allennlp.nn import util
+from radeval.metrics.radgraph._vendor.allennlp.modules.span_extractors.span_extractor import SpanExtractor
+from radeval.metrics.radgraph._vendor.allennlp.modules.time_distributed import TimeDistributed
+from radeval.metrics.radgraph._vendor.allennlp.nn import util
 
 
 @SpanExtractor.register("self_attentive")

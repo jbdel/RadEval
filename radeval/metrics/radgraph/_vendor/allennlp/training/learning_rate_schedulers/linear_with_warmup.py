@@ -1,7 +1,7 @@
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.training.learning_rate_schedulers import PolynomialDecay
-from RadEval.metrics.radgraph._vendor.allennlp.training.learning_rate_schedulers.learning_rate_scheduler import LearningRateScheduler
+from radeval.metrics.radgraph._vendor.allennlp.training.learning_rate_schedulers import PolynomialDecay
+from radeval.metrics.radgraph._vendor.allennlp.training.learning_rate_schedulers.learning_rate_scheduler import LearningRateScheduler
 
 
 @LearningRateScheduler.register("linear_with_warmup")

@@ -2,7 +2,7 @@ from typing import Iterable, Tuple, Optional
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.registrable import Registrable
+from radeval.metrics.radgraph._vendor.allennlp.common.registrable import Registrable
 
 NamedParameter = Tuple[str, torch.Tensor]
 

@@ -5,13 +5,13 @@ import torch
 from torch.nn.modules.linear import Linear
 import torch.nn.functional as F
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import check_dimensions_match, ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.data import TextFieldTensors, Vocabulary
-from RadEval.metrics.radgraph._vendor.allennlp.modules import Seq2SeqEncoder, TimeDistributed, TextFieldEmbedder
-from RadEval.metrics.radgraph._vendor.allennlp.models.model import Model
-from RadEval.metrics.radgraph._vendor.allennlp.nn import InitializerApplicator
-from RadEval.metrics.radgraph._vendor.allennlp.nn.util import get_text_field_mask, sequence_cross_entropy_with_logits
-from RadEval.metrics.radgraph._vendor.allennlp.training.metrics import CategoricalAccuracy, SpanBasedF1Measure
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import check_dimensions_match, ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.data import TextFieldTensors, Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.modules import Seq2SeqEncoder, TimeDistributed, TextFieldEmbedder
+from radeval.metrics.radgraph._vendor.allennlp.models.model import Model
+from radeval.metrics.radgraph._vendor.allennlp.nn import InitializerApplicator
+from radeval.metrics.radgraph._vendor.allennlp.nn.util import get_text_field_mask, sequence_cross_entropy_with_logits
+from radeval.metrics.radgraph._vendor.allennlp.training.metrics import CategoricalAccuracy, SpanBasedF1Measure
 
 
 @Model.register("simple_tagger")

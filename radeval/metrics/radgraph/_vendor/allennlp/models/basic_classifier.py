@@ -2,12 +2,12 @@ from typing import Dict, Optional
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.data import TextFieldTensors, Vocabulary
-from RadEval.metrics.radgraph._vendor.allennlp.models.model import Model
-from RadEval.metrics.radgraph._vendor.allennlp.modules import FeedForward, Seq2SeqEncoder, Seq2VecEncoder, TextFieldEmbedder
-from RadEval.metrics.radgraph._vendor.allennlp.nn import InitializerApplicator, util
-from RadEval.metrics.radgraph._vendor.allennlp.nn.util import get_text_field_mask
-from RadEval.metrics.radgraph._vendor.allennlp.training.metrics import CategoricalAccuracy
+from radeval.metrics.radgraph._vendor.allennlp.data import TextFieldTensors, Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.models.model import Model
+from radeval.metrics.radgraph._vendor.allennlp.modules import FeedForward, Seq2SeqEncoder, Seq2VecEncoder, TextFieldEmbedder
+from radeval.metrics.radgraph._vendor.allennlp.nn import InitializerApplicator, util
+from radeval.metrics.radgraph._vendor.allennlp.nn.util import get_text_field_mask
+from radeval.metrics.radgraph._vendor.allennlp.training.metrics import CategoricalAccuracy
 
 
 @Model.register("basic_classifier")

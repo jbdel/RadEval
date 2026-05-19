@@ -4,9 +4,9 @@ from typing import Any, Dict, List, Optional, Tuple, Iterable
 
 from transformers import PreTrainedTokenizer
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.util import sanitize_wordpiece
-from RadEval.metrics.radgraph._vendor.allennlp.data.tokenizers.token import Token
-from RadEval.metrics.radgraph._vendor.allennlp.data.tokenizers.tokenizer import Tokenizer
+from radeval.metrics.radgraph._vendor.allennlp.common.util import sanitize_wordpiece
+from radeval.metrics.radgraph._vendor.allennlp.data.tokenizers.token import Token
+from radeval.metrics.radgraph._vendor.allennlp.data.tokenizers.tokenizer import Tokenizer
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +73,7 @@ class PretrainedTransformerTokenizer(Tokenizer):
         tokenizer_kwargs.setdefault("use_fast", True)
         # Note: Just because we request a fast tokenizer doesn't mean we get one.
 
-        from RadEval.metrics.radgraph._vendor.allennlp.common import cached_transformers
+        from radeval.metrics.radgraph._vendor.allennlp.common import cached_transformers
 
         self.tokenizer = cached_transformers.get_tokenizer(
             model_name, **tokenizer_kwargs
@@ -115,7 +115,7 @@ class PretrainedTransformerTokenizer(Tokenizer):
         self.single_sequence_token_type_id = None
 
         # Reverse-engineer the tokenizer for two sequences
-        from RadEval.metrics.radgraph._vendor.allennlp.common import cached_transformers
+        from radeval.metrics.radgraph._vendor.allennlp.common import cached_transformers
 
         tokenizer_with_special_tokens = cached_transformers.get_tokenizer(
             model_name, **tokenizer_kwargs

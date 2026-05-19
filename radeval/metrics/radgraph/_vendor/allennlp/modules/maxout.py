@@ -5,8 +5,8 @@ from typing import Sequence, Union
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.common.registrable import FromParams
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.common.registrable import FromParams
 
 
 class Maxout(torch.nn.Module, FromParams):

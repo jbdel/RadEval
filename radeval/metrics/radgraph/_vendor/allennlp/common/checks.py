@@ -107,7 +107,7 @@ def check_for_gpu(device: Union[int, torch.device, List[Union[int, torch.device]
     elif device is None:
         return
     else:
-        from RadEval.metrics.radgraph._vendor.allennlp.common.util import int_to_device
+        from radeval.metrics.radgraph._vendor.allennlp.common.util import int_to_device
 
         device = int_to_device(device)
         if device != torch.device("cpu"):

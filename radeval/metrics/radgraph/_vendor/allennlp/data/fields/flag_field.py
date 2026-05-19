@@ -1,7 +1,7 @@
 from typing import Any, Dict, List
 
 
-from RadEval.metrics.radgraph._vendor.allennlp.data.fields.field import Field
+from radeval.metrics.radgraph._vendor.allennlp.data.fields.field import Field
 
 
 class FlagField(Field[Any]):

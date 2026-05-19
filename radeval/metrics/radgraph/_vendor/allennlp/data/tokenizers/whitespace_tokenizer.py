@@ -1,7 +1,7 @@
 from typing import List
 
-from RadEval.metrics.radgraph._vendor.allennlp.data.tokenizers.token import Token
-from RadEval.metrics.radgraph._vendor.allennlp.data.tokenizers.tokenizer import Tokenizer
+from radeval.metrics.radgraph._vendor.allennlp.data.tokenizers.token import Token
+from radeval.metrics.radgraph._vendor.allennlp.data.tokenizers.tokenizer import Tokenizer
 
 
 @Tokenizer.register("whitespace")

@@ -1,8 +1,8 @@
 import torch
 from torch.nn.parameter import Parameter
 
-from RadEval.metrics.radgraph._vendor.allennlp.modules.matrix_attention.matrix_attention import MatrixAttention
-from RadEval.metrics.radgraph._vendor.allennlp.nn import Activation
+from radeval.metrics.radgraph._vendor.allennlp.modules.matrix_attention.matrix_attention import MatrixAttention
+from radeval.metrics.radgraph._vendor.allennlp.nn import Activation
 
 
 @MatrixAttention.register("bilinear")

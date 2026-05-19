@@ -2,9 +2,9 @@ import logging
 import collections
 from typing import Any, Dict, List, Optional, Tuple, DefaultDict
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
-from RadEval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_reader import DatasetReader
-from RadEval.metrics.radgraph._vendor.allennlp.data.fields import (
+from radeval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
+from radeval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_reader import DatasetReader
+from radeval.metrics.radgraph._vendor.allennlp.data.fields import (
     Field,
     ListField,
     TextField,
@@ -12,10 +12,10 @@ from RadEval.metrics.radgraph._vendor.allennlp.data.fields import (
     MetadataField,
     SequenceLabelField,
 )
-from RadEval.metrics.radgraph._vendor.allennlp.data.instance import Instance
-from RadEval.metrics.radgraph._vendor.allennlp.data.tokenizers import Token
-from RadEval.metrics.radgraph._vendor.allennlp.data.token_indexers import SingleIdTokenIndexer, TokenIndexer
-from RadEval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_utils import enumerate_spans
+from radeval.metrics.radgraph._vendor.allennlp.data.instance import Instance
+from radeval.metrics.radgraph._vendor.allennlp.data.tokenizers import Token
+from radeval.metrics.radgraph._vendor.allennlp.data.token_indexers import SingleIdTokenIndexer, TokenIndexer
+from radeval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_utils import enumerate_spans
 
 logger = logging.getLogger(__name__)
 

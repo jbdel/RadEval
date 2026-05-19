@@ -7,21 +7,21 @@ import numpy
 import torch
 from torch.nn.modules import Dropout
 
-from RadEval.metrics.radgraph._vendor.allennlp.common import FromParams
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
-from RadEval.metrics.radgraph._vendor.allennlp.common.util import lazy_groups_of
-from RadEval.metrics.radgraph._vendor.allennlp.data import Instance, Token, Vocabulary
-from RadEval.metrics.radgraph._vendor.allennlp.data.batch import Batch
-from RadEval.metrics.radgraph._vendor.allennlp.data.fields import TextField
-from RadEval.metrics.radgraph._vendor.allennlp.data.token_indexers.elmo_indexer import (
+from radeval.metrics.radgraph._vendor.allennlp.common import FromParams
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
+from radeval.metrics.radgraph._vendor.allennlp.common.util import lazy_groups_of
+from radeval.metrics.radgraph._vendor.allennlp.data import Instance, Token, Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.data.batch import Batch
+from radeval.metrics.radgraph._vendor.allennlp.data.fields import TextField
+from radeval.metrics.radgraph._vendor.allennlp.data.token_indexers.elmo_indexer import (
     ELMoCharacterMapper,
     ELMoTokenCharactersIndexer,
 )
-from RadEval.metrics.radgraph._vendor.allennlp.modules.elmo_lstm import ElmoLstm
-from RadEval.metrics.radgraph._vendor.allennlp.modules.highway import Highway
-from RadEval.metrics.radgraph._vendor.allennlp.modules.scalar_mix import ScalarMix
-from RadEval.metrics.radgraph._vendor.allennlp.nn.util import (
+from radeval.metrics.radgraph._vendor.allennlp.modules.elmo_lstm import ElmoLstm
+from radeval.metrics.radgraph._vendor.allennlp.modules.highway import Highway
+from radeval.metrics.radgraph._vendor.allennlp.modules.scalar_mix import ScalarMix
+from radeval.metrics.radgraph._vendor.allennlp.nn.util import (
     add_sentence_boundary_token_ids,
     get_device_of,
     remove_sentence_boundaries,
@@ -658,7 +658,7 @@ class _ElmoBiLm(torch.nn.Module):
         embedding = full_embedding[2 : len(tokens), :]
         vocab_size, embedding_dim = list(embedding.size())
 
-        from RadEval.metrics.radgraph._vendor.allennlp.modules.token_embedders import Embedding  # type: ignore
+        from radeval.metrics.radgraph._vendor.allennlp.modules.token_embedders import Embedding  # type: ignore
 
         self._bos_embedding = full_embedding[0, :]
         self._eos_embedding = full_embedding[1, :]

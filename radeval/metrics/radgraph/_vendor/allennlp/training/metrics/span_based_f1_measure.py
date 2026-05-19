@@ -3,12 +3,12 @@ from collections import defaultdict
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.util import is_distributed
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.nn.util import get_lengths_from_binary_sequence_mask
-from RadEval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
-from RadEval.metrics.radgraph._vendor.allennlp.training.metrics.metric import Metric
-from RadEval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_utils.span_utils import (
+from radeval.metrics.radgraph._vendor.allennlp.common.util import is_distributed
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.nn.util import get_lengths_from_binary_sequence_mask
+from radeval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.training.metrics.metric import Metric
+from radeval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_utils.span_utils import (
     bio_tags_to_spans,
     bioul_tags_to_spans,
     iob1_tags_to_spans,

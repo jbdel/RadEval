@@ -3,7 +3,7 @@ from typing import Optional
 import torch
 import torch.nn
 
-from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.seq2vec_encoder import Seq2VecEncoder
+from radeval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.seq2vec_encoder import Seq2VecEncoder
 
 
 @Seq2VecEncoder.register("bert_pooler")
@@ -42,7 +42,7 @@ class BertPooler(Seq2VecEncoder):
     ) -> None:
         super().__init__()
 
-        from RadEval.metrics.radgraph._vendor.allennlp.common import cached_transformers
+        from radeval.metrics.radgraph._vendor.allennlp.common import cached_transformers
 
         model = cached_transformers.get(
             pretrained_model, False, override_weights_file, override_weights_strip_prefix
@@ -68,7 +68,7 @@ class BertPooler(Seq2VecEncoder):
     ):
         pooler = self.pooler
         for _ in range(num_wrapping_dims):
-            from RadEval.metrics.radgraph._vendor.allennlp.modules import TimeDistributed
+            from radeval.metrics.radgraph._vendor.allennlp.modules import TimeDistributed
 
             pooler = TimeDistributed(pooler)
         pooled = pooler(tokens)

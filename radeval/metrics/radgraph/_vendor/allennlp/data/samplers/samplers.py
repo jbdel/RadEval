@@ -1,7 +1,7 @@
 from typing import List, Iterable
 from torch.utils import data
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.registrable import Registrable
+from radeval.metrics.radgraph._vendor.allennlp.common.registrable import Registrable
 
 """
 Duplicates of the pytorch Sampler classes. Broadly, these only exist

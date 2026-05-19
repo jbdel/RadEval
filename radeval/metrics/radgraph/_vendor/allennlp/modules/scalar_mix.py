@@ -3,8 +3,8 @@ from typing import List
 import torch
 from torch.nn import ParameterList, Parameter
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.nn import util
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.nn import util
 
 
 class ScalarMix(torch.nn.Module):

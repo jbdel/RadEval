@@ -3,9 +3,9 @@ import math
 import torch
 from torch.nn import Parameter
 
-from RadEval.metrics.radgraph._vendor.allennlp.nn import util
-from RadEval.metrics.radgraph._vendor.allennlp.nn.activations import Activation
-from RadEval.metrics.radgraph._vendor.allennlp.modules.matrix_attention.matrix_attention import MatrixAttention
+from radeval.metrics.radgraph._vendor.allennlp.nn import util
+from radeval.metrics.radgraph._vendor.allennlp.nn.activations import Activation
+from radeval.metrics.radgraph._vendor.allennlp.modules.matrix_attention.matrix_attention import MatrixAttention
 
 
 @MatrixAttention.register("linear")

@@ -3,11 +3,11 @@ from typing import List, Dict, Union, Iterator
 import torch
 from torch.utils import data
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.registrable import Registrable
-from RadEval.metrics.radgraph._vendor.allennlp.common.lazy import Lazy
-from RadEval.metrics.radgraph._vendor.allennlp.data.instance import Instance
-from RadEval.metrics.radgraph._vendor.allennlp.data.batch import Batch
-from RadEval.metrics.radgraph._vendor.allennlp.data.samplers import Sampler, BatchSampler
+from radeval.metrics.radgraph._vendor.allennlp.common.registrable import Registrable
+from radeval.metrics.radgraph._vendor.allennlp.common.lazy import Lazy
+from radeval.metrics.radgraph._vendor.allennlp.data.instance import Instance
+from radeval.metrics.radgraph._vendor.allennlp.data.batch import Batch
+from radeval.metrics.radgraph._vendor.allennlp.data.samplers import Sampler, BatchSampler
 
 
 TensorDict = Dict[str, Union[torch.Tensor, Dict[str, torch.Tensor]]]
@@ -51,7 +51,7 @@ class PyTorchDataLoader(data.DataLoader, DataLoader):
     ```
     from torch.utils.data import DataLoader
 
-    from RadEval.metrics.radgraph._vendor.allennlp.data import allennlp_collate
+    from radeval.metrics.radgraph._vendor.allennlp.data import allennlp_collate
     # Construct a dataloader directly for a dataset which contains allennlp
     # Instances which have _already_ been indexed.
     my_loader = DataLoader(dataset, batch_size=32, collate_fn=allennlp_collate)

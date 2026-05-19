@@ -2,7 +2,7 @@ from typing import Tuple, Union, Optional, Callable, Any
 import torch
 from torch.nn.utils.rnn import pack_padded_sequence, PackedSequence
 
-from RadEval.metrics.radgraph._vendor.allennlp.nn.util import get_lengths_from_binary_sequence_mask, sort_batch_by_length
+from radeval.metrics.radgraph._vendor.allennlp.nn.util import get_lengths_from_binary_sequence_mask, sort_batch_by_length
 
 # We have two types here for the state, because storing the state in something
 # which is Iterable (like a tuple, below), is helpful for internal manipulation

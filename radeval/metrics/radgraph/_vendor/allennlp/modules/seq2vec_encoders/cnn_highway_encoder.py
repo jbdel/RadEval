@@ -3,10 +3,10 @@ from typing import Sequence, Dict, List, Callable
 import torch
 import numpy as np
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.modules.layer_norm import LayerNorm
-from RadEval.metrics.radgraph._vendor.allennlp.modules.highway import Highway
-from RadEval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.seq2vec_encoder import Seq2VecEncoder
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.modules.layer_norm import LayerNorm
+from radeval.metrics.radgraph._vendor.allennlp.modules.highway import Highway
+from radeval.metrics.radgraph._vendor.allennlp.modules.seq2vec_encoders.seq2vec_encoder import Seq2VecEncoder
 
 _VALID_PROJECTION_LOCATIONS = {"after_cnn", "after_highway", None}
 

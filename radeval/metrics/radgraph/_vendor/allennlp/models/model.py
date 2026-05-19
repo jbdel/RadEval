@@ -11,13 +11,13 @@ from typing import Dict, List, Set, Type, Optional, Union
 import numpy
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.common.params import Params
-from RadEval.metrics.radgraph._vendor.allennlp.common.registrable import Registrable
-from RadEval.metrics.radgraph._vendor.allennlp.data import Instance, Vocabulary
-from RadEval.metrics.radgraph._vendor.allennlp.data.batch import Batch
-from RadEval.metrics.radgraph._vendor.allennlp.nn import util
-from RadEval.metrics.radgraph._vendor.allennlp.nn.regularizers import RegularizerApplicator
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.common.params import Params
+from radeval.metrics.radgraph._vendor.allennlp.common.registrable import Registrable
+from radeval.metrics.radgraph._vendor.allennlp.data import Instance, Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.data.batch import Batch
+from radeval.metrics.radgraph._vendor.allennlp.nn import util
+from radeval.metrics.radgraph._vendor.allennlp.nn.regularizers import RegularizerApplicator
 
 logger = logging.getLogger(__name__)
 
@@ -405,7 +405,7 @@ class Model(torch.nn.Module, Registrable):
         If `vocab` is given, we will extend the loaded model's vocabulary using the passed vocab
         object (including calling `extend_embedder_vocab`, which extends embedding layers).
         """
-        from RadEval.metrics.radgraph._vendor.allennlp.models.archival import load_archive  # here to avoid circular imports
+        from radeval.metrics.radgraph._vendor.allennlp.models.archival import load_archive  # here to avoid circular imports
 
         model = load_archive(archive_file).model
         if vocab:

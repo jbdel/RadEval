@@ -9,12 +9,12 @@ import textwrap
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
-from RadEval.metrics.radgraph._vendor.allennlp.data.fields.sequence_field import SequenceField
-from RadEval.metrics.radgraph._vendor.allennlp.data.tokenizers.token import Token
-from RadEval.metrics.radgraph._vendor.allennlp.data.token_indexers.token_indexer import TokenIndexer, IndexedTokenList
-from RadEval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
-from RadEval.metrics.radgraph._vendor.allennlp.nn import util
+from radeval.metrics.radgraph._vendor.allennlp.common.checks import ConfigurationError
+from radeval.metrics.radgraph._vendor.allennlp.data.fields.sequence_field import SequenceField
+from radeval.metrics.radgraph._vendor.allennlp.data.tokenizers.token import Token
+from radeval.metrics.radgraph._vendor.allennlp.data.token_indexers.token_indexer import TokenIndexer, IndexedTokenList
+from radeval.metrics.radgraph._vendor.allennlp.data.vocabulary import Vocabulary
+from radeval.metrics.radgraph._vendor.allennlp.nn import util
 
 # There are two levels of dictionaries here: the top level is for the *key*, which aligns
 # TokenIndexers with their corresponding TokenEmbedders.  The bottom level is for the *objects*

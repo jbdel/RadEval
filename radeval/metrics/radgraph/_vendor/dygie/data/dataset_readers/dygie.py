@@ -5,17 +5,17 @@ import pickle as pkl
 import warnings
 
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
-from RadEval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_reader import DatasetReader
-from RadEval.metrics.radgraph._vendor.allennlp.data.fields import (ListField, TextField, SpanField, MetadataField,
+from radeval.metrics.radgraph._vendor.allennlp.common.file_utils import cached_path
+from radeval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_reader import DatasetReader
+from radeval.metrics.radgraph._vendor.allennlp.data.fields import (ListField, TextField, SpanField, MetadataField,
                                   SequenceLabelField, AdjacencyField, LabelField)
-from RadEval.metrics.radgraph._vendor.allennlp.data.instance import Instance
-from RadEval.metrics.radgraph._vendor.allennlp.data.tokenizers import Token
-from RadEval.metrics.radgraph._vendor.allennlp.data.token_indexers import SingleIdTokenIndexer, TokenIndexer
-from RadEval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_utils import enumerate_spans
+from radeval.metrics.radgraph._vendor.allennlp.data.instance import Instance
+from radeval.metrics.radgraph._vendor.allennlp.data.tokenizers import Token
+from radeval.metrics.radgraph._vendor.allennlp.data.token_indexers import SingleIdTokenIndexer, TokenIndexer
+from radeval.metrics.radgraph._vendor.allennlp.data.dataset_readers.dataset_utils import enumerate_spans
 
-from RadEval.metrics.radgraph._vendor.dygie.data.fields.adjacency_field_assym import AdjacencyFieldAssym
-from RadEval.metrics.radgraph._vendor.dygie.data.dataset_readers.document import Document, Sentence
+from radeval.metrics.radgraph._vendor.dygie.data.fields.adjacency_field_assym import AdjacencyFieldAssym
+from radeval.metrics.radgraph._vendor.dygie.data.dataset_readers.document import Document, Sentence
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 

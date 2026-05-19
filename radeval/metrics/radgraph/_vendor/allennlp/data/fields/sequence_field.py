@@ -1,4 +1,4 @@
-from RadEval.metrics.radgraph._vendor.allennlp.data.fields.field import DataArray, Field
+from radeval.metrics.radgraph._vendor.allennlp.data.fields.field import DataArray, Field
 
 
 class SequenceField(Field[DataArray]):

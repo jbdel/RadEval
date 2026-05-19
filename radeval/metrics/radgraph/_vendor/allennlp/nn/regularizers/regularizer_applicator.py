@@ -3,8 +3,8 @@ from typing import List, Tuple
 
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.common import FromParams
-from RadEval.metrics.radgraph._vendor.allennlp.nn.regularizers.regularizer import Regularizer
+from radeval.metrics.radgraph._vendor.allennlp.common import FromParams
+from radeval.metrics.radgraph._vendor.allennlp.nn.regularizers.regularizer import Regularizer
 
 
 class RegularizerApplicator(FromParams):

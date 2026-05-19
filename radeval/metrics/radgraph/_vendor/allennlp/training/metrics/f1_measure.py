@@ -1,7 +1,7 @@
 from typing import Dict
 
-from RadEval.metrics.radgraph._vendor.allennlp.training.metrics.metric import Metric
-from RadEval.metrics.radgraph._vendor.allennlp.training.metrics.fbeta_measure import FBetaMeasure
+from radeval.metrics.radgraph._vendor.allennlp.training.metrics.metric import Metric
+from radeval.metrics.radgraph._vendor.allennlp.training.metrics.fbeta_measure import FBetaMeasure
 
 
 @Metric.register("f1")

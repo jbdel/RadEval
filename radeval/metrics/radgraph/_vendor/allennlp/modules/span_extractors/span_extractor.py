@@ -1,6 +1,6 @@
 import torch
 
-from RadEval.metrics.radgraph._vendor.allennlp.common.registrable import Registrable
+from radeval.metrics.radgraph._vendor.allennlp.common.registrable import Registrable
 
 
 class SpanExtractor(torch.nn.Module, Registrable):

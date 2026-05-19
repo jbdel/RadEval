@@ -1,4 +1,4 @@
-from RadEval.metrics.radgraph._vendor.allennlp.data.samplers.samplers import (
+from radeval.metrics.radgraph._vendor.allennlp.data.samplers.samplers import (
     Sampler,
     BatchSampler,
     SequentialSampler,
@@ -7,5 +7,5 @@ from RadEval.metrics.radgraph._vendor.allennlp.data.samplers.samplers import (
     RandomSampler,
     BasicBatchSampler,
 )
-from RadEval.metrics.radgraph._vendor.allennlp.data.samplers.bucket_batch_sampler import BucketBatchSampler
-from RadEval.metrics.radgraph._vendor.allennlp.data.samplers.max_tokens_batch_sampler import MaxTokensBatchSampler
+from radeval.metrics.radgraph._vendor.allennlp.data.samplers.bucket_batch_sampler import BucketBatchSampler
+from radeval.metrics.radgraph._vendor.allennlp.data.samplers.max_tokens_batch_sampler import MaxTokensBatchSampler
