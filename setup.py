@@ -88,6 +88,11 @@ setup(
         "radeval.metrics.SRRBert": ["*.json"],
         "radeval.metrics.bertscore._vendor": [
             "rescale_baseline/*/*.tsv",
+            "rescale_baseline/*/*/*.tsv",
+        ],
+        "radeval.metrics.radfact_ct": [
+            "prompts/ct/*.txt",
+            "prompts/ct/*.json",
         ],
     },
     zip_safe=False,
