@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='radeval',
-    version='2.2.1',
+    version='2.2.2',
     author='Jean-Benoit Delbrouck, Justin Xu, Xi Zhang, Dave Van Veen',
     maintainer='Xi Zhang, JB Delbrouck',
     url='https://github.com/jbdel/RadEval',
