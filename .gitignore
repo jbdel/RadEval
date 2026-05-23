@@ -7,6 +7,8 @@ __pycache__/
 *.pyo
 *.pyd
 *.pytest_cache/
+build/
+dist/
 
 # Ignore log files
 *.log

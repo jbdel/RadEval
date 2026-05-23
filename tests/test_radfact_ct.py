@@ -27,6 +27,30 @@ class TestRadFactCTUnit:
     def test_import(self):
         assert RadFactCT is not None
 
+    def test_prompt_files_readable(self):
+        """All six prompt files must be readable from the installed package location.
+
+        This test catches wheel packaging omissions: unlike asserting Path.exists()
+        against the source tree, these loaders use Path(__file__).parent internally
+        and will raise FileNotFoundError if the files are absent post-install.
+        """
+        from radeval.metrics.radfact_ct.radfact_ct import (
+            _load_report_to_phrases_prompts,
+            _load_negative_filtering_prompts,
+            _load_nli_prompts,
+        )
+        system, pairs = _load_report_to_phrases_prompts()
+        assert isinstance(system, str) and len(system) > 0
+        assert len(pairs) > 0
+
+        system, pairs = _load_negative_filtering_prompts()
+        assert isinstance(system, str) and len(system) > 0
+        assert len(pairs) > 0
+
+        system, pairs = _load_nli_prompts()
+        assert isinstance(system, str) and len(system) > 0
+        assert len(pairs) > 0
+
     def test_missing_api_key(self):
         old = os.environ.pop("OPENAI_API_KEY", None)
         try:

@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='radeval',
-    version='2.2.1',
+    version='2.2.2',
     author='Jean-Benoit Delbrouck, Justin Xu, Xi Zhang, Dave Van Veen',
     maintainer='Xi Zhang, JB Delbrouck',
     url='https://github.com/jbdel/RadEval',
@@ -88,6 +88,11 @@ setup(
         "radeval.metrics.SRRBert": ["*.json"],
         "radeval.metrics.bertscore._vendor": [
             "rescale_baseline/*/*.tsv",
+            "rescale_baseline/*/*/*.tsv",
+        ],
+        "radeval.metrics.radfact_ct": [
+            "prompts/ct/*.txt",
+            "prompts/ct/*.json",
         ],
     },
     zip_safe=False,
