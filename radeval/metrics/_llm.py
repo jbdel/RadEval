@@ -30,6 +30,7 @@ PRICING_PER_1M: dict[str, tuple[float, float]] = {
     # Google Gemini (https://ai.google.dev/gemini-api/docs/pricing)
     "gemini-2.5-flash": (0.30, 2.50),
     "gemini-2.5-pro":   (1.25, 10.00),
+    "gemini-3.1-flash-lite": (0.10, 0.40),
 }
 
 # ---------------------------------------------------------------------------
