@@ -1,5 +1,8 @@
 from radeval.metrics.f1chexbert import F1CheXbert
 import numpy as np
+import torch.nn as nn
+
+from radeval.metrics._chexbert_base import BaseCheXbertEvaluator
 
 
 def test_f1chexbert():
@@ -112,3 +115,65 @@ def test_f1chexbert_per_sample():
 
     assert "f1chexbert_5_micro_f1" not in results
     assert "f1chexbert" not in results
+
+
+class _StubCheXbertEvaluator(BaseCheXbertEvaluator):
+    """CheXbert evaluator with canned labels, so no weights are needed."""
+
+    CONDITION_NAMES = [
+        'Enlarged Cardiomediastinum', 'Cardiomegaly', 'Lung Opacity',
+        'Lung Lesion', 'Edema', 'Consolidation', 'Pneumonia', 'Atelectasis',
+        'Pneumothorax', 'Pleural Effusion', 'Pleural Other', 'Fracture',
+        'Support Devices',
+    ]
+    NO_FINDING = 'No Finding'
+    TOP5 = ['Cardiomegaly', 'Edema', 'Consolidation', 'Atelectasis',
+            'Pleural Effusion']
+
+    def __init__(self, label_table):
+        nn.Module.__init__(self)
+        self._init_evaluator(model=None, tokenizer=None, device="cpu",
+                             batch_size=4)
+        self._label_table = label_table
+
+    def get_labels(self, reports, mode="rrg", on_batch_done=None):
+        return [self._label_table[r] for r in reports]
+
+
+def test_chexbert_per_sample_accuracy_values():
+    """Guard the per-sample accuracy arithmetic against exact numpy ground truth.
+
+    Regression test for #29: the exact-match accuracy and the per-sample label
+    accuracies used to be computed via sklearn's private ``_check_targets``,
+    which silently changed its tuple layout in scikit-learn 1.8. That both
+    crashed ``pe_accuracy`` and made ``sample_acc_all`` return wrong numbers of
+    the right shape, so type/range/length assertions could not catch it.
+    """
+    rng = np.random.default_rng(0)
+    refs = [f"ref{i}" for i in range(6)]
+    hyps = [f"hyp{i}" for i in range(6)]
+
+    table = {r: rng.integers(0, 2, size=14).tolist() for r in refs}
+    table.update({h: rng.integers(0, 2, size=14).tolist() for h in hyps})
+    # force one exact match so the all-labels-correct path is exercised
+    table[hyps[3]] = list(table[refs[3]])
+
+    ev = _StubCheXbertEvaluator(table)
+    _, pe_accuracy, _, _, sample_acc_full, sample_acc_5 = ev.forward(hyps, refs)
+
+    ref_mat = np.array([table[r] for r in refs])
+    hyp_mat = np.array([table[h] for h in hyps])
+    match_full = ref_mat == hyp_mat
+    match_5 = ref_mat[:, ev.top5_idx] == hyp_mat[:, ev.top5_idx]
+
+    np.testing.assert_allclose(pe_accuracy, match_5.all(axis=1).astype(float))
+    np.testing.assert_allclose(sample_acc_5, match_5.mean(axis=1))
+    np.testing.assert_allclose(sample_acc_full, match_full.mean(axis=1))
+
+    # the forced-identical pair must score a perfect 1.0 everywhere
+    assert pe_accuracy[3] == 1.0
+    assert sample_acc_5[3] == 1.0
+    assert sample_acc_full[3] == 1.0
+
+    assert len(sample_acc_5) == len(refs)
+    assert len(sample_acc_full) == len(refs)

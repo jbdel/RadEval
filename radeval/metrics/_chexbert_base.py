@@ -15,8 +15,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 from sklearn.metrics import accuracy_score, classification_report
-from sklearn.metrics._classification import _check_targets
-from sklearn.utils.sparsefuncs import count_nonzero
 
 
 def generate_attention_masks(batch_ids: torch.LongTensor) -> torch.FloatTensor:
@@ -160,19 +158,16 @@ class BaseCheXbertEvaluator(nn.Module):
 
         accuracy = accuracy_score(refs5, hyps5)
 
-        # sklearn >=1.8 returns (y_type, y_true, y_pred, indicator);
-        # earlier releases return (y_type, y_true, y_pred). Tolerate both.
-        _ct5 = _check_targets(refs5, hyps5)
-        y_true5, y_pred5 = _ct5[1], _ct5[2]
-        pe_accuracy = (count_nonzero(y_true5 - y_pred5, axis=1) == 0).astype(float)
+        # ``get_labels`` already yields dense binary indicator rows of equal
+        # width, so compare them directly. Routing this through sklearn's
+        # private ``_check_targets`` broke on scikit-learn >=1.8, which inserts
+        # ``unique_labels`` at index 1 of the returned tuple.
+        match5 = np.asarray(refs5) == np.asarray(hyps5)
+        pe_accuracy = match5.all(axis=1).astype(float)
+        sample_label_acc_5 = match5.mean(axis=1).astype(float).tolist()
 
-        sample_label_acc_5 = np.asarray(
-            (y_true5 == y_pred5).mean(axis=1)).astype(float).ravel().tolist()
-
-        _ct_full = _check_targets(refs_chexbert, hyps_chexbert)
-        y_true_full, y_pred_full = _ct_full[1], _ct_full[2]
-        sample_label_acc_full = np.asarray(
-            (y_true_full == y_pred_full).mean(axis=1)).astype(float).ravel().tolist()
+        match_full = np.asarray(refs_chexbert) == np.asarray(hyps_chexbert)
+        sample_label_acc_full = match_full.mean(axis=1).astype(float).tolist()
 
         cr = classification_report(
             refs_chexbert, hyps_chexbert,
